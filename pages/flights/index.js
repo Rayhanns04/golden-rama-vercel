@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import Layout from "../../src/components/layout";
 import { FormFlightSearch } from "../../src/components/form";
-import { convertDateFlight } from "../../src/helpers";
+import { convertDateFlight, convertDateFlightWithYear } from "../../src/helpers";
 import { CustomDivider } from "../../src/components/divider";
 import { useDispatch } from "react-redux";
 import { resetDataTour } from "../../src/state/tour/tour.slice";
@@ -46,10 +46,10 @@ const Flights = (props) => {
   };
   const handleSubmit = (values, actions) => {
     let query = {
-      departureDate: convertDateFlight(values.flights[0].departure_date),
+      departureDate: convertDateFlightWithYear(values.flights[0].departure_date),
       returnDate:
         values.flights[0].is_round_trip == true
-          ? convertDateFlight(values.flights[0].return_date)
+          ? convertDateFlightWithYear(values.flights[0].return_date)
           : "",
       originCode: values.flights[0].departure.code,
       destinationCode: values.flights[0].destination.code,

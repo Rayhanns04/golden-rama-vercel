@@ -144,6 +144,13 @@ export function convertDateFlight(date) {
   return result;
 }
 
+export function convertDateFlightWithYear(date) {
+  const newDate = new Date(date);
+  const result = `${newDate.getMonth() + 1}-${newDate.getDate()}-${newDate.getFullYear()}`;
+  console.log(result, 'result');
+  return result;
+}
+
 export function convertDateFlightPage(date) {
   const currentDate = new Date(date);
   const options = { year: "2-digit", month: "short", day: "numeric" };
