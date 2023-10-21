@@ -2422,6 +2422,7 @@ export const FormFlightSearch = ({
         : (result = await getAirports(search));
       return Promise.resolve(result);
     });
+
     const handleSearch = (search) => {
       setSearch(search);
       setTimeout(() => {}, 1000);

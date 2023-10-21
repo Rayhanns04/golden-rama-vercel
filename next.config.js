@@ -23,6 +23,7 @@ const nextConfig = {
       "flagcdn.com",
       "cdn.bemyguest.com.sgnull",
       "cdn.bemyguest.com.sg",
+      "portalvhds11000v9mfhk0k.blob.core.windows.net"
     ],
   },
   async rewrites() {
