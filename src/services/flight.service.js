@@ -56,6 +56,7 @@ export const getRecommendedAirports = async () => {
 
 export const getFlights = async (data, issmartcombo) => {
   try {
+    // console.log('responseReq', data)
     const response = await axios.post(`${BASE_URL}/orders/flight/available`, {
       data: data,
     });

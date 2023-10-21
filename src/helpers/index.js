@@ -146,7 +146,7 @@ export function convertDateFlight(date) {
 
 export function convertDateFlightWithYear(date) {
   const newDate = new Date(date);
-  const result = `${newDate.getMonth() + 1}-${newDate.getDate()}-${newDate.getFullYear()}`;
+  const result = `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`;
   console.log(result, 'result');
   return result;
 }
@@ -170,13 +170,20 @@ export function convertTimeFlightPage(date) {
 
 export function getClassCode(code) {
   const cabinClass = [
-    { label: "Economy", value: "E" },
-    { label: "Premium Economy", value: "PE" },
-    { label: "Business Class", value: "B" },
-    { label: "First Class", value: "F" },
+    { label: "Economy", value: "Economy" },
+    { label: "Premium Economy", value: "PremiumEconomy" },
+    { label: "Business", value: "Business" },
+    { label: "First", value: "First" },
+    { label: "Premium First", value: "PremiumFirst" },
+    // { label: "Economy", value: "E" },
+    // { label: "Premium Economy", value: "PE" },
+    // { label: "Business Class", value: "B" },
+    // { label: "First Class", value: "F" },
   ];
   const result = cabinClass.find((item) => item.value === code);
-  return result.label;
+  if(result){
+    return result.label;
+  }
 }
 
 export function differenceDate(dateDeparture, dateArrival) {

@@ -885,7 +885,7 @@ export const FormInsuranceSearch = ({ handleSubmit, actionButton = null }) => {
                             alt="Person"
                             width={24}
                             height={24}
-                            src={"/svg/flights/person.svg"}
+                            src="/svg/flights/person.svg"
                           />
                           <Text>{form.values.adults}</Text>
                         </Flex>
@@ -1023,7 +1023,7 @@ export const FormInsuranceSearch = ({ handleSubmit, actionButton = null }) => {
                             alt="Person"
                             width={24}
                             height={24}
-                            src={"/svg/flights/person.svg"}
+                            src="/svg/flights/person.svg"
                           />
                           <Text>{form.values[field.name]}</Text>
                         </Flex>
@@ -2379,6 +2379,7 @@ export const FormFlightSearch = ({
   history,
   ...rest
 }) => {
+
   const indexOf = require("lodash/indexOf");
   if (history?.length > 0) {
     initialForm = {
@@ -2409,6 +2410,7 @@ export const FormFlightSearch = ({
       },
     };
   }
+  
   const AirportForm = ({ name, type, indexFlight }) => {
     const form = useFormikContext();
     const [search, setSearch] = useState("");

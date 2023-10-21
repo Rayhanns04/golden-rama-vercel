@@ -2975,14 +2975,15 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
       spaceBetween={12}
       slidesOffsetBefore={24}
       slidesOffsetAfter={24}
-      slidesPerView={"auto"}
+      slidesPerView={1}
       cssMode={false}
+      style={{ width: '100%' }}
     >
       {item.map((item, index) => (
-        <SwiperSlide key={index} style={{ maxWidth: "250px" }}>
+        <SwiperSlide key={index} style={{ maxWidth: "280px" }}>
           <Formik initialValues={item} onSubmit={handleClick}>
             {(formik) => (
-              <LinkBox p={"16px"} bg={"white"} rounded={"xl"}>
+              <LinkBox p={"16px"} bg={"white"} width={'100%'} rounded={"xl"}>
                 <Stack direction={"row"} justifyContent={"space-between"}>
                   <Stack direction={"column"}>
                     <HStack alignItems={"start"}>
@@ -3041,7 +3042,7 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
                         {item.flights[0].adult +
                           item.flights[0].child +
                           item.flights[0].infant}{" "}
-                        Penumpang, {getClassCode(item.flights[0].class)}
+                        Penumpang, {getClassCode(item.flights[0].class)}  
                       </Text>
                       <LinkOverlay href="#" onClick={formik.handleSubmit} />
                     </Stack>

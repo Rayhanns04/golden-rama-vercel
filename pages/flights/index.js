@@ -44,6 +44,7 @@ const Flights = (props) => {
     child: history.length > 0 ? history[0].flights[0].child : 0,
     infant: history.length > 0 ? history[0].flights[0].infant : 0,
   };
+
   const handleSubmit = (values, actions) => {
     let query = {
       departureDate: convertDateFlightWithYear(values.flights[0].departure_date),
@@ -56,9 +57,9 @@ const Flights = (props) => {
       adult: values.flights[0].adult,
       child: values.flights[0].child,
       infant: values.flights[0].infant,
-      class: values.flights[0].class,
+      cabinClasses: [values.flights[0].class],
       airlines: "",
-      is_round_trip: values.flights[0].is_round_trip,
+      isRoundTrip: values.flights[0].is_round_trip,
       is_smart_combo: values.flights[0].is_round_trip,
     };
     setHistory((history) => {
@@ -71,6 +72,7 @@ const Flights = (props) => {
     dispatch(resetDataTour({}));
     dispatch(resetDataFlight({}));
   }, []);
+  
   return (
     <Layout
       pagetitle={"Tiket Pesawat"}
