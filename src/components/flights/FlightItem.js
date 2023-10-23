@@ -10,7 +10,7 @@ import {
   getRecommendedAirports,
 } from "../../services/flight.service";
 
-const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData }) => {
+const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position }) => {
 
   console.log('originName',originData)
   

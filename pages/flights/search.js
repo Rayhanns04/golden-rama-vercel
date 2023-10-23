@@ -105,6 +105,8 @@ const SearchFlights = ({
 
   const [currentJourney, setCurrentJourney] = useState() 
   const [flights, setFlights] = useState([]);
+
+
   const [statusSuccess, setStatusSuccess] = useState(false);
 
   const dispatch = useDispatch();
@@ -142,9 +144,7 @@ const SearchFlights = ({
 
     try {
       const response = await getFlights(payload, isSmartCombo);
-
-      // console.log('response', response);
-
+      
       const originName = await getAirports(query?.originCode)
       const destinationName = await getAirports(query?.destinationCode)
     
@@ -159,8 +159,9 @@ const SearchFlights = ({
 
       if (response.success === true) {
         const currentFlight = response.data?.Schedules[position]?.Flights;
-
         setCurrentJourney(response.data?.Schedules[position]);
+
+
         setFlights(currentFlight.slice(0, shownItems));
         setTotalData(currentFlight.length);
         setIsLoading(false);
@@ -710,7 +711,9 @@ const SearchFlights = ({
   // const departureDateTime = additionalData.data?.[0]?.journeys?.[0]?.segments?.[0]?.departureDateTime;
 
   const departureDateTime = query?.departureDate;
-  console.log('departure date',departureDateTime)
+  const returnDateTime = query?.returnDate;
+  console.log(cart)
+  // console.log('departure date',departureDateTime)
 
   return (
     <Layout
@@ -773,7 +776,7 @@ const SearchFlights = ({
                 "- " +
                   date(
                     new Date(
-                      additionalData?.data[1].journeys[0]?.segments[0].departureDateTime
+                      returnDateTime
                     ),
                     "iii, d LLL yy"
                   )}
@@ -1019,7 +1022,17 @@ const SearchFlights = ({
                 // console.log("item", item);
                 return (
                   <>
-                    <FlightItem item={item} isLoading={isLoading} isDesktop={isDesktop} query={query} key={index} originData={originData} destinationData={destinationData}  />
+                    <FlightItem 
+                      item={item} 
+                      isLoading={isLoading} 
+                      isDesktop={isDesktop} 
+                      query={query} 
+                      key={index} 
+                      originData={originData} 
+                      destinationData={destinationData} 
+                      handlePosition={handlePosition} 
+                      position={position}
+                      />
                   </>
                 );
               })
