@@ -155,7 +155,6 @@ const SearchFlights = ({
       if(destinationName?.length > 0){
         setDestinationData(destinationName)
       }
-      console.log('originName', originData)
 
       if (response.success === true) {
         const currentFlight = response.data?.Schedules[position]?.Flights;
