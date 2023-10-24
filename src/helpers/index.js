@@ -118,6 +118,17 @@ export function convertRupiah(price = null) {
   return null;
 }
 
+export function convertTimeToCustomFormat(inputTime) {
+  const timeRegex = /^(\d{2}):(\d{2})$/;
+  if (timeRegex.test(inputTime)) {
+    const [hours, minutes] = inputTime.split(':');  
+    const formattedTime = `${parseInt(hours)}j ${parseInt(minutes)}m`;
+    return formattedTime;
+  } else {
+    return "Format waktu tidak valid";
+  }
+}
+
 export function convertDate(date) {
   const newDate = new Date(date);
   return newDate.toISOString().slice(0, 10);
@@ -169,6 +180,9 @@ export function convertTimeFlightPage(date) {
 }
 
 export function getClassCode(code) {
+
+  const codeNow = code[0]
+
   const cabinClass = [
     { label: "Economy", value: "Economy" },
     { label: "Premium Economy", value: "PremiumEconomy" },
@@ -180,10 +194,8 @@ export function getClassCode(code) {
     // { label: "Business Class", value: "B" },
     // { label: "First Class", value: "F" },
   ];
-  const result = cabinClass.find((item) => item.value === code);
-  if(result){
-    return result.label;
-  }
+  const result = cabinClass.find((item) => item.value === codeNow);
+  return result?.label ?? "Not Found";
 }
 
 export function differenceDate(dateDeparture, dateArrival) {

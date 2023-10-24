@@ -4,7 +4,7 @@ import DetailButton from "./DetailButton";
 import { CustomOrangeFullWidthButton } from "../button";
 import { useEffect, useState } from "react";
 import { useLoginToast } from "../../hooks";
-import { convertDateFlightPage, convertRupiah } from "../../helpers";
+import { convertDateFlightPage, convertRupiah, getClassCode } from "../../helpers";
 import {
   getAirports,
   getRecommendedAirports,
@@ -12,7 +12,7 @@ import {
 
 const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position }) => {
 
-  console.log('originName',originData)
+  // console.log('originName',originData)
   
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
@@ -173,7 +173,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                       >{`${item.segments[0].flightDesignator.carrierCode}${item.segments[0].flightDesignator.flightNumber}`}</Text> */}
                     </HStack>
                     <Text hidden={!isDesktop} fontWeight={"bold"}>
-                      {query?.cabinClasses}
+                      {getClassCode(query?.cabinClasses)}
                     </Text>
                     {/* add text with border rounded , with text smart combo */}
                     {item.isCombine && (
@@ -208,6 +208,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                 item={item}
                 query={query}
                 isDesktop={isDesktop}
+                originData={originData}
                 isLoading={isLoading}
                 setIsEmpty={setIsEmptyState}
                 empty={isEmpty}
@@ -255,7 +256,6 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                     {
                       originData?.map((item)=>{
                         if(item?.attributes?.code === query?.originCode){
-                          console.log('originName',item?.attributes?.cityName)
                           return item?.attributes?.cityName
                         }
                       })
@@ -356,7 +356,6 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                     {
                       destinationData?.map((item)=>{
                         if(item?.attributes?.code === query?.destinationCode){
-                          console.log('originName',item?.attributes?.cityName)
                           return item?.attributes?.cityName
                         }
                       })
@@ -492,8 +491,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                 disabled={isEmpty || isLoading}
                 onClick={(e) =>
                   loginToast(() => handlePosition(e, position, item))
-                }
-              >
+                }>
                 Pilih
               </CustomOrangeFullWidthButton>
             </Skeleton>

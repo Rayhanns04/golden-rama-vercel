@@ -50,6 +50,7 @@ import {
   convertDateFlightPage,
   convertRupiah,
   convertTimeFlightPage,
+  convertTimeToCustomFormat,
   differenceDate,
   differenceDateLong,
   filterAirlines,
@@ -101,7 +102,7 @@ const SearchFlights = ({
     is_smart_combo: dataQuery?.is_smart_combo,
   };
 
-  // console.log(query)
+  // console.log('query', query)
 
   const [currentJourney, setCurrentJourney] = useState() 
   const [flights, setFlights] = useState([]);
@@ -125,12 +126,15 @@ const SearchFlights = ({
     { ssr: false }
   );
 
+  // console.log('inView', inView, shownItems)
+
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
 
-  // console.log(flights)
+  // console.log('flights', flights)
   // console.log(noresults)
 
+  
   const fetchFlight = async (
     query,
     shownItems,
@@ -140,10 +144,10 @@ const SearchFlights = ({
   ) => {
     setIsLoading(true);
     const payload = query;
-    // console.log(payload);
-
+    
     try {
       const response = await getFlights(payload, isSmartCombo);
+      // console.log('iniresponse',response);
       
       const originName = await getAirports(query?.originCode)
       const destinationName = await getAirports(query?.destinationCode)
@@ -160,6 +164,10 @@ const SearchFlights = ({
         const currentFlight = response.data?.Schedules[position]?.Flights;
         setCurrentJourney(response.data?.Schedules[position]);
 
+
+        if(query?.isRoundTrip === 'true'){
+
+        }
 
         setFlights(currentFlight.slice(0, shownItems));
         setTotalData(currentFlight.length);
@@ -204,6 +212,7 @@ const SearchFlights = ({
 
     //   setTotalData(currentFlight.length);
     // }
+
     // if (filter) {
     //   if (filter?.transits?.length > 0)
     //     currentFlight = filterTransit(currentFlight, filter.transits);
@@ -270,6 +279,9 @@ const SearchFlights = ({
     if (flights.length === 0 || statusSuccess === false) {
       setIsLoading(!noresults ?? true);
       fetchFlight(query, shownItems, position, sortBy, filter);
+    } else if(inView && flights?.length < totalData){
+      setIsLoading(true);
+      fetchFlight(query, shownItems, position, sortBy, filter);
     } else {
       setIsLoading(false);
     }
@@ -295,6 +307,7 @@ const SearchFlights = ({
   };
 
   const handlePosition = (e, value, journey) => {
+    // console.log('iniresponse', cart)
     e.preventDefault();
     if (!(e.target.innerHTML === "Detail")) {
       setCart([...cart, journey]);
@@ -711,7 +724,7 @@ const SearchFlights = ({
 
   const departureDateTime = query?.departureDate;
   const returnDateTime = query?.returnDate;
-  console.log(cart)
+  // console.log(cart)
   // console.log('departure date',departureDateTime)
 
   return (
@@ -727,8 +740,7 @@ const SearchFlights = ({
           : null
       }`}
       pagetitle={"Hasil Pencarian Tiket"}
-      hideBottomBar
-    >
+      hideBottomBar>
       {!noresults && (
         <Box as={"section"} px={"24px"} mx={"-24px"}>
           <Stack
@@ -765,20 +777,8 @@ const SearchFlights = ({
           </Stack>
           <Stack maxW={{ lg: "container.lg", xl: "container.xl" }} mx={"auto"}>
             <Text fontSize={{ base: "sm", md: "md" }}>
-              {date(
-                new Date(
-                  departureDateTime
-                  ),
-                "iii, d LLL yy"
-              ) + " "}
-              {query.isRoundTrip == "true" &&
-                "- " +
-                  date(
-                    new Date(
-                      returnDateTime
-                    ),
-                    "iii, d LLL yy"
-                  )}
+              {date(new Date(departureDateTime), "iii, d LLL yy") + " "}
+              {query.isRoundTrip == "true" && "- " + date(new Date(returnDateTime), "iii, d LLL yy" )}
             </Text>
           </Stack>
           <Stack
@@ -886,7 +886,7 @@ const SearchFlights = ({
                   fontSize={{ base: "xs", md: "sm" }}
                   fontWeight="thin"
                 >
-                  {query?.cabinClasses}
+                  {getClassCode(query?.cabinClasses)}
                 </Text>
               </Button>
             </HStack>
@@ -917,34 +917,31 @@ const SearchFlights = ({
                   color="white"
                   textTransform="capitalize"
                 >
-                  {query.isRoundTrip === "true" && index == 0
+                  {query?.isRoundTrip === "true" && index == 0
                     ? "Pergi"
-                    : query.isRoundTrip === "true" && index == 1
+                    : query?.isRoundTrip === "true" && index == 1
                     ? "Pulang"
                     : ""}
                 </Badge>
                 <Stack>
                   <Text color="neutral.text.medium">
                     {`${date(
-                      new Date(item.segments[0].departureDateTime),
+                      new Date(item?.DepartDate),
                       "dd LLL yy"
-                    )}, ${convertTimeFlightPage(
-                      item.segments[0].departureDateTime
-                    )} - ${convertTimeFlightPage(
-                      item.segments[item.segments.length - 1].arrivalDateTime
-                    )} (${differenceDate(
-                      item.segments[0].departureDateTime,
-                      item.segments[item.segments.length - 1].arrivalDateTime
-                    )})`}
+                    )}, ${item?.DepartTime.replace(/:/, '.')} - ${item?.ArriveTime.replace(/:/, '.')}
+                     (${convertTimeToCustomFormat(item?.Duration)})`}
                   </Text>
                   <Text color="neutral.text.medium">
-                    {`${item.segments[0].origin.code} - ${
-                      item.segments[item.segments.length - 1].destination.code
+                    {`${item?.Origin} - ${
+                      item?.Destination
                     }`}{" "}
                     <Text color="black" fontWeight="semibold" as="span">
                       {`• ${convertRupiah(
-                        sumPriceFareFinal(item.segments, item.connectingType)
+                        item?.Fare
                       )} per pax`}
+                      {/* {`• ${convertRupiah(
+                        sumPriceFareFinal(item.segments, item.connectingType)
+                      )} per pax`} */}
                     </Text>
                   </Text>
                 </Stack>
@@ -1135,6 +1132,7 @@ const SearchFlights = ({
 //   console.log(ctx)
 
 //   let additionalData, totalFlight, noresults = false;
+//   console.log('additionalData', additionalData)
 //   try {
 //     additionalData = await getFlights(query, query?.is_smart_combo);
 //     if (additionalData.data[0].journeys.length === 0) {
