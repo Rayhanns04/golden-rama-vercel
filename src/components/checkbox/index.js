@@ -8,7 +8,7 @@ export const CustomCheckbox = ({ values, item, field = null, ...props }) => {
     <Checkbox
       alignItems={"flex-start"}
       flexDirection={"row-reverse"}
-      isChecked={values && values.includes(id.toString())}
+      isChecked={values && values.includes(id?.toString())}
       colorScheme={"brand.blue"}
       justifyContent={"space-between"}
       {...field}

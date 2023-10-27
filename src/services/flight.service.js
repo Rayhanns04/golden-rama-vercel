@@ -2,6 +2,7 @@ import axios from "axios";
 import { encryptData } from "../helpers/crypto";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL_API;
+const BASE_URL_SECOND = process.env.REACT_APP_BACKEND_URL;
 
 export const getAirlines = async () => {
   try {
@@ -119,11 +120,19 @@ export const resendEticket = async ({ orderNumber, email }, jwt) => {
   }
 };
 
-export const getDetailPrice = async (data) => {
+export const getDetailPrice = async (data, jwt) => {
   try {
-    const response = await axios.post(`${BASE_URL}/orders/flight/price`, {
+    const response = await axios.post(`${BASE_URL}/orders/flight/price`, 
+    {
       data: data,
-    });
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+    );
+    // console.log('iniresponse', response, jwt)
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);

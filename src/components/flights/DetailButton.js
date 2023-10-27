@@ -6,7 +6,7 @@ import { useLoginToast } from "../../hooks";
 import { convertDateFlightPage, convertRupiah, convertTimeFlightPage, getClassCode, simplifyBodyDetailFlight } from "../../helpers";
 
 
-const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDesktop, isLoading, originData }) => {
+const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDesktop, isLoading, originData, handlePosition }) => {
     
   // console.log('item',item)
 
@@ -27,7 +27,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
     }
   },[item, totalTransit])
 
-  console.log('item1', item?.TotalTransit, journey )
+  // console.log('item1', item?.TotalTransit, journey )
 
   // const payload = simplifyBodyDetailFlightt(item, query);
   // const { data, isLoading } = useQuery(
@@ -144,12 +144,6 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
           </Stack> */}
           <Stack spacing={"24px"} py={"24px"}>
             {journey.map((flight, index) => {
-              // if (
-              //   item.flightDesignator.carrierName === "Malaysia Airlines" &&
-              //   connectingType.connectingType != "THROUGH"
-              // ) {
-              //   // console.log("item", item);
-              // }
               return (
                 <Stack key={index} spacing={"24px"}>
                   <HStack
@@ -176,17 +170,6 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                         </Badge>
                         <Text fontSize={{ base: "sm", md: "md" }}>
                           {`| ${getClassCode(query?.cabinClasses)}`}
-                          {/* {`| 
-                          ${ connectingType.connectingType != "THROUGH"
-                            ? getClassCode(
-                                item.fares[0]?.fareGroupCode ??
-                                  router.query.class
-                              )
-                            : getClassCode(
-                                connectingType.segments[0].fares[0]
-                                  .fareGroupCode
-                              )
-                          }`} */}
                         </Text>
                       </HStack>
                     </HStack>
@@ -292,20 +275,32 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                         objectFit="contain"
                       />
                       <VStack alignItems={"start"}>
-                        <Text
-                          fontSize={{ base: "sm", md: "md" }}
-                          fontWeight={"semibold"}
-                        >
-                          Bag
-                          {/* {connectingType.connectingType != "THROUGH"
-                            ? item.fares?.[0]?.defaultBaggage
-                            : connectingType.segments[0].fares?.[0]
-                                ?.defaultBaggage} */}
-                        </Text>
+                        {flight?.TotalTransit == 0 ? (
+                          <Text
+                            fontSize={{ base: "sm", md: "md" }}
+                            fontWeight={"semibold"}>
+                            Bag {" "} {flight?.Facilities !== null ? flight?.Facilities[0]?.Value : ''}
+                          </Text>
+                        ) : 
+                        (
+                          <>
+                            {
+                            flight?.ConnectingFlights.map((item, index)=>(
+                                <Text
+                                  key={index}
+                                  fontSize={{ base: "sm", md: "md" }}
+                                  fontWeight={"semibold"}>
+                                  Bag {" "} {flight?.Facilities !== null ? flight?.Facilities[index]?.Value : ''}
+                                </Text>
+                              ))
+                            }
+                          </>
+                        ) 
+                        }
                       </VStack>
                     </HStack>
                   </VStack>
-                  {item?.TotalTransit === 1 && index < journey.length - 1 && (
+                  {item?.TotalTransit > 0 || index < journey.length - 1 && (
                     <VStack
                       p={"12px"}
                       bg={"brand.blue.100"}
@@ -321,6 +316,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       <Text
                         fontWeight={"semibold"}
                         fontSize={{ base: "sm", md: "md" }}
+                        textAlign="center"
                         color={"neutral.text.medium"}>
                         {`${flight?.DestinationCityName} (${flight?.Destination}) ${flight?.DestinationAirportName }`}
                       </Text>

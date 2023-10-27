@@ -158,7 +158,7 @@ export function convertDateFlight(date) {
 export function convertDateFlightWithYear(date) {
   const newDate = new Date(date);
   const result = `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`;
-  console.log(result, 'result');
+  // console.log(result, 'result');
   return result;
 }
 
@@ -247,19 +247,29 @@ export function simplifyPaxFares(paxFares) {
 }
 
 export function getAirlineAvailable(flight) {
+  // console.log('item', flight)
   const mapAirline = flight.map((item) => {
-    const airline = item.segments.map((segment) => {
-      return {
-        id: segment.flightDesignator.carrierCode,
-        name: segment.flightDesignator.carrierName,
-      };
-    });
+    // console.log('uniqAirline', item)
+
+    let itemId = '';
+    if(item?.TotalTransit === 0){
+      itemId = item?.Id
+    } else if(item?.TotalTransit === 1){
+      itemId = item?.ConnectingFlights[0]?.Id
+    }
+
+    const airline = {
+      id: itemId,
+      name: item?.AirlineName,
+    };
+    // const airline = []
     return airline;
   });
 
   let uniqueAirline = [
     ...new Map(mapAirline.flat(1).map((m) => [m.id, m])).values(),
   ];
+  // console.log('uniqAirline', uniqueAirline, mapAirline)
   return uniqueAirline;
 }
 
@@ -612,72 +622,127 @@ export function simplifyQuerySearch(query) {
   };
 }
 
-export function simplifyJourneysFlight(journeys, query) {
-  const journey = journeys.map((item) => {
-    const segmentData = item.segments.map((segment, index) => {
-      const flightDesignator = {
-        opSuffix: segment.flightDesignator.opSuffix,
-        carrierCode: segment.flightDesignator.carrierCode,
-        flightNumber: segment.flightDesignator.flightNumber,
-      };
-      if (item.connectingType == "THROUGH" && index == 0) {
-        return {
-          ...segment,
-          flightDesignator: flightDesignator,
-          fareCode: item.segments[0].fares[0].fareCode,
-          // fares: item.segments[0].fares,
-          fareGroupCode: item.segments[0].fares[0].fareGroupCode,
-          // arrivalDateTime: segment.arrivalDateTime,
-          // departureDateTime: segment.departureDateTime,
-          // origin: segment.origin,
-          // destination: segment.destination,
-        };
-      }
-      if (item.connectingType == "THROUGH" && index != 0) {
-        return {
-          ...segment,
-          flightDesignator: flightDesignator,
-          fareGroupCode: item.segments[0].fares[0].fareGroupCode,
-          // arrivalDateTime: segment.arrivalDateTime,
-          // departureDateTime: segment.departureDateTime,
-          // origin: segment.origin,
-          // destination: segment.destination,
-        };
-      }
-      return {
-        ...segment,
-        flightDesignator: flightDesignator,
-        fareCode: segment.fares[0].fareCode,
-        fareGroupCode: segment.fares[0].fareGroupCode,
-        // arrivalDateTime: segment.arrivalDateTime,
-        // departureDateTime: segment.departureDateTime,
-        // origin: segment.origin,
-        // destination: segment.destination,
-      };
-    });
-    return {
-      ...item,
-      vendorCode: item.vendorCode,
-      journeyKey: item?.journeyKey,
-      connectingType: item?.connectingType,
-      segments: segmentData,
+export function simplifyJourneysFlight(journeys, query, isDomestic) {
+  // console.log('payload',journeys, query, isDomestic)
+
+  let payload = {}
+
+  if(journeys?.IsConnecting === false){
+    payload = {
+      isInternational: isDomestic,
+      airline: journeys?.Airline,
+      adult: query.adult,
+      child: query.child,
+      infant: query.infant,
+      classId: journeys?.ClassObjects[0]?.Id,
+      flightId: journeys?.ClassObjects[0]?.FlightId,
+      fare: journeys?.ClassObjects[0]?.Fare,
+      tax: journeys?.ClassObjects[0]?.Tax,
+      fareBasisCode: journeys?.ClassObjects[0]?.FareBasisCode,
+      code: journeys?.ClassObjects[0]?.Code,
+      extraData: journeys?.ClassObjects[0]?.ExtraData
     };
-  });
-  const isCombinedJourney =
-    journeys?.[0]?.isCombine &&
-    journeys?.[1]?.isCombine &&
-    journeys?.[0]?.vendorCode == "GUA"
-      ? true
-      : false;
-  const payload = {
-    originCode: query.originCode,
-    destinationCode: query.destinationCode,
-    adult: query.adult,
-    child: query.child,
-    infant: query.infant,
-    journeys: journey,
-    isCombinedJourneys: isCombinedJourney,
-  };
+  } else {
+    
+
+    const classId = []
+    const flightId = []
+    const tax = []
+    const fare = []
+
+
+    journeys?.ConnectingFlights.map(async (item) => {
+      classId.push(item?.ClassObjects[0]?.Id)
+      flightId.push(item?.ClassObjects[0]?.FlightId)
+      tax.push(item?.ClassObjects[0]?.Tax)
+      fare.push(item?.ClassObjects[0]?.Fare)
+    })
+    // console.log('iniresponse', fare.reduce((total, num) => total + num, 0))
+
+    payload = {
+      isInternational: isDomestic,
+      airline: journeys?.Airline,
+      adult: query.adult,
+      child: query.child,
+      infant: query.infant,
+      classId: classId.join('#'),
+      flightId: flightId.join('#'),
+      fare: parseInt(fare.reduce((total, num) => total + num, 0)),
+      tax: parseInt(tax.reduce((total, num) => total + num, 0)),
+      fareBasisCode: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.FareBasisCode,
+      code: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.Code,
+      extraData: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.ExtraData
+    };
+    
+  }
+
+  // const journey = journeys.map((item) => {
+    // const segmentData = item.segments.map((segment, index) => {
+    //   const flightDesignator = {
+    //     opSuffix: segment.flightDesignator.opSuffix,
+    //     carrierCode: segment.flightDesignator.carrierCode,
+    //     flightNumber: segment.flightDesignator.flightNumber,
+    //   };
+    //   if (item.connectingType == "THROUGH" && index == 0) {
+    //     return {
+    //       ...segment,
+    //       flightDesignator: flightDesignator,
+    //       fareCode: item.segments[0].fares[0].fareCode,
+    //       // fares: item.segments[0].fares,
+    //       fareGroupCode: item.segments[0].fares[0].fareGroupCode,
+    //       // arrivalDateTime: segment.arrivalDateTime,
+    //       // departureDateTime: segment.departureDateTime,
+    //       // origin: segment.origin,
+    //       // destination: segment.destination,
+    //     };
+    //   }
+    //   if (item.connectingType == "THROUGH" && index != 0) {
+    //     return {
+    //       ...segment,
+    //       flightDesignator: flightDesignator,
+    //       fareGroupCode: item.segments[0].fares[0].fareGroupCode,
+    //       // arrivalDateTime: segment.arrivalDateTime,
+    //       // departureDateTime: segment.departureDateTime,
+    //       // origin: segment.origin,
+    //       // destination: segment.destination,
+    //     };
+    //   }
+    //   return {
+    //     ...segment,
+    //     flightDesignator: flightDesignator,
+    //     fareCode: segment.fares[0].fareCode,
+    //     fareGroupCode: segment.fares[0].fareGroupCode,
+    //     // arrivalDateTime: segment.arrivalDateTime,
+    //     // departureDateTime: segment.departureDateTime,
+    //     // origin: segment.origin,
+    //     // destination: segment.destination,
+    //   };
+    // });
+    // return {
+    //   ...item,
+    //   vendorCode: item.vendorCode,
+    //   journeyKey: item?.journeyKey,
+    //   connectingType: item?.connectingType,
+    //   segments: segmentData,
+    // };
+  // });
+
+  // const isCombinedJourney =
+  //   journeys?.[0]?.isCombine &&
+  //   journeys?.[1]?.isCombine &&
+  //   journeys?.[0]?.vendorCode == "GUA"
+  //     ? true
+  //     : false;
+      
+  // const payload = {
+  //   originCode: query.originCode,
+  //   destinationCode: query.destinationCode,
+  //   adult: query.adult,
+  //   child: query.child,
+  //   infant: query.infant,
+  //   journeys: journey,
+  //   isCombinedJourneys: isCombinedJourney,
+  // };
   return payload;
 }
 

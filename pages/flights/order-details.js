@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Badge,
   Box,
@@ -23,7 +24,7 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../src/components/layout";
 import {
   CustomFilterButton,
@@ -53,6 +54,7 @@ import { checkoutData } from "../../src/state/order/order.slice";
 import { checkPromo } from "../../src/services/promo.service";
 import { FlightDetails, FlightPriceDetails } from "../../src/components/card";
 import { useSteps } from "chakra-ui-steps";
+// console.log('orderData', data, journeys?.flights, query, isDomestic, user)
 
 const OrderDetails = () => {
   const [isError, setIsError] = useState(false);
@@ -61,26 +63,31 @@ const OrderDetails = () => {
   const [isTimeOpen, setIsTimeOpen] = useState(false);
   const [remainingTime, setRemainingTime] = useState(60 * 5);
   let timeoutId = null;
-  React.useEffect(() => {
-    startTimer();
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [remainingTime]);
 
   const startTimer = () => {
     timeoutId = setTimeout(() => {
       setIsTimeOpen(true);
     }, remainingTime * 1000);
   };
-  const { data, query, isDomestic } = useSelector(
+
+  React.useEffect(() => {
+    startTimer();
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [remainingTime, startTimer, timeoutId]);
+
+  const { data, query, isDomestic, addFee } = useSelector(
     (state) => state.orderReducer
   );
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const [isChoosed, setIsChoosed] = useState(false);
   const [form, setForm] = useState({
-    journeys: simplifyJourneysFlight(data.flights, query).journeys,
+    journeys: data
   });
+
+  const {journeys} = form;
+
   const [customer, setCustomer] = useState({
     fullName: isLoggedIn ? user?.full_name : "",
     email: isLoggedIn ? user?.email : "",
@@ -100,123 +107,291 @@ const OrderDetails = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   totalPrice;
+  
+  const [totalFareFlight, setTotalFareFlight] = useState([])
+  const [fareTotal, setFareTotal] = useState()
+  const [fareDetail, setFareDetail] = useState()
+  const [serviceFee, setServiceFee] = useState(20000)
+  const [priceOriginal, setPriceOrignal] = useState()
+  const [resultFareBreakdown, setResultFareBreakdown] = useState([])
+  
+  const dataQuery = {
+    adult: query?.adult,
+    child: query?.child,
+    infant: query?.infant
+  }
 
-  const payload = simplifyJourneysFlight(data.flights, query);
-  // simplifyBodyDetailFlight(journey, query)
-  const [isPromoAvailable, setIsPromoAvailable] = useState({});
-  const [totalPrice, setTotalPrice] = useState({});
-  const price = useQuery(["getPriceFlightDetail", payload], async () => {
-    const response = await getDetailPrice(payload);
-    setTotalPrice({
-      subTotal:
-        response.data.priceFinalCustom -
-        response.data.priceMargin -
-        response.data.priceDiscount,
-      total: response.data.priceFinalCustom,
-      serviceFee: response.data.priceMargin,
-      discount: response.data.priceDiscount,
-    });
-    setForm({
-      ...form,
-      transaction: {
-        subTotal:
-          response.data.priceFinalCustom -
-          response.data.priceMargin -
-          response.data.priceDiscount,
-        total: response.data.priceFinalCustom,
-        serviceFee: response.data.priceMargin,
-        discount: response.data.priceDiscount,
-        downPayment: 0,
-      },
-    });
-    return Promise.resolve(response.data);
-  });
+  console.log('iniresponse', '--------------------')
+  // console.log('iniresponse1', fareTotal, addFee)
+  // console.log('iniresponse2', fareDetail)
+  // console.log('iniresponse3', data)
+  // console.log('iniresponse4', query)
+  // console.log('iniresponse5', dataQuery)
+  console.log('iniresponse6', resultFareBreakdown)
 
-  const priceArray = useQuery(
-    ["getPriceFlightArray", payload, price.data],
-    async () => {
-      try {
-        const payloads = data.flights.map((item, index) =>
-          simplifyBodyDetailFlight(item, query)
-        );
-        let value;
-        if (payloads?.[0]?.isCombinedJourneys === true) {
-          // console.log("payloads", price.data?.journeys);
-          // let priceData = price.data;
-          // await price.data?.journeys?.[0]?.segments[0].fares?.[0]?.paxFares?.map(
-          //   (item, index) => {
-          //     const total = item?.total;
-          //     // jumlahkan basefare dengan basefare journey array ke 1
-          //     const total2 =
-          //       price.data?.journeys?.[1]?.segments[0].fares?.[0]?.paxFares?.[
-          //         index
-          //       ]?.total;
-          //     const totalBaseFare = (total + total2) / 2;
+  useEffect(() => {
+    if(query?.isRoundTrip === 'true'){
+      data?.flights?.map(async (item)=>{
+        const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+        const response = await getDetailPrice(fareItem);
+        setFareDetail(...fareDetail, Promise.resolve(response.data));
+      })
+    } else {
 
-          //     // totalFare.push(totalBaseFare);
-          //     priceData.journeys[0].segments[0].fares[0].paxFares[index].total =
-          //       totalBaseFare;
-          //     priceData.journeys[1].segments[0].fares[0].paxFares[index].total =
-          //       totalBaseFare;
-          //   }
-          // );
-          // console.log("priceData", priceData);
-          value = await Promise.all(
-            price.data?.journeys.map(async (item, index) => {
-              let detail;
-              if (price.data.connectingType == "SUM") {
-                detail = mappingPriceFlight(item?.segments, true);
-              } else {
-                detail = mappingPriceFlight(
-                  item?.segments[0]?.fares[0]?.paxFares
-                );
-              }
-              const total = sumTaxPrice(item?.segments[0]?.fares[0]?.paxFares);
+      data?.flights?.map(async (item)=>{
 
-              return Promise.resolve({ detail, total });
-            })
-          );
-          //tax and totalbaseFare
-          let priceValue = value;
-          await value?.[0]?.detail?.map((item, index) => {
-            const tax = item?.tax;
-            const tax2 = value?.[1]?.detail?.[index]?.tax;
-            const taxTotal = (tax + tax2) / 2;
-            const totalBaseFare = item?.totalBaseFare;
-            const totalBaseFare2 = value?.[1]?.detail?.[index]?.totalBaseFare;
-            const totalBaseFareTotal = (totalBaseFare + totalBaseFare2) / 2;
-
-            priceValue[0].detail[index].tax = taxTotal;
-            priceValue[0].detail[index].totalBaseFare = totalBaseFareTotal;
-            priceValue[1].detail[index].tax = taxTotal;
-            priceValue[1].detail[index].totalBaseFare = totalBaseFareTotal;
+        if(item?.FlightType === 'GdsBfm'){
+          let totalAmountByPaxType = {};
+          item?.FareBreakdowns?.forEach(function(item) {
+            var paxType = item.PaxType;
+            var charges = item.Charges;
+            
+            var totalAmount = charges.reduce(function(total, charge) {
+                return total + charge.Amount;
+            }, 0);
+        
+            if (totalAmountByPaxType[paxType] === undefined) {
+                totalAmountByPaxType[paxType] = 0;
+            }
+        
+            totalAmountByPaxType[paxType] += totalAmount;
           });
 
-          value = priceValue;
-        } else {
-          value = await Promise.all(
-            payloads.map(async (item, index) => {
-              const response = await getDetailPrice(item);
-              const detail = mappingPriceFlight(
-                response?.data?.journeys[0].segments[0].fares[0].paxFares
-              );
+          var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+            return {
+                "PaxType": paxType,
+                "TotalAmount": totalAmountByPaxType[paxType]
+            };
+          });
+          setResultFareBreakdown(result)
+          setFareTotal(item?.Fare)
+          setPriceOrignal(item?.Fare)
+        } else if (item?.FlightType === 'NonGds'){
 
-              const total = sumTaxPrice(
-                response?.data?.journeys[0].segments[0].fares[0].paxFares
-              );
+          if(item?.IsConnecting === false){
+            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+            try {
+              const response = await getDetailPrice(fareItem, jwt);
 
-              return Promise.resolve({ detail, total });
-            })
-          );
+              var totalAmountByPaxType = {};
+              response?.data?.Details.forEach(function(item) {
+                var paxType = item.Code;
+                var amount = item.Amount;
+            
+                if (totalAmountByPaxType[paxType] === undefined) {
+                    totalAmountByPaxType[paxType] = 0;
+                }
+                totalAmountByPaxType[paxType] += amount;
+              });
+
+              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                return {
+                    "PaxType": paxType,
+                    "TotalAmount": totalAmountByPaxType[paxType]
+                };
+              });
+
+              setResultFareBreakdown(result)
+              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+              setFareDetail(response?.data?.Details)
+              setFareTotal(response?.data?.Total)
+            } catch (error) {
+              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+            }
+          } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
+
+            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+            try {
+              const response = await getDetailPrice(fareItem, jwt);
+              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+              setFareDetail(response?.data?.Details)
+              setFareTotal(response?.data?.Total)
+
+              var totalAmountByPaxType = {};
+              fareDetail.forEach(function(item) {
+                var paxType = item.Code;
+                var amount = item.Amount;
+            
+                if (totalAmountByPaxType[paxType] === undefined) {
+                    totalAmountByPaxType[paxType] = 0;
+                }
+                totalAmountByPaxType[paxType] += amount;
+              });
+
+              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                return {
+                    "PaxType": paxType,
+                    "TotalAmount": totalAmountByPaxType[paxType]
+                };
+              });
+
+              setResultFareBreakdown(result)
+              
+              // console.log('iniresponse7', response)
+            } catch (error) {
+              
+            }
+          }
         }
-        return Promise.resolve(value);
-      } catch (error) {
-        console.error(error);
 
-        return Promise.reject(error);
-      }
-    }
-  );
+      // if(item?.IsConnecting === false){
+
+      //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+      //   try {
+      //     const response = await getDetailPrice(fareItem, jwt);
+      //   } catch (error) {
+      //     console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+      //   }
+      // } else {
+
+      //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+      //   try {
+      //     const response = await getDetailPrice(fareItem, jwt);
+      //     // console.log('iniresponse', response)
+      //   } catch (error) {
+      //     console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+      //   }
+
+      //   // item?.ConnectingFlights.map(async (item) => {
+      //   //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+      //   //   try {
+      //   //     const response = await getDetailPrice(fareItem, jwt);
+      //   //   } catch (error) {
+      //   //     console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+      //   //   }
+      //   // })
+      //   // const flight1 = item?.ConnectingFlights[0]
+      //   // const flight2 = item?.ConnectingFlights[1]
+      // }
+      // console.log('iniresponse', fareItem, response?.data, item)
+      // const response = await getDetailPrice(fareItem, jwt);
+      // setFareDetail(...fareDetail, Promise.resolve(response.data));
+    })
+  }
+  }, [query?.isRoundTrip, data?.flights, isDomestic, jwt, query]);
+
+  // const payload = query;
+  // simplifyBodyDetailFlight(journey, query)
+
+  const [isPromoAvailable, setIsPromoAvailable] = useState({});
+  const [totalPrice, setTotalPrice] = useState({});
+
+  // datasementara 
+  const priceArray = {
+    isLoading: false
+  }
+
+  // const price = useQuery(["getPriceFlightDetail", payload], async () => {
+  //   const response = await getDetailPrice(fareDetail);
+      // setTotalPrice({
+      //   subTotal:
+      //     response.data.priceFinalCustom -
+      //     response.data.priceMargin -
+      //     response.data.priceDiscount,
+      //   total: response.data.priceFinalCustom,
+      //   serviceFee: response.data.priceMargin,
+      //   discount: response.data.priceDiscount,
+      // });
+      // setForm({
+      //   ...form,
+      //   transaction: {
+      //     subTotal:
+      //       response.data.priceFinalCustom -
+      //       response.data.priceMargin -
+      //       response.data.priceDiscount,
+      //     total: response.data.priceFinalCustom,
+      //     serviceFee: response.data.priceMargin,
+      //     discount: response.data.priceDiscount,
+      //     downPayment: 0,
+      //   },
+      // });
+  //   return Promise.resolve(response.data);
+  // });
+
+  // const priceArray = useQuery(["getPriceFlightArray", payload, price.data],
+  //   async () => {
+  //     try {
+  //       const payloads = data.flights.map((item, index) =>
+  //         simplifyBodyDetailFlight(item, query)
+  //       );
+  //       let value;
+  //       if (payloads?.[0]?.isCombinedJourneys === true) {
+  //         // console.log("payloads", price.data?.journeys);
+  //         // let priceData = price.data;
+  //         // await price.data?.journeys?.[0]?.segments[0].fares?.[0]?.paxFares?.map(
+  //         //   (item, index) => {
+  //         //     const total = item?.total;
+  //         //     // jumlahkan basefare dengan basefare journey array ke 1
+  //         //     const total2 =
+  //         //       price.data?.journeys?.[1]?.segments[0].fares?.[0]?.paxFares?.[
+  //         //         index
+  //         //       ]?.total;
+  //         //     const totalBaseFare = (total + total2) / 2;
+
+  //         //     // totalFare.push(totalBaseFare);
+  //         //     priceData.journeys[0].segments[0].fares[0].paxFares[index].total =
+  //         //       totalBaseFare;
+  //         //     priceData.journeys[1].segments[0].fares[0].paxFares[index].total =
+  //         //       totalBaseFare;
+  //         //   }
+  //         // );
+  //         // console.log("priceData", priceData);
+  //         value = await Promise.all(
+  //           price.data?.journeys.map(async (item, index) => {
+  //             let detail;
+  //             if (price.data.connectingType == "SUM") {
+  //               detail = mappingPriceFlight(item?.segments, true);
+  //             } else {
+  //               detail = mappingPriceFlight(
+  //                 item?.segments[0]?.fares[0]?.paxFares
+  //               );
+  //             }
+  //             const total = sumTaxPrice(item?.segments[0]?.fares[0]?.paxFares);
+
+  //             return Promise.resolve({ detail, total });
+  //           })
+  //         );
+  //         //tax and totalbaseFare
+  //         let priceValue = value;
+  //         await value?.[0]?.detail?.map((item, index) => {
+  //           const tax = item?.tax;
+  //           const tax2 = value?.[1]?.detail?.[index]?.tax;
+  //           const taxTotal = (tax + tax2) / 2;
+  //           const totalBaseFare = item?.totalBaseFare;
+  //           const totalBaseFare2 = value?.[1]?.detail?.[index]?.totalBaseFare;
+  //           const totalBaseFareTotal = (totalBaseFare + totalBaseFare2) / 2;
+
+  //           priceValue[0].detail[index].tax = taxTotal;
+  //           priceValue[0].detail[index].totalBaseFare = totalBaseFareTotal;
+  //           priceValue[1].detail[index].tax = taxTotal;
+  //           priceValue[1].detail[index].totalBaseFare = totalBaseFareTotal;
+  //         });
+
+  //         value = priceValue;
+  //       } else {
+  //         value = await Promise.all(
+  //           payloads.map(async (item, index) => {
+  //             const response = await getDetailPrice(item);
+  //             const detail = mappingPriceFlight(
+  //               response?.data?.journeys[0].segments[0].fares[0].paxFares
+  //             );
+
+  //             const total = sumTaxPrice(
+  //               response?.data?.journeys[0].segments[0].fares[0].paxFares
+  //             );
+
+  //             return Promise.resolve({ detail, total });
+  //           })
+  //         );
+  //       }
+  //       return Promise.resolve(value);
+  //     } catch (error) {
+  //       console.error(error);
+
+  //       return Promise.reject(error);
+  //     }
+  //   }
+  // );
 
   const handleChange = (e, type) => {
     e.preventDefault();
@@ -361,6 +536,7 @@ const OrderDetails = () => {
       },
     }
   );
+
   const TotalPrice = ({ ...props }) => {
     return (
       <Box position={"sticky"} bottom={0}>
@@ -380,14 +556,14 @@ const OrderDetails = () => {
             w="full"
             whiteSpace={"nowrap"}
           >
-            {price.isLoading ? (
+            {/* {price.isLoading ? (
               <Spinner />
             ) : price.data?.priceFinalCustom ? (
               <>IDR {convertRupiah(price?.data?.priceFinalCustom) + " "}</>
             ) : (
               " "
-            )}
-
+            )} */}
+              <>IDR {convertRupiah(fareTotal+serviceFee)}</>
             <Text
               fontSize={"xs"}
               color="neutral.text.low"
@@ -400,15 +576,17 @@ const OrderDetails = () => {
           <CustomOrangeFullWidthButton
             maxW={"180px"}
             onClick={() => setIsChoosed(true)}
-            disabled={price.isLoading && !price.data?.priceFinalCustom}
+            // disabled={price.isLoading && !price.data?.priceFinalCustom}
           >
-            {price.isLoading ? (
-              <Spinner />
-            ) : price.data?.priceFinalCustom ? (
-              "Pilih Tiket"
-            ) : (
-              "Tiket Tidak Tersedia"
-            )}
+            {
+              fareTotal === undefined ? (
+                <Spinner />
+              ) : fareTotal !== undefined ? (
+                "Pilih Tiket"
+              ) : (
+                "Tiket Tidak Tersedia"
+              )
+            }
           </CustomOrangeFullWidthButton>
         </HStack>
       </Box>
@@ -416,6 +594,9 @@ const OrderDetails = () => {
   };
 
   const TabContent = ({ type, onChoose, journey }) => {
+
+    // console.log('journeyOrderDetails', journey)
+
     const { query } = useSelector((state) => state.orderReducer);
     // const payload = simplifyBodyDetailFlight(journey, query);
     const isDesktop = useBreakpointValue(
@@ -424,6 +605,19 @@ const OrderDetails = () => {
     );
     const [detailPrice, setDetailPrice] = useState([]);
     const [totalTaxPrice, setTotalTaxPrice] = useState(0);
+
+    const [flights, setFlights] = useState([])
+
+    useEffect(()=>{
+      if(journey?.TotalTransit === 0){
+        setFlights([journey])
+      } else if(journey?.TotalTransit === 1) {
+        setFlights([...journey?.ConnectingFlights])
+      } else {
+        setFlights([])
+      }
+    },[journey])
+
     // const price = useQuery(["getPriceFlight", payload], async () => {
     //   const response = await getDetailPrice(payload);
     //   setDetailPrice(
@@ -447,12 +641,12 @@ const OrderDetails = () => {
           <GridItem colSpan={3} p={"24px"} bg={"brand.blue.100"}>
             <HStack>
               {[
-                query.is_round_trip == "true"
+                query.isRoundTrip == "true"
                   ? "Round Trip - Pergi"
                   : "One Way",
-                type === "transit"
-                  ? `${journey.segments.length - 1} Transit`
-                  : "Langsung",
+                  type === "transit" ? 
+                  (journey?.TotalTransit === 0 ? "Langsung" : `${journey?.TotalTransit} Transit`)
+                  : "Langsung"
               ].map((item, index) => (
                 <Badge
                   key={index}
@@ -468,10 +662,10 @@ const OrderDetails = () => {
             </HStack>
             <Text my="12px" fontWeight="semibold" fontSize={"lg"}>
               Ke{" "}
-              {journey.segments[journey.segments.length - 1].destination.city}
+              {journey?.DestinationCityName}
             </Text>
             <Stack spacing={"24px"} py={"24px"}>
-              {journey.segments.map((item, index) => (
+              {flights.map((item, index) => (
                 <Box as={"section"} key={index}>
                   <Stack
                     w="full"
@@ -488,20 +682,14 @@ const OrderDetails = () => {
                         <HStack>
                           <HStack alignItems={"center"}>
                             <Text fontSize={"xs"} fontWeight={"semibold"}>
-                              {`${item.flightDesignator.carrierName} |`}
+                              {`${item?.AirlineName} | `}
                             </Text>
                             <Text fontSize={"xs"}>{`${
-                              item.flightDesignator.carrierCode
-                            }: ${
-                              item.flightDesignator.flightNumber
-                            } | ${getClassCode(
-                              journey.connectingType === "THROUGH"
-                                ? journey.segments[0].fares[0].fareGroupCode
-                                : item.fares[0].fareGroupCode
-                            )}`}</Text>
+                              item?.Number
+                            } | ${getClassCode(query?.cabinClasses)}`}</Text>
                           </HStack>
                         </HStack>
-                        <Badge>{`${item.flightDesignator.carrierCode} ${item.flightDesignator.flightNumber}`}</Badge>
+                        <Badge>{`${item?.Number}`}</Badge>
                       </HStack>
                       <HStack alignItems={"stretch"} gap={4}>
                         <VStack
@@ -509,19 +697,30 @@ const OrderDetails = () => {
                           alignItems={"end"}
                           textAlign={"right"}
                         >
-                          {[item.departureDateTime, item.arrivalDateTime].map(
-                            (datetime, index) => (
-                              <Box key={index}>
-                                <Text fontSize={"sm"} fontWeight={"semibold"}>
-                                  {convertTimeFlightPage(datetime)}
-                                </Text>
-                                <Text fontSize={"xs"}>
-                                  {" "}
-                                  {convertDateFlightPage(datetime)}
-                                </Text>
-                              </Box>
-                            )
-                          )}
+                          {[ 
+                            {
+                              a: item?.DepartTime,
+                              b: item?.DepartDate
+                            }, 
+                            {
+                              a: item?.ArriveTime,
+                              b: item?.ArriveDate
+                            }    
+                          ].map(
+                              (datetime, index) => (
+                                <Box key={index}>
+                                  <Text
+                                    fontSize={{ base: "sm", md: "md" }}
+                                    fontWeight={"semibold"}
+                                  >
+                                    {datetime?.a?.replace(/:/, '.')}
+                                  </Text>
+                                  <Text fontSize={{ base: "sm", md: "md" }}>
+                                    {convertDateFlightPage(datetime?.b)}
+                                  </Text>
+                                </Box>
+                              )
+                            )}
                         </VStack>
                         <Box py={"12px"}>
                           <VStack
@@ -550,15 +749,15 @@ const OrderDetails = () => {
                         >
                           {[
                             {
-                              c: `${item.origin.city}, ${item.origin.code}`,
-                              a: `${item.origin.airport}`,
+                              c: `${item?.OriginCityName}, ${item?.Origin}`,
+                              a: `${item?.OriginAirportName}`
                             },
                             {
-                              b: `${item.legs[0].durationHours} JAM ${item.legs[0].durationMinutes} MENIT`,
+                              b: `${item.Duration.split(':')[0]} JAM ${item.Duration.split(':')[1]} MENIT`,
                             },
                             {
-                              c: `${item.destination.city}, ${item.destination.code}`,
-                              a: `${item.destination.airport}`,
+                              c: `${item?.DestinationCityName}, ${item?.Destination}`,
+                              a: `${item?.DestinationAirportName}`,
                             },
                           ].map((item, index) =>
                             item.b ? (
@@ -573,7 +772,7 @@ const OrderDetails = () => {
                                 </Text>
                                 <Text
                                   color={"neutral.text.medium"}
-                                  fontSize={"sm"}
+                                  fontSize={{ base: "sm", md: "md" }}
                                 >
                                   {item.a}
                                 </Text>
@@ -611,56 +810,69 @@ const OrderDetails = () => {
                     )}
                     <HStack
                       justifyContent={"space-between"}
-                      alignItems={"center"}
-                    >
-                      <HStack>
+                      alignItems={"center"}>
+                        <HStack>
+                          <Image
+                            src="/svg/nav/tours.svg"
+                            alt="tours"
+                            width={20}
+                            height={20}
+                          />
+                          <Text fontSize={"sm"} fontWeight={"semibold"}>
+                              {item?.TotalTransit == 0 ? (
+                              <Text
+                                fontSize={{ base: "sm", md: "md" }}
+                                fontWeight={"semibold"}>
+                                Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[0]?.Value : ' - '}
+                              </Text>
+                            ) : 
+                            (
+                              <>
+                                {
+                                item?.ConnectingFlights.map((item, index)=>(
+                                    <Text
+                                      key={index}
+                                      fontSize={{ base: "sm", md: "md" }}
+                                      fontWeight={"semibold"}>
+                                      Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[index]?.Value : ' - '}
+                                    </Text>
+                                  ))
+                                }
+                              </>
+                            ) 
+                            }
+                          </Text>
+                        </HStack>
                         <Image
-                          src="/svg/nav/tours.svg"
-                          alt="tours"
-                          width={20}
-                          height={20}
+                          hidden
+                          src="/svg/icons/chevron-down.svg"
+                          alt="chevron-down"
+                          width={16}
+                          height={16}
                         />
-                        <Text fontSize={"sm"} fontWeight={"semibold"}>
-                          {`Bagasi ${
-                            journey.connectingType === "THROUGH"
-                              ? journey.segments[0].fares[0].defaultBaggage
-                              : item.fares[0].defaultBaggage
-                          }`}
-                        </Text>
                       </HStack>
-                      <Image
-                        hidden
-                        src="/svg/icons/chevron-down.svg"
-                        alt="chevron-down"
-                        width={16}
-                        height={16}
-                      />
-                    </HStack>
-                  </Box>
-                  {type === "transit" && index < journey.segments.length - 1 && (
-                    <VStack
-                      p={"12px"}
-                      mb={"24px"}
-                      bg={"brand.blue.100"}
-                      borderRadius={"12px"}
-                      justifyContent={"center"}
-                      alignText={"center"}
-                    >
-                      <Text fontSize={"sm"} color={"neutral.text.low"}>
-                        {`Transit selama ${differenceDateLong(
-                          journey.segments[index].arrivalDateTime,
-                          journey.segments[index + 1].departureDateTime
-                        )} di`}
-                      </Text>
-                      <Text
-                        fontWeight={"semibold"}
-                        fontSize={"sm"}
-                        color={"neutral.text.medium"}
+                    </Box>
+                    {item?.TotalTransit > 0 || index < flights?.length - 1 &&(
+                      <VStack
+                        p={"12px"}
+                        mt={'8px'}
+                        bg={"brand.blue.100"}
+                        borderRadius={"12px"}
+                        justifyContent={"center"}
+                        alignText={"center"}
                       >
-                        {`${item.destination.city} (${item.destination.code}) ${item.destination.airport}`}
-                      </Text>
-                    </VStack>
-                  )}
+                        <Text fontSize={"sm"} color={"neutral.text.low"}>
+                        {`Transit selama ${item?.Duration?.split(':')[0]} Jam ${item?.Duration?.split(':')[1]} Menit di`}
+                        </Text>
+                        <Text
+                          fontWeight={"semibold"}
+                          fontSize={"sm"}
+                          color={"neutral.text.medium"}
+                        >
+                          {`${item?.DestinationCityName} (${item?.Destination}) ${item?.DestinationAirportName }`}                      
+                        </Text>
+                      </VStack>
+                    )}
                 </Box>
               ))}
             </Stack>
@@ -726,9 +938,11 @@ const OrderDetails = () => {
     setIsTimeOpen(false);
     setRemainingTime(60);
   };
+
   const handleReload = () => {
     window.location.reload();
   };
+
   const TimerModal = ({ isOpen, onClose, handleSubmit }) => {
     return (
       <CustomFilterButton
@@ -750,6 +964,7 @@ const OrderDetails = () => {
       </CustomFilterButton>
     );
   };
+
   return (
     <Layout type={"nested"} pagetitle={"Detail Pemesanan"} hideBottomBar>
       <Box position={"relative"}>
@@ -853,7 +1068,7 @@ const OrderDetails = () => {
                         >
                           Penerbangan Pergi
                         </Tab>
-                        {query.is_round_trip === "true" ? (
+                        {query.isRoundTrip === "true" ? (
                           <Tab
                             borderRadius="full"
                             bg="white"
@@ -879,7 +1094,7 @@ const OrderDetails = () => {
                         />
                       </TabPanel>
                       <TabPanel p={0}>
-                        {query.is_round_trip == "true" ? (
+                        {query.isRoundTrip == "true" ? (
                           <TabContent
                             type={
                               data.flights[0].connectingType != "DIRECT"
@@ -887,7 +1102,10 @@ const OrderDetails = () => {
                                 : "direct"
                             }
                             journey={data.flights[1]}
-                            onChoose={() => setIsChoosed(true)}
+                            onChoose={() => {
+                              setIsChoosed(true)
+                              alert('ini kedua')
+                            }}
                           />
                         ) : (
                           ""
@@ -907,135 +1125,151 @@ const OrderDetails = () => {
                         <Text pb="16px" fontSize="lg" fontWeight="semibold">
                           Detail Harga
                         </Text>
-                        {!priceArray?.isLoading ? (
-                          <>
-                            <VStack
-                              alignItems="start"
-                              py={"16px"}
-                              // borderBottom="1px dashed #9E9E9E"
-                            >
-                              {priceArray?.data &&
-                                priceArray?.data.map((i, index) => {
-                                  const detail = i.detail;
-                                  return (
-                                    <>
-                                      <Text
-                                        color="brand.blue.400"
-                                        fontWeight="semibold"
-                                        fontSize={"sm"}
-                                      >
-                                        Tiket penerbangan {index + 1} •{" "}
-                                        {
-                                          data.flights[index]?.segments[0]
-                                            ?.flightDesignator?.carrierName
-                                        }
-                                      </Text>
-                                      {detail.map((item, idx) => (
+                              <>
+                                <VStack
+                                  alignItems="start"
+                                  py={"16px"}
+                                  // borderBottom="1px dashed #9E9E9E"
+                                  >
+                                  <>
+                                    {
+                                      journeys.flights.map((item, index) => (
+                                        <Text
+                                          color="brand.blue.400"
+                                          fontWeight="semibold"
+                                          fontSize={"sm"}
+                                          key={index}
+                                        >
+                                          Tiket penerbangan {index + 1} •{" "}
+                                          {
+                                            item?.IsConnecting === false ? item?.AirlineName : item?.ConnectingFlights[0]?.AirlineName
+                                          }
+                                        </Text>
+                                      ))
+                                    }
+
+                                    {
+                                      dataQuery.adult !== "0" && (
                                         <HStack
                                           w="full"
                                           justifyContent="space-between"
-                                          key={idx}
+                                          pt={2}
                                         >
-                                          {idx}
-                                          <Text
-                                            fontSize="sm"
-                                            color="neutral.text.medium"
-                                          >
-                                            {`${getPaxFaresName(
-                                              item.paxType
-                                            )} (x${item.quantity})`}
+                                          <Text fontSize="sm" color="neutral.text.medium">
+                                            Dewasa (x{dataQuery?.adult})
                                           </Text>
-                                          <Text
-                                            fontSize="sm"
-                                            color="neutral.text.medium"
-                                          >
-                                            IDR{" "}
-                                            {convertRupiah(
-                                              item.totalBaseFare +
-                                                item.tax -
-                                                item.discount
-                                            )}
-                                          </Text>
+                                          {
+                                            resultFareBreakdown?.map((item, index) => {
+                                              if(item?.PaxType === "ADT"){
+                                                return (
+                                                  <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                    IDR {convertRupiah(item?.TotalAmount)}
+                                                  </Text>
+                                                )
+                                              } 
+                                            })
+                                          }
                                         </HStack>
-                                      ))}
-                                      {/* <HStack
-                                        w="full"
-                                        justifyContent="space-between"
-                                      >
-                                        <Text
-                                          fontSize="sm"
-                                          color="neutral.text.medium"
+                                      )
+                                    }
+
+                                    {
+                                      dataQuery.child !== "0" && (
+                                        <HStack
+                                          w="full"
+                                          justifyContent="space-between"
                                         >
-                                          Pajak
-                                        </Text>
-                                        <Text
-                                          fontSize="sm"
-                                          color="neutral.text.medium"
+                                          <Text fontSize="sm" color="neutral.text.medium">
+                                            Anak-anak (x{dataQuery?.child})
+                                          </Text>
+                                          {
+                                            resultFareBreakdown?.map((item, index) => {
+                                              if(item?.PaxType === "CHD"){
+                                                return (
+                                                  <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                    IDR {convertRupiah(item?.TotalAmount)}
+                                                  </Text>
+                                                )
+                                              } 
+                                            })
+                                          }
+                                        </HStack>
+                                      )
+                                    }
+
+                                    {
+                                      dataQuery.infant !== "0" && (
+                                        <HStack
+                                          w="full"
+                                          justifyContent="space-between"
                                         >
-                                          Sudah Termasuk
-                                        </Text>
-                                      </HStack> */}
-                                      {/* <HStack
-                                        w="full"
-                                        justifyContent="space-between"
-                                      >
-                                        <Text
-                                          fontSize="sm"
-                                          color="neutral.text.medium"
-                                        >
-                                          Service Fee
-                                        </Text>
-                                        <Text
-                                          fontSize="sm"
-                                          color="neutral.text.medium"
-                                        >
-                                          IDR{" "}
-                                          {convertRupiah(
-                                            price?.data?.priceMargin ?? 0
-                                          )}
-                                        </Text>
-                                      </HStack> */}
-                                      <Divider variant={"dashed"} />
-                                    </>
-                                  );
-                                })}
-                              <HStack
-                                w="full"
-                                justifyContent="space-between"
-                                pt={4}
-                              >
-                                <Text fontSize="sm" color="neutral.text.medium">
-                                  Pajak
-                                </Text>
-                                <Text fontSize="sm" color="neutral.text.medium">
-                                  Sudah Termasuk
-                                  {/* IDR {convertRupiah(i.total)} */}
-                                </Text>
-                              </HStack>
-                              <HStack w="full" justifyContent="space-between">
-                                <Text fontSize="sm" color="neutral.text.medium">
-                                  Service Fee
-                                </Text>
-                                <Text fontSize="sm" color="neutral.text.medium">
-                                  IDR{" "}
-                                  {convertRupiah(price?.data?.priceMargin ?? 0)}
-                                </Text>
-                              </HStack>
-                              <Divider variant={"dashed"} />
-                            </VStack>
-                            <HStack justifyContent="space-between" py="16px">
-                              <Text>Total Pembayaran</Text>
-                              <Text fontWeight="semibold">
-                                IDR{" "}
-                                {convertRupiah(price?.data?.priceFinalCustom)}
-                              </Text>
-                            </HStack>
-                          </>
+                                          <Text fontSize="sm" color="neutral.text.medium">
+                                            Bayi (x{dataQuery?.infant})
+                                          </Text>
+                                          {
+                                            resultFareBreakdown?.map((item, index) => {
+                                              if(item?.PaxType === "INF" || item?.PaxType === "INFT"){
+                                                return (
+                                                  <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                    {
+                                                      item?.TotalAmount !== 0 ? (
+                                                        `IDR ${convertRupiah(item?.TotalAmount)}`
+                                                      ) : (`IDR 0`)
+                                                    }
+                                                  </Text>
+                                                )
+                                              } 
+                                            })
+                                          }
+                                        </HStack>
+                                      )
+                                    }
+
+                              
+                                    <Divider variant={"dashed"} />
+                                  </>
+         
+                                  <HStack
+                                    w="full"
+                                    justifyContent="space-between"
+                                    pt={4}
+                                  >
+                                    <Text fontSize="sm" color="neutral.text.medium">
+                                      Pajak
+                                    </Text>
+                                    <Text fontSize="sm" color="neutral.text.medium">
+                                      Sudah Termasuk
+                                      {/* IDR {convertRupiah(i.total)} */}
+                                    </Text>
+                                  </HStack>
+                                  <HStack w="full" justifyContent="space-between">
+                                    <Text fontSize="sm" color="neutral.text.medium">
+                                      Service Fee
+                                    </Text>
+                                    <Text fontSize="sm" color="neutral.text.medium">
+                                      IDR{" "}
+                                      {convertRupiah(serviceFee)}
+                                      {/* {convertRupiah(price?.data?.priceMargin ?? 0)} */}
+                                    </Text>
+                                  </HStack>
+                                  <Divider variant={"dashed"} />
+                                </VStack>
+                                <HStack justifyContent="space-between" py="16px">
+                                  <Text>Total Pembayaran</Text>
+                                  <Text fontWeight="semibold">
+                                    IDR{" "}
+                                    {convertRupiah(fareTotal+serviceFee)}
+                                    {/* {convertRupiah(price?.data?.priceFinalCustom)} */}
+                                  </Text>
+                                </HStack>
+                              </>
+                        {/* {!priceArray?.isLoading ? (
+                          
                         ) : (
                           <Center>
                             <Spinner></Spinner>
                           </Center>
-                        )}
+                        )} */}
                       </Box>
                       <Box
                         position={"sticky"}

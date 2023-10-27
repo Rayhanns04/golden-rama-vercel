@@ -12,6 +12,7 @@ export const orderSlice = createSlice({
       };
       state.isDomestic = actions.payload.isDomestic;
       state.query = actions.payload.query;
+      state.addFee = actions.payload.addFee;
     },
     checkoutData: (state, actions) => {
       state.orderDetail = actions.payload.orderDetail;
@@ -21,6 +22,7 @@ export const orderSlice = createSlice({
       state.query = {};
       state.orderDetail = {};
       state.isDomestic = {};
+      state.addFee = {}
     },
   },
 });

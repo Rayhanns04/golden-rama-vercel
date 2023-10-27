@@ -27,8 +27,8 @@ export const CustomOrangeFullWidthButton = ({
   return (
     <Button
       w={props.w ?? "full"}
-      mt={props.mt ?? "24px"}
-      py={props.py ?? "12px"}
+      // mt={props.mt ?? "24px"}
+      // py={props.py ?? "12px"}
       fontSize={props.fontSize ?? { base: "xs", md: "sm" }}
       textColor={props.textColor ?? (isoutlined && "brand.orange.400")}
       bg={props.bg ?? (isoutlined ? "transparent" : "brand.orange.400")}

@@ -84,7 +84,6 @@ const SearchFlights = ({
   ...props
 }) => {
   // let noresults = false
-  // console.log(additionalData)
   const router = useRouter();
   const dataQuery = router.query;
   
@@ -106,9 +105,8 @@ const SearchFlights = ({
 
   const [currentJourney, setCurrentJourney] = useState() 
   const [flights, setFlights] = useState([]);
-
-
   const [statusSuccess, setStatusSuccess] = useState(false);
+  const [additionFee, setAdditionalFee] = useState();
 
   const dispatch = useDispatch();
   const { ref: trigger, inView } = useInView();
@@ -121,20 +119,15 @@ const SearchFlights = ({
   const [cart, setCart] = useState([]);
   const [checkoutPage, setCheckoutPage] = useState(false);
   const [isSmartCombo, setIsSmartCombo] = useState(true)
+  const [isInternational, setIsInternational] = useState(false);
   const isDesktop = useBreakpointValue(
     { base: false, md: true },
     { ssr: false }
   );
-
-  // console.log('inView', inView, shownItems)
-
+  
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
 
-  // console.log('flights', flights)
-  // console.log(noresults)
-
-  
   const fetchFlight = async (
     query,
     shownItems,
@@ -147,7 +140,7 @@ const SearchFlights = ({
     
     try {
       const response = await getFlights(payload, isSmartCombo);
-      // console.log('iniresponse',response);
+      console.log('iniresponse',response);
       
       const originName = await getAirports(query?.originCode)
       const destinationName = await getAirports(query?.destinationCode)
@@ -163,12 +156,8 @@ const SearchFlights = ({
       if (response.success === true) {
         const currentFlight = response.data?.Schedules[position]?.Flights;
         setCurrentJourney(response.data?.Schedules[position]);
-
-
-        if(query?.isRoundTrip === 'true'){
-
-        }
-
+        setIsInternational(response.data?.Schedules[position].IsInternational)
+        setAdditionalFee(response.data?.Schedules[position].AdditionalFee)
         setFlights(currentFlight.slice(0, shownItems));
         setTotalData(currentFlight.length);
         setIsLoading(false);
@@ -177,7 +166,6 @@ const SearchFlights = ({
         setStatusSuccess(false);
       }
     } catch (error) {
-      // console.error('Error fetching flight data:', error);
       setIsLoading(false);
       setStatusSuccess(false);
     }
@@ -246,6 +234,7 @@ const SearchFlights = ({
     //     setTotalData(response.data[position].journeys.length);
     //   }
     // }
+
     // //sort flight
     // currentFlight = sortFlight(sortBy, currentFlight);
     // //jika isCombine true, maka tampilkan di paling atas
@@ -259,6 +248,7 @@ const SearchFlights = ({
     //   currFlight = [...isCombine, ...currFlight];
     //   currentFlight = currFlight;
     // }
+    
     // // hide when journeyKey is same on array
     // let currentFlights = currentFlight;
     // currentFlight = currentFlights.filter((item, index) => {
@@ -274,18 +264,72 @@ const SearchFlights = ({
 
     // setIsLoading(false);
   };
+
+  // console.log('inView', inView, shownItems)
+  // console.log('flights', flights)
+  // console.log(noresults)
+
+  // console.log('filter', sortBy)
+  // console.log('iniresponse', isInternational, cart, cart?.length, checkoutPage, position, query?.isRoundTrip)
+  // console.log('iniresponse',response);
   
   useEffect(() => {
-    if (flights.length === 0 || statusSuccess === false) {
-      setIsLoading(!noresults ?? true);
-      fetchFlight(query, shownItems, position, sortBy, filter);
-    } else if(inView && flights?.length < totalData){
+    if (
+      (query?.isRoundTrip === 'false' && cart?.length === 1) ||
+      (query?.isRoundTrip === 'true' && cart?.length === 2)
+    ) {
+      setCheckoutPage(true);
+    }
+  }, [query?.isRoundTrip, cart?.length]);
+  
+  useEffect(() => {
+    const shouldFetch = flights.length === 0 && statusSuccess === false;
+  
+    if (shouldFetch || (inView && flights.length < totalData)) {
       setIsLoading(true);
       fetchFlight(query, shownItems, position, sortBy, filter);
     } else {
       setIsLoading(false);
     }
-  }, [flights, statusSuccess, noresults, query, shownItems, position, sortBy, filter]);
+  }, [flights, statusSuccess, inView, noresults, query, shownItems, position, sortBy, filter]);
+  
+  useEffect(() => {
+    setIsLoading(true);
+    fetchFlight(query, shownItems, position, sortBy, filter);
+  }, [position]);  
+
+  
+  //sort flight
+  useEffect(()=>{
+    let currentFlight = sortFlight(sortBy, flights);
+    //jika isCombine true, maka tampilkan di paling atas
+    // if (query?.isRoundTrip === "true" && query?.is_smart_combo == "true") {
+    //   let isCombine = currentFlight.filter((item) => {
+    //     return item.isCombine === true;
+    //   });
+    //   let currFlight = currentFlight.filter((item) => {
+    //     return item.isCombine !== true;
+    //   });
+    //   currFlight = [...isCombine, ...currFlight];
+    //   currentFlight = currFlight;
+    // }
+
+    // hide when journeyKey is same on array
+    let currentFlights = currentFlight;
+    currentFlight = currentFlights.filter((item, index) => {
+      return (
+        currentFlights.findIndex(
+          (item2) => item2.Id === item.Id
+        ) === index
+      );
+    });
+    setFlights(currentFlight.slice(0, shownItems));
+    setTotalData(currentFlight.length);
+
+    setIsLoading(false);
+  },[sortBy])
+
+  
 
   const handleFilter = (filter) => {
     setIsLoading(true);
@@ -307,32 +351,30 @@ const SearchFlights = ({
   };
 
   const handlePosition = (e, value, journey) => {
-    // console.log('iniresponse', cart)
     e.preventDefault();
     if (!(e.target.innerHTML === "Detail")) {
       setCart([...cart, journey]);
-      if (position < totalFlight - 1) {
+      if (query?.isRoundTrip === 'true' && cart?.length === 0) {
         setPosition(value + 1);
         window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        setCheckoutPage(true);
       }
       setIsLoading(true);
     }
   };
 
-  // useEffect(() => {
-  //   if (checkoutPage) {
-  //     dispatch(
-  //       orderData({
-  //         data: cart,
-  //         query: query,
-  //         isDomestic: filterIsDomestic(additionalData.data),
-  //       })
-  //     );
-  //     router.push({ pathname: "/flights/order-details" });
-  //   }
-  // }, [additionalData.data, cart, checkoutPage, dispatch, query, router]);
+  useEffect(() => {
+    if (checkoutPage) {
+      dispatch(
+        orderData({
+          data: cart,
+          query: query,
+          isDomestic: isInternational,
+          addFee: additionFee
+        })
+      );
+      router.push({ pathname: "/flights/order-details" });
+    }
+  }, [cart, checkoutPage, dispatch, query, router, isInternational]);
 
   const SortButton = ({ sortByState }) => {
     const [sortBy, setSortBy] = sortByState;
@@ -446,7 +488,6 @@ const SearchFlights = ({
         });
       }
     };
-
     
     const times = [
       {
@@ -719,7 +760,6 @@ const SearchFlights = ({
     );
   };
 
-  
   // const departureDateTime = additionalData.data?.[0]?.journeys?.[0]?.segments?.[0]?.departureDateTime;
 
   const departureDateTime = query?.departureDate;
@@ -732,8 +772,8 @@ const SearchFlights = ({
       type={"nested"}
       metatitle={`Hasil Pencarian Tiket ${
         query.isRoundTrip == "true" ? `Round Trip` : `One Way`
-      }: 🛫${additionalData?.data?.[0]?.originCode} 🛬${
-        additionalData?.data?.[0]?.destinationCode
+      }: 🛫${query?.originCode} 🛬${
+        query?.destinationCode
       }, ${
         departureDateTime
           ? date(new Date(departureDateTime), "d LLL yy") + " "
@@ -995,9 +1035,9 @@ const SearchFlights = ({
             </Box>
           ) : (
             <HStack>
-              {additionalData?.data && (
+              {flights?.length > 0 && (
                 <FilterButton
-                  airlines={additionalData?.data[0].journeys}
+                  airlines={flights}
                   handleFilter={handleFilter}
                 />
               )}
@@ -1135,11 +1175,11 @@ const SearchFlights = ({
 //   console.log('additionalData', additionalData)
 //   try {
 //     additionalData = await getFlights(query, query?.is_smart_combo);
-//     if (additionalData.data[0].journeys.length === 0) {
-//       noresults = true;
-//       additionalData = false;
-//       totalFlight = 0;
-//     }
+//     // if (additionalData.data[0].journeys.length === 0) {
+//     //   noresults = true;
+//     //   additionalData = false;
+//     //   totalFlight = 0;
+//     // }
 //     // if (additionalData.filter?.[0]?.combinedJourneys?.length > 0) {
 //     //   additionalData.data[0].journeys = additionalData.data[0].journeys.concat(
 //     //     additionalData.filter[0].combinedJourneys?.map((item) => {
@@ -1176,7 +1216,8 @@ const SearchFlights = ({
 //     props: {
 //       additionalData,
 //       noresults,
-//       totalFlight: totalFlight ?? additionalData.data.length,
+//       // totalFlight: totalFlight ?? additionalData.data.length,
+//       totalFlight: totalFlight,
 //       meta: {
 //         title: "Hasil Pencarian Tiket",
 //       },
