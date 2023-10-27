@@ -140,7 +140,7 @@ const SearchFlights = ({
     
     try {
       const response = await getFlights(payload, isSmartCombo);
-      console.log('iniresponse',response);
+      // console.log('iniresponse',response);
       
       const originName = await getAirports(query?.originCode)
       const destinationName = await getAirports(query?.destinationCode)

@@ -121,13 +121,13 @@ const OrderDetails = () => {
     infant: query?.infant
   }
 
-  console.log('iniresponse', '--------------------')
+  // console.log('iniresponse', '--------------------')
   // console.log('iniresponse1', fareTotal, addFee)
   // console.log('iniresponse2', fareDetail)
   // console.log('iniresponse3', data)
   // console.log('iniresponse4', query)
   // console.log('iniresponse5', dataQuery)
-  console.log('iniresponse6', resultFareBreakdown)
+  // console.log('iniresponse6', resultFareBreakdown)
 
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
@@ -137,9 +137,7 @@ const OrderDetails = () => {
         setFareDetail(...fareDetail, Promise.resolve(response.data));
       })
     } else {
-
       data?.flights?.map(async (item)=>{
-
         if(item?.FlightType === 'GdsBfm'){
           let totalAmountByPaxType = {};
           item?.FareBreakdowns?.forEach(function(item) {
@@ -172,7 +170,7 @@ const OrderDetails = () => {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-
+              // console.log('iniresponse7', response)
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -227,7 +225,7 @@ const OrderDetails = () => {
 
               setResultFareBreakdown(result)
               
-              // console.log('iniresponse7', response)
+              
             } catch (error) {
               
             }
