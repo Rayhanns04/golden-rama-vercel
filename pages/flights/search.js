@@ -140,7 +140,6 @@ const SearchFlights = ({
     
     try {
       const response = await getFlights(payload, isSmartCombo);
-      // console.log('iniresponse',response);
       
       const originName = await getAirports(query?.originCode)
       const destinationName = await getAirports(query?.destinationCode)
@@ -265,7 +264,7 @@ const SearchFlights = ({
     // setIsLoading(false);
   };
 
-  // console.log('inView', inView, shownItems)
+  console.log('inView', inView, shownItems, position, totalData, flights?.length)
   // console.log('flights', flights)
   // console.log(noresults)
 
@@ -284,19 +283,29 @@ const SearchFlights = ({
   
   useEffect(() => {
     const shouldFetch = flights.length === 0 && statusSuccess === false;
-  
-    if (shouldFetch || (inView && flights.length < totalData)) {
-      setIsLoading(true);
+    
+    if (shouldFetch) {
+      console.log('inView', 'ini jalan 1')
       fetchFlight(query, shownItems, position, sortBy, filter);
     } else {
       setIsLoading(false);
     }
-  }, [flights, statusSuccess, inView, noresults, query, shownItems, position, sortBy, filter]);
+  }, [flights, statusSuccess, flights.length]);
   
   useEffect(() => {
-    setIsLoading(true);
-    fetchFlight(query, shownItems, position, sortBy, filter);
+    if (inView && totalData > (flights?.length || 0)) {
+      console.log('inView', 'ini jalan 2')
+      fetchFlight(query, shownItems, position, sortBy, filter);
+    }
+  }, [inView, flights, totalData, query, shownItems, position, sortBy, filter]);
+
+  useEffect(() => {
+    console.log('inView', 'ini jalan 3')
+    if(position !== 0){
+      fetchFlight(query, shownItems, position, sortBy, filter);
+    }
   }, [position]);  
+
 
   
   //sort flight
@@ -329,22 +338,21 @@ const SearchFlights = ({
     setIsLoading(false);
   },[sortBy])
 
-  
-
   const handleFilter = (filter) => {
     setIsLoading(true);
     filter.is_filtered = true;
     setFilter(filter);
   };
 
-  useEffect(() => {
-    if (inView) {
-      showMoreItems();
-    }
-  }, [inView]);
   const showMoreItems = () => {
     setShownItems((prev) => prev + 15);
   };
+
+  useEffect(() => {
+    if (inView && (totalData > flights?.length)  ) {
+      showMoreItems();
+    }
+  }, [inView]);
 
   const handleViewAll = () => {
     showMoreItems();
@@ -374,7 +382,7 @@ const SearchFlights = ({
       );
       router.push({ pathname: "/flights/order-details" });
     }
-  }, [cart, checkoutPage, dispatch, query, router, isInternational]);
+  }, [checkoutPage, cart , dispatch, query, router, isInternational]);
 
   const SortButton = ({ sortByState }) => {
     const [sortBy, setSortBy] = sortByState;

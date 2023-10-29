@@ -127,17 +127,14 @@ const OrderDetails = () => {
   // console.log('iniresponse3', data)
   // console.log('iniresponse4', query)
   // console.log('iniresponse5', dataQuery)
-  // console.log('iniresponse6', resultFareBreakdown)
+  // console.log('iniresponse7', response)
+
+  console.log('itemku', resultFareBreakdown)
 
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
       data?.flights?.map(async (item)=>{
-        const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-        const response = await getDetailPrice(fareItem);
-        setFareDetail(...fareDetail, Promise.resolve(response.data));
-      })
-    } else {
-      data?.flights?.map(async (item)=>{
+        console.log('itemku', item)
         if(item?.FlightType === 'GdsBfm'){
           let totalAmountByPaxType = {};
           item?.FareBreakdowns?.forEach(function(item) {
@@ -161,7 +158,7 @@ const OrderDetails = () => {
                 "TotalAmount": totalAmountByPaxType[paxType]
             };
           });
-          setResultFareBreakdown(result)
+          setResultFareBreakdown([...resultFareBreakdown, result])
           setFareTotal(item?.Fare)
           setPriceOrignal(item?.Fare)
         } else if (item?.FlightType === 'NonGds'){
@@ -170,7 +167,6 @@ const OrderDetails = () => {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              // console.log('iniresponse7', response)
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -189,7 +185,7 @@ const OrderDetails = () => {
                 };
               });
 
-              setResultFareBreakdown(result)
+              setResultFareBreakdown([...resultFareBreakdown, result])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
               setFareTotal(response?.data?.Total)
@@ -222,10 +218,99 @@ const OrderDetails = () => {
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
+              setResultFareBreakdown([...resultFareBreakdown, result])
+            } catch (error) {
+              
+            }
+          }
+        }
+      })
+    } else {
+      data?.flights?.map(async (item)=>{
+        if(item?.FlightType === 'GdsBfm'){
+          let totalAmountByPaxType = {};
+          item?.FareBreakdowns?.forEach(function(item) {
+            var paxType = item.PaxType;
+            var charges = item.Charges;
+            
+            var totalAmount = charges.reduce(function(total, charge) {
+                return total + charge.Amount;
+            }, 0);
+        
+            if (totalAmountByPaxType[paxType] === undefined) {
+                totalAmountByPaxType[paxType] = 0;
+            }
+        
+            totalAmountByPaxType[paxType] += totalAmount;
+          });
 
-              setResultFareBreakdown(result)
-              
-              
+          var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+            return {
+                "PaxType": paxType,
+                "TotalAmount": totalAmountByPaxType[paxType]
+            };
+          });
+          setResultFareBreakdown([result])
+          setFareTotal(item?.Fare)
+          setPriceOrignal(item?.Fare)
+        } else if (item?.FlightType === 'NonGds'){
+
+          if(item?.IsConnecting === false){
+            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+            try {
+              const response = await getDetailPrice(fareItem, jwt);
+              var totalAmountByPaxType = {};
+              response?.data?.Details.forEach(function(item) {
+                var paxType = item.Code;
+                var amount = item.Amount;
+            
+                if (totalAmountByPaxType[paxType] === undefined) {
+                    totalAmountByPaxType[paxType] = 0;
+                }
+                totalAmountByPaxType[paxType] += amount;
+              });
+
+              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                return {
+                    "PaxType": paxType,
+                    "TotalAmount": totalAmountByPaxType[paxType]
+                };
+              });
+
+              setResultFareBreakdown([result])
+              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+              setFareDetail(response?.data?.Details)
+              setFareTotal(response?.data?.Total)
+            } catch (error) {
+              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+            }
+          } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
+
+            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+            try {
+              const response = await getDetailPrice(fareItem, jwt);
+              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+              setFareDetail(response?.data?.Details)
+              setFareTotal(response?.data?.Total)
+
+              var totalAmountByPaxType = {};
+              fareDetail.forEach(function(item) {
+                var paxType = item.Code;
+                var amount = item.Amount;
+            
+                if (totalAmountByPaxType[paxType] === undefined) {
+                    totalAmountByPaxType[paxType] = 0;
+                }
+                totalAmountByPaxType[paxType] += amount;
+              });
+
+              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                return {
+                    "PaxType": paxType,
+                    "TotalAmount": totalAmountByPaxType[paxType]
+                };
+              });
+              setResultFareBreakdown([result])
             } catch (error) {
               
             }
@@ -1131,102 +1216,100 @@ const OrderDetails = () => {
                                   >
                                   <>
                                     {
-                                      journeys.flights.map((item, index) => (
-                                        <Text
-                                          color="brand.blue.400"
-                                          fontWeight="semibold"
-                                          fontSize={"sm"}
-                                          key={index}
-                                        >
-                                          Tiket penerbangan {index + 1} •{" "}
+                                      journeys .flights.map((item, index) => (
+                                        <>
+                                          <Text
+                                            color="brand.blue.400"
+                                            fontWeight="semibold"
+                                            fontSize={"sm"}
+                                            key={index}
+                                          >
+                                            Tiket penerbangan {index + 1} •{" "}
+                                            {
+                                              item?.IsConnecting === false ? item?.AirlineName : item?.ConnectingFlights[0]?.AirlineName
+                                            }
+                                          </Text>
                                           {
-                                            item?.IsConnecting === false ? item?.AirlineName : item?.ConnectingFlights[0]?.AirlineName
+                                            dataQuery.adult !== "0" && (
+                                              <HStack
+                                                w="full"
+                                                justifyContent="space-between"
+                                                // pt={2}
+                                              >
+                                                <Text fontSize="sm" color="neutral.text.medium">
+                                                  Dewasa (x{dataQuery?.adult})
+                                                </Text>
+                                                {
+                                                  resultFareBreakdown[index]?.map((item, index) => {
+                                                    if(item?.PaxType === "ADT"){
+                                                      return (
+                                                        <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                          IDR {convertRupiah(item?.TotalAmount)}
+                                                        </Text>
+                                                      )
+                                                    } 
+                                                  })
+                                                }
+                                              </HStack>
+                                            )
                                           }
-                                        </Text>
+
+                                          {
+                                            dataQuery.child !== "0" && (
+                                              <HStack
+                                                w="full"
+                                                justifyContent="space-between"
+                                              >
+                                                <Text fontSize="sm" color="neutral.text.medium">
+                                                  Anak-anak (x{dataQuery?.child})
+                                                </Text>
+                                                {
+                                                  resultFareBreakdown[index]?.map((item, index) => {
+                                                    if(item?.PaxType === "CHD"){
+                                                      return (
+                                                        <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                          IDR {convertRupiah(item?.TotalAmount)}
+                                                        </Text>
+                                                      )
+                                                    } 
+                                                  })
+                                                }
+                                              </HStack>
+                                            )
+                                          }
+
+                                          {
+                                            dataQuery.infant !== "0" && (
+                                              <HStack
+                                                w="full"
+                                                justifyContent="space-between"
+                                              >
+                                                <Text fontSize="sm" color="neutral.text.medium">
+                                                  Bayi (x{dataQuery?.infant})
+                                                </Text>
+                                                {
+                                                  resultFareBreakdown[index]?.map((item, index) => {
+                                                    if(item?.PaxType === "INF" || item?.PaxType === "INFT"){
+                                                      return (
+                                                        <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                          {
+                                                            item?.TotalAmount !== 0 ? (
+                                                              `IDR ${convertRupiah(item?.TotalAmount)}`
+                                                            ) : (`IDR 0`)
+                                                          }
+                                                        </Text>
+                                                      )
+                                                    } 
+                                                  })
+                                                }
+                                              </HStack>
+                                            )
+                                          }
+                                        </>
                                       ))
                                     }
-
-                                    {
-                                      dataQuery.adult !== "0" && (
-                                        <HStack
-                                          w="full"
-                                          justifyContent="space-between"
-                                          pt={2}
-                                        >
-                                          <Text fontSize="sm" color="neutral.text.medium">
-                                            Dewasa (x{dataQuery?.adult})
-                                          </Text>
-                                          {
-                                            resultFareBreakdown?.map((item, index) => {
-                                              if(item?.PaxType === "ADT"){
-                                                return (
-                                                  <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                    IDR {convertRupiah(item?.TotalAmount)}
-                                                  </Text>
-                                                )
-                                              } 
-                                            })
-                                          }
-                                        </HStack>
-                                      )
-                                    }
-
-                                    {
-                                      dataQuery.child !== "0" && (
-                                        <HStack
-                                          w="full"
-                                          justifyContent="space-between"
-                                        >
-                                          <Text fontSize="sm" color="neutral.text.medium">
-                                            Anak-anak (x{dataQuery?.child})
-                                          </Text>
-                                          {
-                                            resultFareBreakdown?.map((item, index) => {
-                                              if(item?.PaxType === "CHD"){
-                                                return (
-                                                  <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                    IDR {convertRupiah(item?.TotalAmount)}
-                                                  </Text>
-                                                )
-                                              } 
-                                            })
-                                          }
-                                        </HStack>
-                                      )
-                                    }
-
-                                    {
-                                      dataQuery.infant !== "0" && (
-                                        <HStack
-                                          w="full"
-                                          justifyContent="space-between"
-                                        >
-                                          <Text fontSize="sm" color="neutral.text.medium">
-                                            Bayi (x{dataQuery?.infant})
-                                          </Text>
-                                          {
-                                            resultFareBreakdown?.map((item, index) => {
-                                              if(item?.PaxType === "INF" || item?.PaxType === "INFT"){
-                                                return (
-                                                  <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                    {
-                                                      item?.TotalAmount !== 0 ? (
-                                                        `IDR ${convertRupiah(item?.TotalAmount)}`
-                                                      ) : (`IDR 0`)
-                                                    }
-                                                  </Text>
-                                                )
-                                              } 
-                                            })
-                                          }
-                                        </HStack>
-                                      )
-                                    }
-
-                              
                                     <Divider variant={"dashed"} />
                                   </>
-         
                                   <HStack
                                     w="full"
                                     justifyContent="space-between"
