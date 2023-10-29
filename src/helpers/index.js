@@ -180,9 +180,7 @@ export function convertTimeFlightPage(date) {
 }
 
 export function getClassCode(code) {
-
   const codeNow = code[0]
-
   const cabinClass = [
     { label: "Economy", value: "Economy" },
     { label: "Premium Economy", value: "PremiumEconomy" },

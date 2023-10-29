@@ -2966,6 +2966,7 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
   const handleRemoveItem = (index) => {
     setItem((items) => items.filter((s, i) => i !== index));
   };
+
   // Return maximum 4 items
   item = item.filter((item, index) => {
     return index <= 3;
@@ -3042,7 +3043,7 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
                         {item.flights[0].adult +
                           item.flights[0].child +
                           item.flights[0].infant}{" "}
-                        Penumpang, {getClassCode(item.flights[0].class)}  
+                        Penumpang, {getClassCode([`${item.flights[0].class}`])}  
                       </Text>
                       <LinkOverlay href="#" onClick={formik.handleSubmit} />
                     </Stack>
