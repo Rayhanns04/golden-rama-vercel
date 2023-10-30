@@ -124,17 +124,17 @@ const OrderDetails = () => {
   // console.log('iniresponse', '--------------------')
   // console.log('iniresponse1', fareTotal, addFee)
   // console.log('iniresponse2', fareDetail)
-  // console.log('iniresponse3', data)
   // console.log('iniresponse4', query)
   // console.log('iniresponse5', dataQuery)
   // console.log('iniresponse7', response)
 
-  console.log('itemku', resultFareBreakdown)
+  // console.log('itemku', resultFareBreakdown)
 
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
+      const totalFareAll = []
+      const resultFareBreakdownTemp = []
       data?.flights?.map(async (item)=>{
-        console.log('itemku', item)
         if(item?.FlightType === 'GdsBfm'){
           let totalAmountByPaxType = {};
           item?.FareBreakdowns?.forEach(function(item) {
@@ -158,16 +158,23 @@ const OrderDetails = () => {
                 "TotalAmount": totalAmountByPaxType[paxType]
             };
           });
-          setResultFareBreakdown([...resultFareBreakdown, result])
-          setFareTotal(item?.Fare)
+
+          console.log('itemkuGdsBfm', result)
+          resultFareBreakdownTemp.push(result)
+          totalFareAll.push(item?.Fare)
+          // setResultFareBreakdown([...resultFareBreakdown, result])
+          
           setPriceOrignal(item?.Fare)
         } else if (item?.FlightType === 'NonGds'){
-
           if(item?.IsConnecting === false){
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
               var totalAmountByPaxType = {};
+
+              console.log('itemku4', response?.data?.Total)
+              // setFareTotal(fareTotal+response?.data?.Total)
+              totalFareAll.push(response?.data?.Total)
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
                 var amount = item.Amount;
@@ -185,21 +192,29 @@ const OrderDetails = () => {
                 };
               });
 
-              setResultFareBreakdown([...resultFareBreakdown, result])
+              console.log('itemkuNonGds', result)
+              // setResultFareBreakdown([...resultFareBreakdown, result])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
-              setFareTotal(response?.data?.Total)
+              
+              resultFareBreakdownTemp.push(result)
+              
+              // setFareTotal(fareTotal+response?.data?.Total)
             } catch (error) {
               console.error('Terjadi kesalahan saat mengambil detail harga:', error);
             }
+            // setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
           } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
 
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
+              console.log('itemku5', response?.data?.Total)
+              totalFareAll.push(response?.data?.Total)
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
-              setFareTotal(response?.data?.Total)
+
+              // setFareTotal(fareTotal+response?.data?.Total)
 
               var totalAmountByPaxType = {};
               fareDetail.forEach(function(item) {
@@ -218,13 +233,18 @@ const OrderDetails = () => {
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
-              setResultFareBreakdown([...resultFareBreakdown, result])
-            } catch (error) {
+              resultFareBreakdownTemp.push(result)
               
+            } catch (error) {
+              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
             }
           }
         }
+        setResultFareBreakdown(resultFareBreakdownTemp)
+        setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
       })
+      // console.log('itemku', totalFareAll)
+      
     } else {
       data?.flights?.map(async (item)=>{
         if(item?.FlightType === 'GdsBfm'){
@@ -352,6 +372,8 @@ const OrderDetails = () => {
     })
   }
   }, [query?.isRoundTrip, data?.flights, isDomestic, jwt, query]);
+
+  console.log('itemku3', data, fareTotal, resultFareBreakdown)
 
   // const payload = query;
   // simplifyBodyDetailFlight(journey, query)
@@ -1205,7 +1227,7 @@ const OrderDetails = () => {
                         p={"24px"}
                         bg="white"
                       >
-                        <Text pb="16px" fontSize="lg" fontWeight="semibold">
+                        <Text pb="1px" fontSize="lg" fontWeight="semibold">
                           Detail Harga
                         </Text>
                               <>

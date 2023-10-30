@@ -1125,35 +1125,34 @@ export function mappingPriceFlight(price, isSUMCombine = false) {
 
 export function sortFlight(sort, data) {
   const index = dataSortFlight.findIndex((e) => e === sort);
+  // console.log('itemku', data)
   let result;
   switch (index) {
     case 0:
       result = orderBy(data, (item) => {
-        let totalFare = 0;
-        if (item.connectingType == "THROUGH") {
-          totalFare = item.segments[0].farePerPax.priceFinalCustom;
-        } else {
-          map(
-            item.segments,
-            (total) => (totalFare += total?.farePerPax?.priceFinalCustom)
-          );
-        }
+        let totalFare = item?.Fare;
+        // if (item.IsConnecting === false) {
+        //   totalFare = item.segments[0].farePerPax.priceFinalCustom;
+        // } else {
+        //   map(
+        //     item.segments,
+        //     (total) => (totalFare += total?.farePerPax?.priceFinalCustom)
+        //   );
+        // }
         return totalFare;
       });
       break;
     case 1:
-      result = orderBy(
-        data,
-        (item) => {
-          let totalFare = 0;
-          if (item.connectingType == "THROUGH") {
-            totalFare = item.segments[0].farePerPax.priceFinalCustom;
-          } else {
-            map(
-              item.segments,
-              (total) => (totalFare += total.farePerPax.priceFinalCustom)
-            );
-          }
+      result = orderBy( data, (item) => {
+          let totalFare = item.Fare;
+          // if (item.connectingType == "THROUGH") {
+          //   totalFare = item.segments[0].farePerPax.priceFinalCustom;
+          // } else {
+          //   map(
+          //     item.segments,
+          //     (total) => (totalFare += total.farePerPax.priceFinalCustom)
+          //   );
+          // }
           return totalFare;
         },
         "desc"
@@ -1161,15 +1160,13 @@ export function sortFlight(sort, data) {
       break;
     case 2:
       result = orderBy(data, (item) => {
-        let date = new Date(item.segments[0].departureDateTime);
+        let date = new Date(item.DepartDateTime);
         return date.getTime();
       });
       break;
     case 3:
-      result = orderBy(
-        data,
-        (item) => {
-          let date = new Date(item.segments[0].departureDateTime);
+      result = orderBy(data, (item) => {
+          let date = new Date(item.DepartDateTime);
           return date.getTime();
         },
         "desc"
@@ -1178,8 +1175,8 @@ export function sortFlight(sort, data) {
     case 4:
       result = orderBy(data, (item) => {
         return differenceTimestamp(
-          item.segments[0].departureDateTime,
-          item.segments[item.segments.length - 1].arrivalDateTime
+          item.DepartDateTime,
+          item.ArriveDateTime
         );
       });
       break;
@@ -1188,8 +1185,8 @@ export function sortFlight(sort, data) {
         data,
         (item) => {
           return differenceTimestamp(
-            item.segments[0].departureDateTime,
-            item.segments[item.segments.length - 1].arrivalDateTime
+            item.DepartDateTime,
+            item.ArriveDateTime
           );
         },
         "desc"

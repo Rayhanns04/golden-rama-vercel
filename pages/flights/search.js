@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/rules-of-hooks */
 import {
   chakra,
   Badge,
@@ -133,7 +132,7 @@ const SearchFlights = ({
       setIsLoading(true);
       const payload = query;
       const response = await getFlights(payload, isSmartCombo);
-      console.log('iniresponse', response);
+      console.log('itemku', response, query);
       
       if (response.success === true) {
         setStatusSuccess(true);
@@ -152,7 +151,7 @@ const SearchFlights = ({
   };
   
   
-  console.log('iniresponse', currentJourney, flights, totalData, position)
+  // console.log('itemku', flights)
 
   useEffect(() => {
     if(statusSuccess === false){
@@ -179,38 +178,30 @@ const SearchFlights = ({
       );
       router.push({ pathname: "/flights/order-details" });
     }
-  }, [checkoutPage, cart , dispatch, query, router, isInternational, query?.isRoundTrip, cart?.length]);
+  }, [checkoutPage, query?.isRoundTrip, cart?.length]);
   
-  // useEffect(() => {
-  //   const shouldFetch = flights.length === 0 && statusSuccess === false;
-    
-  //   if (shouldFetch) {
-  //     console.log('inView', 'ini jalan 1')
-  //     fetchFlight(query, shownItems, position, sortBy, filter);
-  //   } else {
-  //     setIsLoading(false);
-  //   }
-  // }, [flights, statusSuccess, flights.length]);
   
-  // useEffect(() => {
-  //   if (inView && totalData > (flights?.length || 0)) {
-  //     console.log('inView', 'ini jalan 2')
-  //     fetchFlight(query, shownItems, position, sortBy, filter);
-  //   }
-  // }, [inView, flights, totalData, query, shownItems, position, sortBy, filter]);
+  useEffect(()=>{
+    const updatedCurrentJourney = currentJourney.map((journey, index) => {
+      if (index === position) {
+        return {
+          ...journey,
+          Flights: sortFlight(sortBy, journey.Flights)
+        };
+      }
+      return journey; 
+    });
+    setCurrentJourney(updatedCurrentJourney);
+  },[sortBy])
 
-  // useEffect(() => {
-  //   console.log('inView', 'ini jalan 3')
-  //   if(position !== 0){
-  //     fetchFlight(query, shownItems, position, sortBy, filter);
-  //   }
-  // }, [position]);  
-
-
-  
   //sort flight
   // useEffect(()=>{
-  //   let currentFlight = sortFlight(sortBy, flights);
+  //   // setIsLoading(true)
+
+  //   let currentFlight = sortFlight(sortBy, currentJourney[position]?.Flights);
+  //   console.log('itemkuresult', currentFlight)
+  //   // setCurrentJourney(currentFlight)
+    
   //   //jika isCombine true, maka tampilkan di paling atas
   //   // if (query?.isRoundTrip === "true" && query?.is_smart_combo == "true") {
   //   //   let isCombine = currentFlight.filter((item) => {
@@ -224,19 +215,19 @@ const SearchFlights = ({
   //   // }
 
   //   // hide when journeyKey is same on array
-  //   let currentFlights = currentFlight;
-  //   currentFlight = currentFlights.filter((item, index) => {
-  //     return (
-  //       currentFlights.findIndex(
-  //         (item2) => item2.Id === item.Id
-  //       ) === index
-  //     );
-  //   });
-  //   setFlights(currentFlight.slice(0, shownItems));
-  //   setTotalData(currentFlight.length);
+  //   // let currentFlights = currentFlight;
+  //   // currentFlight = currentFlights.filter((item, index) => {
+  //   //   return (
+  //   //     currentFlights.findIndex(
+  //   //       (item2) => item2.Id === item.Id
+  //   //     ) === index
+  //   //   );
+  //   // });
+  //   // setFlights(currentFlight.slice(0, shownItems));
+  //   // setTotalData(currentFlight.length);
 
-  //   setIsLoading(false);
-  // },[sortBy])
+  //   // setIsLoading(false);
+  // },[ position, sortBy])
 
   const handleFilter = (filter) => {
     setIsLoading(true);
@@ -280,6 +271,9 @@ const SearchFlights = ({
           setIsLoading(false);
         }, 1000);
       }
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
     }
   };
 
@@ -927,7 +921,7 @@ const SearchFlights = ({
               color={"neutral.text.medium"}
               fontSize={{ base: "xs", md: "sm" }}
             >
-              {`${currentJourney[position]?.Flights?.length} Tersedia`}
+               {`${currentJourney[position]?.Flights?.length === undefined ? 0 : currentJourney[position]?.Flights?.length } Tersedia`}
             </Text>
           )}
           {isLoading ? (
@@ -967,7 +961,7 @@ const SearchFlights = ({
             gap={"24px"}
           >
             {currentJourney?.length !== 0 ? (
-              currentJourney[position]?.Flights.slice(0, shownItems).map((item, index) => {
+              currentJourney[position]?.Flights?.slice(0, shownItems).map((item, index) => {
                 // console.log("iniresponse", item);
                 return (
                   <>
