@@ -271,7 +271,7 @@ export default function Home({ data, meta }) {
                               <Image
                                 alt={description}
                                 objectPosition={"center"}
-                                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${desktop}`}
+                                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${desktop}`}
                                 objectFit={"contain"}
                                 quality={100}
                                 layout="fill"
