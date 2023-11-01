@@ -297,15 +297,19 @@ export function getAirlineAvailable(flight) {
 
 
 export function filterTransit(flight, transit) {
-  // console.log(flight, transit, "filter transit")
-  const mapAirline = flight.map((item) => {
-    if (transit.includes(item.segments.length.toString())) {
-      return item;
-    }
-    return null;
-  });
-  const result = compact(mapAirline);
-  return result;
+  // console.log(flight, transit, "itemku0")
+
+  const flightNow = []
+
+  flight.map((item)=>{
+    transit.map((trans)=>{
+      // console.log('itemku3', item?.TotalTransit === Number(trans), item?.TotalTransit, trans, typeof(item?.TotalTransit), typeof(trans))
+      if(item?.TotalTransit === Number(trans)){
+        flightNow.push(item)
+      }
+    })
+  })
+  return flightNow;
 }
 
 export function filterOthers(flight) {
@@ -316,16 +320,27 @@ export function filterOthers(flight) {
 }
 
 export function filterAirlines(flight, airlines) {
-  const airline = flight.map((item) => {
-    const segments = item.segments.map((segment) => {
-      if (airlines.includes(segment.flightDesignator.carrierCode)) {
-        return true;
-      }
-    });
-    if (segments.includes(true)) return item;
+  const flightNow = [] 
+
+  flight.map((item) => {
+    if(item?.TotalTransit > 0){
+      airlines.map((air)=>{
+        if(item?.ConnectingFlights[0]?.AirlineName === air){
+          flightNow.push(item)
+        }
+      })
+    } else {
+      airlines.map((air)=>{
+        if(item?.AirlineName === air){
+          flightNow.push(item)
+        }
+      })
+    }
+     
   });
-  const result = compact(airline);
-  return result;
+
+  // const result = compact(airline);
+  return flightNow;
 }
 
 export function filterFacility(flight) {
@@ -337,7 +352,10 @@ export function filterFacility(flight) {
 
 export function filterPrice(flight, minPrice, maxPrice) {
   const flights = flight.map((item) => {
-    const totalPrice = sumPriceFare(item.segments);
+    // const totalPrice = sumPriceFare(item?.Fare);
+
+    const totalPrice = item?.Fare;
+    // console.log('itemku11', flights, result, minPrice, maxPrice, totalPrice)
     if (totalPrice >= minPrice && totalPrice <= maxPrice) {
       return item;
     }
@@ -418,7 +436,6 @@ export function sumTaxPrice(prices) {
 }
 
 export function convertArrayAirlines(airlines) {
-  console.log('itemku11',airlines)
   const result = airlines
     ?.map((item) => {
       return ` 
@@ -1260,6 +1277,7 @@ export function sumPriceFareFinal(segments, type = "DIRECT") {
 }
 
 export function filterFlightDepartureAndArrival(flights, type, times) {
+  // console.log('itemku', flights)
   let arrayResult = [];
   times.forEach((time) => {
     let filterTime = find(filterTimeFlight, { id: parseInt(time) });
@@ -1267,16 +1285,16 @@ export function filterFlightDepartureAndArrival(flights, type, times) {
     if (type == "departure") {
       data = flights.map((item) => {
         let startTime = new Date(
-          `${item.segments[0].departureDateTime.slice(0, 10)} ${
+          `${item?.DepartDateTime.slice(0, 10)} ${
             filterTime.time[0]
           }`
         );
         let endTime = new Date(
-          `${item.segments[0].departureDateTime.slice(0, 10)} ${
+          `${item?.DepartDateTime.slice(0, 10)} ${
             filterTime.time[1]
           }`
         );
-        let currentDate = new Date(item.segments[0].departureDateTime);
+        let currentDate = new Date(item?.DepartDateTime);
         if (
           currentDate.getTime() >= startTime.getTime() &&
           currentDate.getTime() <= endTime.getTime()
@@ -1287,19 +1305,19 @@ export function filterFlightDepartureAndArrival(flights, type, times) {
     } else if (type == "arrival") {
       data = flights.map((item) => {
         let startTime = new Date(
-          `${item.segments[item.segments.length - 1].arrivalDateTime.slice(
+          `${item?.ArriveDateTime.slice(
             0,
             10
           )} ${filterTime.time[0]}`
         );
         let endTime = new Date(
-          `${item.segments[item.segments.length - 1].arrivalDateTime.slice(
+          `${item?.ArriveDateTime.slice(
             0,
             10
           )} ${filterTime.time[1]}`
         );
         let currentDate = new Date(
-          item.segments[item.segments.length - 1].arrivalDateTime
+          item?.ArriveDateTime
         );
         if (
           currentDate.getTime() >= startTime.getTime() &&

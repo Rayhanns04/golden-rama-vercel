@@ -2850,7 +2850,6 @@ export const FlightPriceDetails = ({
 };
 
 export const  FlightDetails = ({ query, data, ...props }) => {
-  console.log('itemku10', data)
   return (
     <Box
       {...props}
@@ -4143,7 +4142,7 @@ export const PromoItems = ({ query }) => {
       dispacth(detail({ promoDetail: item }));
       router.push(`/promo/${item.code}`);
     };
-    console.log(item);
+    // console.log(item);
     return (
       <>
         {!isLoading ? (

@@ -101,7 +101,12 @@ const SearchFlights = ({
     is_smart_combo: dataQuery?.is_smart_combo,
   };
 
+  const payload = query;
+
   // console.log('query', query)
+  // data save all 
+  const [currentJourneySave, setCurrentJourneySave] = useState([]) 
+
 
   const [currentJourney, setCurrentJourney] = useState([]) 
   const [flights, setFlights] = useState([]);
@@ -129,7 +134,6 @@ const SearchFlights = ({
   const [destinationData, setDestinationData] = useState('')
   
   const fetchFlight = async () => {
-    const payload = query;
     try {
       setIsLoading(true);
       const response = await getFlights(payload, isSmartCombo);
@@ -138,6 +142,7 @@ const SearchFlights = ({
       if (response.success === true) {
         setStatusSuccess(true);
         setCurrentJourney(response?.data?.Schedules);
+        setCurrentJourneySave(response?.data?.Schedules);
         setFlights(response.data?.Schedules[position]?.Flights?.slice(0, shownItems));
         setTotalData(response.data?.Schedules[position]?.Flights?.length);
         setAdditionalFee(response.data?.Schedules[position]?.AdditionalFee);
@@ -151,8 +156,11 @@ const SearchFlights = ({
     }
   };
   
-  
-  // console.log('itemku', sortBy)
+  // console.log('itemku', currentJourney)
+
+  // useEffect(() => {
+  //   fetchFlight();
+  // }, []);
 
   useEffect(() => {
     if(statusSuccess === false){
@@ -181,7 +189,6 @@ const SearchFlights = ({
     }
   }, [checkoutPage, query?.isRoundTrip, cart?.length]);
   
-  
   useEffect(()=>{
     const updatedCurrentJourney = currentJourney.map((journey, index) => {
       if (index === position) {
@@ -198,95 +205,47 @@ const SearchFlights = ({
 
   useEffect(()=>{
     if (filter.is_filtered) {
-      if (filter?.transits?.length > 0) {
-        // const updatedCurrentJourney = currentJourney.map((journey, index) => {
-        //   if (index === position) {
-        //     return {
-        //       ...journey,
-        //       Flights: filterTransit(journey.Flights, filter.transits)
-        //     };
-        //   }
-        //   return journey; 
-        // });
-        // setCurrentJourney(updatedCurrentJourney);
-        // console.log('itemku', updatedCurrentJourney)
-        // currentFlight = filterTransit(currentFlight, filter.transits);
-      }
-      if (filter?.airlines?.length > 0) {
-        const updatedCurrentJourney = currentJourney.map((journey, index) => {
-          if (index === position) {
-            return {
-              ...journey,
-              Flights: filterAirlines(journey.Flights, filter.airlines)
-            };
-          }
-          return journey; 
-        });
-        // setCurrentJourney(updatedCurrentJourney);
-        console.log('itemku', 'airlinesfilteractive')
-        console.log('itemku', updatedCurrentJourney)
-        // currentFlight = filterAirlines(currentFlight, filter.airlines);
-      }
-      if (filter?.others?.length > 0){
-        // const updatedCurrentJourney = currentJourney.map((journey, index) => {
-        //   if (index === position) {
-        //     return {
-        //       ...journey,
-        //       Flights: filterOthers(journey.Flights)
-        //     };
-        //   }
-        //   return journey; 
-        // });
-        // setCurrentJourney(updatedCurrentJourney);
-        // currentFlight = filterOthers(currentFlight);
-        // console.log('itemku', updatedCurrentJourney)
-      }
-      if (filter?.facilities?.length > 0){
-        // const updatedCurrentJourney = currentJourney.map((journey, index) => {
-        //   if (index === position) {
-        //     return {
-        //       ...journey,
-        //       Flights: filterFacility(journey.Flights)
-        //     };
-        //   }
-        //   return journey; 
-        // });
-        // setCurrentJourney(updatedCurrentJourney);
-        // currentFlight = filterFacility(currentFlight);
-        // console.log('itemku', updatedCurrentJourney)
-      }
-      if (filter?.departure_times?.length > 0){
-        // const updatedCurrentJourney = currentJourney.map((journey, index) => {
-        //   if (index === position) {
-        //     return {
-        //       ...journey,
-        //       Flights: filterFlightDepartureAndArrival(journey.Flights,"departure", filter.departure_times )
-        //     };
-        //   }
-        //   return journey; 
-        // });
-        // setCurrentJourney(updatedCurrentJourney);
-        // currentFlight = filterFacility(currentFlight);
-        // console.log('itemku', updatedCurrentJourney)
-      }
-      if (filter?.arrival_times?.length > 0){
 
-        // const updatedCurrentJourney = currentJourney.map((journey, index) => {
-        //   if (index === position) {
-        //     return {
-        //       ...journey,
-        //       Flights: filterFlightDepartureAndArrival(journey.Flights,"arrival", filter.arrival_times )
-        //     };
-        //   }
-        //   return journey; 
-        // });
-        // setCurrentJourney(updatedCurrentJourney);
-        // currentFlight = filterFacility(currentFlight);
-        // console.log('itemku', updatedCurrentJourney)
-      }
-      // currentFlight = filterPrice(currentFlight, filter.min_price,filter.max_price);
-      // setTotalData(currentFlight.length);
-      // setIsLoading(false);
+      const applyAllFilters = (flights) => {
+        let filteredFlights = flights;
+        
+        if (filter?.transits?.length > 0) {
+          filteredFlights = filterTransit(filteredFlights, filter.transits);
+        }
+        if (filter?.airlines?.length > 0) {
+          filteredFlights = filterAirlines(filteredFlights, filter.airlines);
+        }
+        if (filter?.others?.length > 0) {
+          filteredFlights = filterOthers(filteredFlights);
+        }
+        if (filter?.facilities?.length > 0){
+          filteredFlights = filterFacility(filteredFlights);
+        }
+        if (filter?.departure_times?.length > 0){
+          filteredFlights = filterFlightDepartureAndArrival(filteredFlights,"departure", filter.departure_times)
+        }
+        if (filter?.arrival_times?.length > 0){
+          filteredFlights = filterFlightDepartureAndArrival(filteredFlights,"arrival", filter.arrival_times );
+        }
+        if (filter?.max_price !== 16000000 || filter?.min_price !== 0 ){
+          filteredFlights = filterPrice(filteredFlights, filter.min_price, filter.max_price);
+        }
+
+        return filteredFlights;
+      };
+  
+      const updatedCurrentJourney = currentJourney.map((journey, index) => {
+        if (index === position) {
+          return {
+            ...journey,
+            Flights: applyAllFilters(journey.Flights)
+          };
+        }
+        return journey;
+      });
+  
+      setCurrentJourney(updatedCurrentJourney);
+
     } 
     // else {
     //   if (cart?.[0]?.isCombine !== true) {
@@ -295,27 +254,52 @@ const SearchFlights = ({
     // }
   },[filter])
   
-  const handleFilter = (filter, dataAirlines) => {
-    setIsLoading(true);
-    
-    const filterBody = {
-      min_price: filter?.filterBody,
-      max_price: filter?.max_price,
-      transits: filter?.transits,
-      departure_times: filter?.departure_times,
-      arrival_times: filter?.arrival_times,
-      airlines: filter.airlines?.map((id) => {
-        const airline = dataAirlines.find((data) => data.id === id.toString());
-        return airline ? airline.name : '';
-      }),
-      others: filter?.others,
+  const handleFilter = (filter, dataAirlines) => { 
+    const initialFilter = {
+      min_price: 0,
+      max_price: 16000000,
+      transits: [],
+      departure_times: [],
+      arrival_times: [],
+      airlines: [],
+      others: [],
       // facilities: [],
-      is_filtered: filter?.is_filtered === false ? true : true,
-      is_smart_combo: filter?.is_smart_combo,
-    }
+      is_filtered: false,
+      is_smart_combo: query?.is_smart_combo == "true" ? true : false,
+    };
 
-    setFilter(filterBody);
-    setIsLoading(false);
+    // console.log("itemku", filter, initialFilter)
+
+    if(JSON.stringify(filter) === JSON.stringify(initialFilter)){
+      setIsLoading(true);
+      setCurrentJourney(currentJourneySave)
+      // console.log('itemku', 'ini bener')
+      // setIsLoading(false);
+    } else {
+      setIsLoading(true);
+      setCurrentJourney(currentJourneySave)
+      const filterBody = {
+        min_price: filter?.min_price,
+        max_price: filter?.max_price,
+        transits: filter?.transits,
+        departure_times: filter?.departure_times,
+        arrival_times: filter?.arrival_times,
+        airlines: filter.airlines?.map((id) => {
+          const airline = dataAirlines.find((data) => data.id === id.toString());
+          return airline ? airline.name : '';
+        }),
+        others: filter?.others,
+        // facilities: [],
+        is_filtered: filter?.is_filtered === false ? true : true,
+        is_smart_combo: filter?.is_smart_combo,
+      }
+
+      // console.log('itemku', 'salah satu')
+      setFilter(filterBody);
+    }
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
   };
 
   const showMoreItems = () => {
@@ -333,6 +317,8 @@ const SearchFlights = ({
       showMoreItems();
     }
   }, [inView]);
+
+  // console.log('itemku',inView, shownItems, statusSuccess, payload, props)
 
   const handleViewAll = () => {
     showMoreItems();
@@ -449,7 +435,7 @@ const SearchFlights = ({
   
   
   const [airlineDataMaskapai, setAirlineDataMaskapai] = useState([])
-  console.log("itemku", filter, airlineDataMaskapai, statusSuccess)
+  
 
   const FilterButton = ({ airlines, handleFilter }) => {
 
@@ -474,15 +460,15 @@ const SearchFlights = ({
     const data = {
       transits: [
         {
-          id: "1",
+          id: "0",
           name: "Langsung",
         },
         {
-          id: "2",
+          id: "1",
           name: "1 Transit",
         },
         {
-          id: "3",
+          id: "2",
           name: "2 Transit",
         },
       ],
@@ -536,7 +522,7 @@ const SearchFlights = ({
       // },
     ];
 
-    data.airlines = getAirlineAvailable(airlines);
+    data.airlines = getAirlineAvailable(currentJourneySave[position]?.Flights);
     // setAirlineDataMaskapai(getAirlineAvailable(airlines));
 
     const initialFilter = {
@@ -624,7 +610,7 @@ const SearchFlights = ({
           footer={"Terapkan"}
           notrounded
         >
-          {query?.isRoundTrip == "true" && (
+          {/* {query?.isRoundTrip == "true" && (
             <Box>
               <Box as="hr" h={2} mx={"-24px"} bg={"gray.100"} />
               <Stack spacing={"24px"} py={"24px"}>
@@ -665,7 +651,7 @@ const SearchFlights = ({
                 </Stack>
               </Stack>
             </Box>
-          )}
+          )} */}
           <Box as="hr" h={2} mx={"-24px"} bg={"gray.100"} />
           <Stack spacing={"24px"} py={"24px"}>
             <Heading fontSize={"md"}>Rentang Harga</Heading>
@@ -1059,9 +1045,9 @@ const SearchFlights = ({
             </Box>
           ) : (
             <HStack>
-              {flights?.length > 0 && (
+              {currentJourneySave[position]?.Flights?.length > 0 && (
                 <FilterButton
-                  airlines={flights}
+                  airlines={currentJourney[position]?.Flights}
                   handleFilter={handleFilter}
                 />
               )}
@@ -1248,5 +1234,28 @@ const SearchFlights = ({
 //     },
 //   };
 // }
+
+export async function getServerSideProps(context) {
+  const { departureDate, returnDate, originCode, destinationCode, adult, child, infant, cabinClasses, airlines, isRoundTrip, is_smart_combo } = context.query;
+
+  // Gunakan nilai-nilai parameter yang diambil
+  // ...
+
+  return {
+    props: {
+      departureDate,
+      returnDate,
+      originCode,
+      destinationCode,
+      adult,
+      child,
+      infant,
+      cabinClasses,
+      airlines,
+      isRoundTrip,
+      is_smart_combo
+    }
+  };
+}
 
 export default SearchFlights;

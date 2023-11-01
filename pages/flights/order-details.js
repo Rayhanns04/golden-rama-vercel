@@ -129,8 +129,8 @@ const OrderDetails = () => {
   // console.log('iniresponse5', dataQuery)
   // console.log('iniresponse7', response)
 
-  console.log('itemku0', data)
-  console.log('itemku1', isLoading)
+  // console.log('itemku0', data)
+  // console.log('itemku1', isLoading)
 
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
@@ -164,7 +164,7 @@ const OrderDetails = () => {
             };
           });
 
-          console.log('itemkuGdsBfm', result)
+          // console.log('itemkuGdsBfm', result)
           resultFareBreakdownTemp.push(result)
           totalFareAll.push(item?.Fare)
           // setResultFareBreakdown([...resultFareBreakdown, result])
@@ -177,7 +177,7 @@ const OrderDetails = () => {
               const response = await getDetailPrice(fareItem, jwt);
               var totalAmountByPaxType = {};
 
-              console.log('itemku4', response?.data?.Total)
+              // console.log('itemku4', response?.data?.Total)
               totalFareAll.push(response?.data?.Total)
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -196,7 +196,7 @@ const OrderDetails = () => {
                 };
               });
 
-              console.log('itemkuNonGds', result)
+              // console.log('itemkuNonGds', result)
               // setResultFareBreakdown([...resultFareBreakdown, result])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
@@ -213,7 +213,7 @@ const OrderDetails = () => {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              console.log('itemku5', response?.data?.Total)
+              // console.log('itemku5', response?.data?.Total)
               totalFareAll.push(response?.data?.Total)
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
@@ -382,7 +382,7 @@ const OrderDetails = () => {
   }
   }, [query?.isRoundTrip, data?.flights, isDomestic, jwt, query]);
 
-  console.log('itemku3', data, fareTotal, resultFareBreakdown)
+  // console.log('itemku3', data, fareTotal, resultFareBreakdown)
 
   // const payload = query;
   // simplifyBodyDetailFlight(journey, query)
@@ -1093,9 +1093,9 @@ const OrderDetails = () => {
                       handlePromo={handlePromo}
                       isPromoAvailable={isPromoAvailable}
                       isLackField={isError}
-                      isKTP = {
-                        data?.flights?.find((item) => (item?.AirlineName === "Citilink" || item?.AirlineName === "AirAsia")
-                        )
+                      isKTP = { true
+                        // data?.flights?.find((item) => (item?.AirlineName === "Citilink" || item?.AirlineName === "AirAsia")
+                        // )
                       }                      
                     />
                   </GridItem>

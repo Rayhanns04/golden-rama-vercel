@@ -1119,9 +1119,11 @@ export const FormPerson = ({
       }, {}),
     };
   }
+
   if (customForm) {
     defaultForm = customForm;
   }
+  
   if (isInsurance) {
     defaultForm = {
       first_name: "",
@@ -1144,6 +1146,7 @@ export const FormPerson = ({
       publisher_country: "",
       passport: "",
     };
+
     defaultYupValidation = {
       first_name: Yup.string().required("Nama Depan harap diisi"),
       last_name: Yup.string().notRequired(),
