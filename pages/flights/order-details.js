@@ -61,6 +61,7 @@ const OrderDetails = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [isTimeOpen, setIsTimeOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState(60 * 5);
   let timeoutId = null;
 
@@ -128,12 +129,16 @@ const OrderDetails = () => {
   // console.log('iniresponse5', dataQuery)
   // console.log('iniresponse7', response)
 
-  // console.log('itemku', resultFareBreakdown)
+  console.log('itemku0', data)
+  console.log('itemku1', isLoading)
 
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
+      let totalData = data?.flights?.length
       const totalFareAll = []
+      setIsLoading(true)
       const resultFareBreakdownTemp = []
+
       data?.flights?.map(async (item)=>{
         if(item?.FlightType === 'GdsBfm'){
           let totalAmountByPaxType = {};
@@ -173,7 +178,6 @@ const OrderDetails = () => {
               var totalAmountByPaxType = {};
 
               console.log('itemku4', response?.data?.Total)
-              // setFareTotal(fareTotal+response?.data?.Total)
               totalFareAll.push(response?.data?.Total)
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -240,6 +244,10 @@ const OrderDetails = () => {
             }
           }
         }
+
+        if(totalData === totalFareAll?.length){
+          setIsLoading(false)
+        }
         setResultFareBreakdown(resultFareBreakdownTemp)
         setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
       })
@@ -247,6 +255,7 @@ const OrderDetails = () => {
       
     } else {
       data?.flights?.map(async (item)=>{
+        setIsLoading(true)
         if(item?.FlightType === 'GdsBfm'){
           let totalAmountByPaxType = {};
           item?.FareBreakdowns?.forEach(function(item) {
@@ -336,7 +345,7 @@ const OrderDetails = () => {
             }
           }
         }
-
+        setIsLoading(false)
       // if(item?.IsConnecting === false){
 
       //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
@@ -661,14 +670,11 @@ const OrderDetails = () => {
             w="full"
             whiteSpace={"nowrap"}
           >
-            {/* {price.isLoading ? (
-              <Spinner />
-            ) : price.data?.priceFinalCustom ? (
-              <>IDR {convertRupiah(price?.data?.priceFinalCustom) + " "}</>
-            ) : (
-              " "
-            )} */}
-              <>IDR {convertRupiah(fareTotal+serviceFee)}</>
+              {
+                isLoading ? 
+                <Spinner/> : 
+                <>IDR {convertRupiah(fareTotal+serviceFee)}</>
+              }
             <Text
               fontSize={"xs"}
               color="neutral.text.low"
@@ -684,7 +690,7 @@ const OrderDetails = () => {
             // disabled={price.isLoading && !price.data?.priceFinalCustom}
           >
             {
-              fareTotal === undefined ? (
+              isLoading ? (
                 <Spinner />
               ) : fareTotal !== undefined ? (
                 "Pilih Tiket"
@@ -699,8 +705,6 @@ const OrderDetails = () => {
   };
 
   const TabContent = ({ type, onChoose, journey }) => {
-
-    // console.log('journeyOrderDetails', journey)
 
     const { query } = useSelector((state) => state.orderReducer);
     // const payload = simplifyBodyDetailFlight(journey, query);
@@ -722,19 +726,6 @@ const OrderDetails = () => {
         setFlights([])
       }
     },[journey])
-
-    // const price = useQuery(["getPriceFlight", payload], async () => {
-    //   const response = await getDetailPrice(payload);
-    //   setDetailPrice(
-    //     mappingPriceFlight(
-    //       response?.data?.journeys[0].segments[0].fares[0].paxFares
-    //     )
-    //   );
-    //   setTotalTaxPrice(
-    //     sumTaxPrice(response?.data?.journeys[0].segments[0].fares[0].paxFares)
-    //   );
-    //   return Promise.resolve(response.data);
-    // });
 
     return (
       <Box maxW={{ lg: "container.lg", xl: "container.xl" }} mx={"auto"}>
@@ -1014,14 +1005,14 @@ const OrderDetails = () => {
         rounded={{ base: "none", md: "lg" }}
         alignItems="center"
       >
-        {!price?.isLoading ? (
+        {!isLoading ? (
           <Text
             fontSize="lg"
             fontWeight="semibold"
             color="brand.orange.400"
             w="full"
           >
-            IDR {convertRupiah(form.transaction?.total)}
+            IDR {convertRupiah(fareTotal+serviceFee)}
           </Text>
         ) : (
           <Spinner></Spinner>
@@ -1079,23 +1070,20 @@ const OrderDetails = () => {
               as={"section"}
               bg={"white"}
               // bg={{ base: "brand.blue.100", md: "brand.blue.100" }}
-              mx={"-24px"}
-            >
+              mx={"-24px"}>
               <Box
                 maxW={{ lg: "container.lg", xl: "container.xl" }}
-                mx={"auto"}
-              >
+                mx={"auto"}>
                 <FlightDetails query={query} data={data} hidden={!isDesktop} />
                 <Grid
                   templateColumns={{ md: "repeat(3,1fr)" }}
                   py={"24px"}
-                  columnGap={"calc(20px + 24px)"}
-                >
+                  columnGap={"calc(20px + 24px)"}>
                   <GridItem colSpan={{ md: 2 }}>
                     <CheckoutDetail
                       category={"flight"}
                       steps={steps}
-                      detail_prices={price}
+                      detail_prices={fareTotal}
                       // additionals={additionals}
                       isDomestic={isDomestic}
                       people={traveler}
@@ -1105,11 +1093,10 @@ const OrderDetails = () => {
                       handlePromo={handlePromo}
                       isPromoAvailable={isPromoAvailable}
                       isLackField={isError}
-                      isKTP={data.flights[0]?.segments.find(
-                        (item) =>
-                          item.flightDesignator.carrierName === "Citilink" ||
-                          item.flightDesignator.carrierName === "AirAsia"
-                      )}
+                      isKTP = {
+                        data?.flights?.find((item) => (item?.AirlineName === "Citilink" || item?.AirlineName === "AirAsia")
+                        )
+                      }                      
                     />
                   </GridItem>
                   <FlightPrice hidden={!isDesktop} />
@@ -1135,7 +1122,7 @@ const OrderDetails = () => {
                         >
                           Rincian Harga
                         </Text>
-                        <FlightPriceDetails detail_prices={price} />
+                        <FlightPriceDetails detail_prices={fareTotal+serviceFee} />
                       </Box>
                       <FlightPrice hidden={isDesktop} />
                     </Stack>
@@ -1252,81 +1239,93 @@ const OrderDetails = () => {
                                             }
                                           </Text>
                                           {
-                                            dataQuery.adult !== "0" && (
-                                              <HStack
-                                                w="full"
-                                                justifyContent="space-between"
-                                                // pt={2}
-                                              >
-                                                <Text fontSize="sm" color="neutral.text.medium">
-                                                  Dewasa (x{dataQuery?.adult})
-                                                </Text>
+                                            isLoading ? 
+                                            (
+                                              <Center width="100%">
+                                                <Spinner></Spinner>
+                                              </Center>
+                                            ): (
+                                              <>
                                                 {
-                                                  resultFareBreakdown[index]?.map((item, index) => {
-                                                    if(item?.PaxType === "ADT"){
-                                                      return (
-                                                        <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                          IDR {convertRupiah(item?.TotalAmount)}
-                                                        </Text>
-                                                      )
-                                                    } 
-                                                  })
+                                                  dataQuery.adult !== "0" && (
+                                                    <HStack
+                                                      w="full"
+                                                      justifyContent="space-between"
+                                                      // pt={2}
+                                                    >
+                                                      <Text fontSize="sm" color="neutral.text.medium">
+                                                        Dewasa (x{dataQuery?.adult})
+                                                      </Text>
+                                                      {
+                                                        resultFareBreakdown[index]?.map((item, index) => {
+                                                          if(item?.PaxType === "ADT"){
+                                                            return (
+                                                              <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                                IDR {convertRupiah(item?.TotalAmount)}
+                                                              </Text>
+                                                            )
+                                                          } 
+                                                        })
+                                                      }
+                                                    </HStack>
+                                                  )
                                                 }
-                                              </HStack>
-                                            )
-                                          }
 
-                                          {
-                                            dataQuery.child !== "0" && (
-                                              <HStack
-                                                w="full"
-                                                justifyContent="space-between"
-                                              >
-                                                <Text fontSize="sm" color="neutral.text.medium">
-                                                  Anak-anak (x{dataQuery?.child})
-                                                </Text>
                                                 {
-                                                  resultFareBreakdown[index]?.map((item, index) => {
-                                                    if(item?.PaxType === "CHD"){
-                                                      return (
-                                                        <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                          IDR {convertRupiah(item?.TotalAmount)}
-                                                        </Text>
-                                                      )
-                                                    } 
-                                                  })
+                                                  dataQuery.child !== "0" && (
+                                                    <HStack
+                                                      w="full"
+                                                      justifyContent="space-between"
+                                                    >
+                                                      <Text fontSize="sm" color="neutral.text.medium">
+                                                        Anak-anak (x{dataQuery?.child})
+                                                      </Text>
+                                                      {
+                                                        resultFareBreakdown[index]?.map((item, index) => {
+                                                          if(item?.PaxType === "CHD"){
+                                                            return (
+                                                              <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                                IDR {convertRupiah(item?.TotalAmount)}
+                                                              </Text>
+                                                            )
+                                                          } 
+                                                        })
+                                                      }
+                                                    </HStack>
+                                                  )
                                                 }
-                                              </HStack>
-                                            )
-                                          }
 
-                                          {
-                                            dataQuery.infant !== "0" && (
-                                              <HStack
-                                                w="full"
-                                                justifyContent="space-between"
-                                              >
-                                                <Text fontSize="sm" color="neutral.text.medium">
-                                                  Bayi (x{dataQuery?.infant})
-                                                </Text>
                                                 {
-                                                  resultFareBreakdown[index]?.map((item, index) => {
-                                                    if(item?.PaxType === "INF" || item?.PaxType === "INFT"){
-                                                      return (
-                                                        <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                          {
-                                                            item?.TotalAmount !== 0 ? (
-                                                              `IDR ${convertRupiah(item?.TotalAmount)}`
-                                                            ) : (`IDR 0`)
-                                                          }
-                                                        </Text>
-                                                      )
-                                                    } 
-                                                  })
+                                                  dataQuery.infant !== "0" && (
+                                                    <HStack
+                                                      w="full"
+                                                      justifyContent="space-between"
+                                                    >
+                                                      <Text fontSize="sm" color="neutral.text.medium">
+                                                        Bayi (x{dataQuery?.infant})
+                                                      </Text>
+                                                      {
+                                                        resultFareBreakdown[index]?.map((item, index) => {
+                                                          if(item?.PaxType === "INF" || item?.PaxType === "INFT"){
+                                                            return (
+                                                              <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                                {
+                                                                  item?.TotalAmount !== 0 ? (
+                                                                    `IDR ${convertRupiah(item?.TotalAmount)}`
+                                                                  ) : (`IDR 0`)
+                                                                }
+                                                              </Text>
+                                                            )
+                                                          } 
+                                                        })
+                                                      }
+                                                    </HStack>
+                                                  )
                                                 }
-                                              </HStack>
+                                              </>
                                             )
                                           }
+                                          
                                         </>
                                       ))
                                     }
@@ -1349,21 +1348,32 @@ const OrderDetails = () => {
                                     <Text fontSize="sm" color="neutral.text.medium">
                                       Service Fee
                                     </Text>
-                                    <Text fontSize="sm" color="neutral.text.medium">
-                                      IDR{" "}
-                                      {convertRupiah(serviceFee)}
-                                      {/* {convertRupiah(price?.data?.priceMargin ?? 0)} */}
-                                    </Text>
+                                    {
+                                      isLoading ? 
+                                      <Spinner/> :
+                                      (
+                                        <Text fontSize="sm" color="neutral.text.medium">
+                                          IDR{" "}
+                                          {convertRupiah(serviceFee)}
+                                          {/* {convertRupiah(price?.data?.priceMargin ?? 0)} */}
+                                        </Text>
+                                      )
+                                    }
                                   </HStack>
                                   <Divider variant={"dashed"} />
                                 </VStack>
                                 <HStack justifyContent="space-between" py="16px">
                                   <Text>Total Pembayaran</Text>
-                                  <Text fontWeight="semibold">
-                                    IDR{" "}
-                                    {convertRupiah(fareTotal+serviceFee)}
-                                    {/* {convertRupiah(price?.data?.priceFinalCustom)} */}
-                                  </Text>
+                                  {
+                                    isLoading ? 
+                                    <Spinner/> : (
+                                      <Text fontWeight="semibold">
+                                        IDR{" "}
+                                        {convertRupiah(fareTotal+serviceFee)}
+                                        {/* {convertRupiah(price?.data?.priceFinalCustom)} */}
+                                      </Text>
+                                    )
+                                  }
                                 </HStack>
                               </>
                         {/* {!priceArray?.isLoading ? (

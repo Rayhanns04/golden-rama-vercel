@@ -2262,6 +2262,7 @@ export const FlightListItem = ({
       }
     );
 
+
     return (
       data && (
         <>
@@ -2827,7 +2828,7 @@ export const FlightPriceDetails = ({
           Total
         </Text>
         <Text fontSize={{ base: "sm", md: "md" }} color="neutral.text.medium">
-          {convertRupiah(detail_prices.data.priceFinalCustom)}
+          {convertRupiah(detail_prices)}
         </Text>
       </HStack>
       {isPromoAvailable && isPromoAvailable.available && (
@@ -2848,7 +2849,8 @@ export const FlightPriceDetails = ({
   );
 };
 
-export const FlightDetails = ({ query, data, ...props }) => {
+export const  FlightDetails = ({ query, data, ...props }) => {
+  console.log('itemku10', data)
   return (
     <Box
       {...props}
@@ -2865,7 +2867,7 @@ export const FlightDetails = ({ query, data, ...props }) => {
         mb="24px"
         color="white"
       >
-        {query.is_round_trip == "true" ? "Round Trip" : "One Way"}
+        {query.isRoundTrip == "true" ? "Round Trip" : "One Way"}
       </Badge>
       <Accordion allowToggle>
         {data.flights.map((item, index) => (
@@ -2878,9 +2880,9 @@ export const FlightDetails = ({ query, data, ...props }) => {
                 textAlign="left"
               >
                 Penerbangan{" "}
-                {query.is_round_trip == "true" && index === 0
+                {query.isRoundTrip == "true" && index === 0
                   ? "Pergi"
-                  : query.is_round_trip == "true" && index === 1
+                  : query.isRoundTrip == "true" && index === 1
                   ? "Pulang"
                   : "Pergi"}
               </Box>
@@ -2895,12 +2897,12 @@ export const FlightDetails = ({ query, data, ...props }) => {
                 borderRadius="8px"
               >
                 <Text fontWeight="semibold">
-                  {`${item.segments[0].origin.city} (${
-                    item.segments[0].origin.code
+                  {`${item.OriginCityName} (${
+                    item.Origin
                   }) - ${
-                    item.segments[item.segments.length - 1].destination.city
+                    item.DestinationCityName
                   } (${
-                    item.segments[item.segments.length - 1].destination.code
+                    item.Destination
                   })`}
                 </Text>
                 <Box alignContent={"center"}>
@@ -2910,21 +2912,21 @@ export const FlightDetails = ({ query, data, ...props }) => {
                   {[
                     {
                       i: `${
-                        query.is_round_trip == "true" && index === 1
+                        query.isRoundTrip == "true" && index === 1
                           ? `/svg/flights/destination.svg`
                           : `/svg/flights/departure.svg`
                       }`,
-                      t: `${convertArrayAirlines(item.segments)}`,
+                      t: `${convertArrayAirlines(data?.flights)}`,
                     },
                     {
                       i: "/svg/flights/date.svg",
                       t: `${date(
-                        new Date(item.segments[0].departureDateTime),
+                        new Date(item.DepartDateTime),
                         "dd LLL yyyy"
                       )}, ${convertTimeFlightPage(
-                        item.segments[0].departureDateTime
+                        item.DepartDateTime
                       )} - ${convertTimeFlightPage(
-                        item.segments[item.segments.length - 1].arrivalDateTime
+                        item.ArriveDateTime
                       )}`,
                     },
                     {
@@ -2935,7 +2937,7 @@ export const FlightDetails = ({ query, data, ...props }) => {
                         query.child != "0" ? `${query.child} Anak-anak,` : ""
                       } ${
                         query.infant != "0" ? `${query.infant} Bayi,` : ""
-                      } ${getClassCode(query.class)}`,
+                      } ${getClassCode(query?.cabinClasses)}`,
                     },
                   ].map((item, index) => (
                     <Stack key={index}>

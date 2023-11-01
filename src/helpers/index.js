@@ -244,32 +244,57 @@ export function simplifyPaxFares(paxFares) {
   });
 }
 
-export function getAirlineAvailable(flight) {
-  // console.log('item', flight)
-  const mapAirline = flight.map((item) => {
-    // console.log('uniqAirline', item)
+// export function getAirlineAvailable(flight) {
+//   // console.log('item', flight)
+//   const mapAirline = flight.map((item) => {
+//     // console.log('uniqAirline', item)
 
-    let itemId = '';
-    if(item?.TotalTransit === 0){
-      itemId = item?.Id
-    } else if(item?.TotalTransit === 1){
-      itemId = item?.ConnectingFlights[0]?.Id
+//     let itemId = '';
+//     if(item?.TotalTransit === 0){
+//       itemId = item?.Id
+//     } else if(item?.TotalTransit === 1){
+//       itemId = item?.ConnectingFlights[0]?.Id
+//     }
+
+//     const airline = {
+//       id: itemId,
+//       name: item?.AirlineName,
+//     };
+//     // const airline = []
+//     return airline;
+//   });
+
+//   let uniqueAirline = [
+//     ...new Map(mapAirline.flat(1).map((m) => [m.id, m])).values(),
+//   ];
+//   console.log('uniqAirline', uniqueAirline, mapAirline)
+//   return uniqueAirline;
+// }
+
+export function getAirlineAvailable(flight) {
+  const uniqueAirline = flight.reduce((acc, item, index) => {
+    let airlineName = item?.AirlineName;
+
+    if (item?.TotalTransit > 0) {
+      airlineName = item?.ConnectingFlights[0]?.AirlineName;
     }
 
-    const airline = {
-      id: itemId,
-      name: item?.AirlineName,
-    };
-    // const airline = []
-    return airline;
-  });
+    if (airlineName) {
+      const existing = acc.find((el) => el.name === airlineName);
+      if (!existing) {
+        acc.push({
+          id: `${index + 1}`,
+          name: airlineName,
+        });
+      }
+    }
 
-  let uniqueAirline = [
-    ...new Map(mapAirline.flat(1).map((m) => [m.id, m])).values(),
-  ];
-  // console.log('uniqAirline', uniqueAirline, mapAirline)
+    return acc;
+  }, []);
+
   return uniqueAirline;
 }
+
 
 export function filterTransit(flight, transit) {
   // console.log(flight, transit, "filter transit")
@@ -393,12 +418,13 @@ export function sumTaxPrice(prices) {
 }
 
 export function convertArrayAirlines(airlines) {
+  console.log('itemku11',airlines)
   const result = airlines
-    .map((item) => {
+    ?.map((item) => {
       return ` 
-        ${item.flightDesignator.carrierName} • ${item.flightDesignator.carrierCode}${item.flightDesignator.flightNumber} `;
+        ${item.AirlineName} • ${item.Number}`;
     })
-    .join("|");
+    ?.join(" | ");
   return result;
 }
 
