@@ -245,7 +245,7 @@ export default function Home({ data, meta }) {
                             <LinkOverlay>
                               <Image
                                 alt={description}
-                                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${mobile}`}
+                                src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${mobile}`}
                                 objectFit={"contain"}
                                 layout="fill"
                                 priority={index === 0}
