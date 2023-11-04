@@ -55,6 +55,7 @@ import {
   filterAirlines,
   filterFacility,
   filterFlightDepartureAndArrival,
+  filterFlightType,
   filterIsDomestic,
   filterOthers,
   filterPrice,
@@ -103,7 +104,6 @@ const SearchFlights = ({
 
   const payload = query;
 
-  // console.log('query', query)
   // data save all 
   const [currentJourneySave, setCurrentJourneySave] = useState([]) 
 
@@ -128,10 +128,13 @@ const SearchFlights = ({
   const isDesktop = useBreakpointValue(
     { base: false, md: true },
     { ssr: false }
-  );
+    );
+  
+  // console.log('itemku', position, currentJourney, currentJourneySave)
   
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
+  const [flightType, setFlightType] = useState('all'); 
   
   const fetchFlight = async () => {
     try {
@@ -141,13 +144,42 @@ const SearchFlights = ({
       
       if (response.success === true) {
         setStatusSuccess(true);
-        setCurrentJourney(response?.data?.Schedules);
-        setCurrentJourneySave(response?.data?.Schedules);
+        
+        const schedules = response.data?.Schedules;
+        schedules.map((item)=>{
+          if(item.IsInternational){
+            setIsInternational(true)
+          }
+        })
+        const lowestPriceFlights = schedules[position]?.Flights.slice(0).sort((a, b) => a.Fare - b.Fare);
+
+        const updatedCurrentJourney = response.data?.Schedules?.map((journey, index) => {
+          if (index === position) {
+            return {
+              ...journey,
+              Flights: lowestPriceFlights
+            };
+          }
+          return journey; 
+        });
+
+        // console.log('itemku2', updatedCurrentJourney)
+
+        setCurrentJourney(updatedCurrentJourney);
+        setCurrentJourneySave(updatedCurrentJourney);
+
+        // setCurrentJourney();
+        
+        // setCurrentJourney(response?.data?.Schedules);
+        // setCurrentJourneySave((currentJourney) => {
+        //   const updatedJourney = [...currentJourney];
+        //   updatedJourney[position].Flights = lowestPriceFlights;
+        //   return updatedJourney;
+        // });
         setFlights(response.data?.Schedules[position]?.Flights?.slice(0, shownItems));
         setTotalData(response.data?.Schedules[position]?.Flights?.length);
         setAdditionalFee(response.data?.Schedules[position]?.AdditionalFee);
         setIsLoading(false);
-        // console.log('iniresponse', 'jalan berapa kali', response?.success);
       }
     } catch (error) {
       setIsLoading(false);
@@ -181,14 +213,14 @@ const SearchFlights = ({
         orderData({
           data: cart,
           query: query,
-          isDomestic: isInternational,
+          isDomestic: !isInternational,
           addFee: additionFee
         })
       );
       router.push({ pathname: "/flights/order-details" });
     }
   }, [checkoutPage, query?.isRoundTrip, cart?.length]);
-  
+
   useEffect(()=>{
     const updatedCurrentJourney = currentJourney.map((journey, index) => {
       if (index === position) {
@@ -199,41 +231,42 @@ const SearchFlights = ({
       }
       return journey; 
     });
-    // console.log('itemku', updatedCurrentJourney)
     setCurrentJourney(updatedCurrentJourney);
+    // console.log('itemku', updatedCurrentJourney)
   },[sortBy])
 
   useEffect(()=>{
-    if (filter.is_filtered) {
+    // if (filter.is_filtered) {
 
-      const applyAllFilters = (flights) => {
-        let filteredFlights = flights;
-        
-        if (filter?.transits?.length > 0) {
-          filteredFlights = filterTransit(filteredFlights, filter.transits);
-        }
-        if (filter?.airlines?.length > 0) {
-          filteredFlights = filterAirlines(filteredFlights, filter.airlines);
-        }
-        if (filter?.others?.length > 0) {
-          filteredFlights = filterOthers(filteredFlights);
-        }
-        if (filter?.facilities?.length > 0){
-          filteredFlights = filterFacility(filteredFlights);
-        }
-        if (filter?.departure_times?.length > 0){
-          filteredFlights = filterFlightDepartureAndArrival(filteredFlights,"departure", filter.departure_times)
-        }
-        if (filter?.arrival_times?.length > 0){
-          filteredFlights = filterFlightDepartureAndArrival(filteredFlights,"arrival", filter.arrival_times );
-        }
-        if (filter?.max_price !== 16000000 || filter?.min_price !== 0 ){
-          filteredFlights = filterPrice(filteredFlights, filter.min_price, filter.max_price);
-        }
+    // } 
+    const applyAllFilters = (flights) => {
+      let filteredFlights = flights;
+      
+      if (filter?.transits?.length > 0) {
+        filteredFlights = filterTransit(filteredFlights, filter.transits);
+      }
+      if (filter?.airlines?.length > 0) {
+        filteredFlights = filterAirlines(filteredFlights, filter.airlines);
+      }
+      if (filter?.others?.length > 0) {
+        filteredFlights = filterOthers(filteredFlights);
+      }
+      if (filter?.facilities?.length > 0){
+        filteredFlights = filterFacility(filteredFlights);
+      }
+      if (filter?.departure_times?.length > 0){
+        filteredFlights = filterFlightDepartureAndArrival(filteredFlights,"departure", filter.departure_times)
+      }
+      if (filter?.arrival_times?.length > 0){
+        filteredFlights = filterFlightDepartureAndArrival(filteredFlights,"arrival", filter.arrival_times );
+      }
+      if (filter?.max_price !== 16000000 || filter?.min_price !== 0 ){
+        filteredFlights = filterPrice(filteredFlights, filter.min_price, filter.max_price);
+      } 
 
         return filteredFlights;
       };
-  
+
       const updatedCurrentJourney = currentJourney.map((journey, index) => {
         if (index === position) {
           return {
@@ -243,16 +276,24 @@ const SearchFlights = ({
         }
         return journey;
       });
-  
-      setCurrentJourney(updatedCurrentJourney);
 
-    } 
+      setCurrentJourney(updatedCurrentJourney);
     // else {
     //   if (cart?.[0]?.isCombine !== true) {
     //     setTotalData(response.data[position].journeys.length);
     //   }
     // }
   },[filter])
+
+  useEffect(()=>{
+    if(flightType === 'all'){
+      setCurrentJourney(currentJourneySave)
+      console.log('itemku12', "in filter all")
+    } else {
+
+      console.log('itemku10', "in filter sendiri")
+    }
+  },[flightType])
   
   const handleFilter = (filter, dataAirlines) => { 
     const initialFilter = {
@@ -272,7 +313,11 @@ const SearchFlights = ({
 
     if(JSON.stringify(filter) === JSON.stringify(initialFilter)){
       setIsLoading(true);
-      setCurrentJourney(currentJourneySave)
+      if(position === 0){
+        setCurrentJourney(currentJourneySave)
+      } else {
+        console.log("ini nanti filter")
+      }
       // console.log('itemku', 'ini bener')
       // setIsLoading(false);
     } else {
@@ -324,9 +369,12 @@ const SearchFlights = ({
     showMoreItems();
   };
 
+  console.log('itemku', flightType, filter.is_filtered)
+
   const handlePosition = (e, value, journey) => {
     e.preventDefault();
     if (!(e.target.innerHTML === "Detail")) {
+      setFlightType(journey?.FlightType)
       if(cart?.length === 0){
         setPosition(position + 1);
       }
@@ -996,6 +1044,7 @@ const SearchFlights = ({
                   setPosition(0);
                   setCart([]);
                   setIsLoading(true);
+                  setFlightType('all')
                   const currentFlight = currentJourney[0]?.Flights;
                   setTotalData(currentFlight.length);
                   setFlights(currentFlight.slice(0, shownItems));

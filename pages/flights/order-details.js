@@ -81,6 +81,9 @@ const OrderDetails = () => {
   const { data, query, isDomestic, addFee } = useSelector(
     (state) => state.orderReducer
   );
+
+  // console.log('itemkudomestic', isDomestic)
+
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const [isChoosed, setIsChoosed] = useState(false);
   const [form, setForm] = useState({
@@ -94,6 +97,7 @@ const OrderDetails = () => {
     email: isLoggedIn ? user?.email : "",
     phone: isLoggedIn ? user?.phone : "",
   });
+
   const [traveler, setTraveler] = useState(createArrayPassanger(query));
   const isDesktop = useBreakpointValue(
     { base: true, md: false },
@@ -103,6 +107,7 @@ const OrderDetails = () => {
   const steps = useSteps({
     initialStep: 0,
   });
+
   function handleNextStep() {
     steps.nextStep();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -122,24 +127,14 @@ const OrderDetails = () => {
     infant: query?.infant
   }
 
-  // console.log('iniresponse', '--------------------')
-  // console.log('iniresponse1', fareTotal, addFee)
-  // console.log('iniresponse2', fareDetail)
-  // console.log('iniresponse4', query)
-  // console.log('iniresponse5', dataQuery)
-  // console.log('iniresponse7', response)
-
-  // console.log('itemku0', data)
-  // console.log('itemku1', isLoading)
-
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
       let totalData = data?.flights?.length
       const totalFareAll = []
       setIsLoading(true)
-      const resultFareBreakdownTemp = []
+      let resultFareBreakdownTemp = []
 
-      data?.flights?.map(async (item)=>{
+      data?.flights?.map(async (item, index)=>{
         if(item?.FlightType === 'GdsBfm'){
           let totalAmountByPaxType = {};
           item?.FareBreakdowns?.forEach(function(item) {
@@ -165,20 +160,19 @@ const OrderDetails = () => {
           });
 
           // console.log('itemkuGdsBfm', result)
-          resultFareBreakdownTemp.push(result)
+          resultFareBreakdownTemp[index] = result
           totalFareAll.push(item?.Fare)
           // setResultFareBreakdown([...resultFareBreakdown, result])
           
           setPriceOrignal(item?.Fare)
         } else if (item?.FlightType === 'NonGds'){
-          if(item?.IsConnecting === false){
+          if(item?.IsConnecting === false && item?.IsMultiClass === false){
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              var totalAmountByPaxType = {};
 
-              // console.log('itemku4', response?.data?.Total)
-              totalFareAll.push(response?.data?.Total)
+              var totalAmountByPaxType = {};
+              
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
                 var amount = item.Amount;
@@ -196,13 +190,38 @@ const OrderDetails = () => {
                 };
               });
 
-              // console.log('itemkuNonGds', result)
-              // setResultFareBreakdown([...resultFareBreakdown, result])
+              // console.log('itemkuNonGds', response)
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
+
+              // ubah response nyaaaaaa
+              const filteredResponse = result.filter(
+                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+              );
+
+              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
+              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
+
+              const sumTotal = result
+                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                .reduce((total, item) => total + item.TotalAmount, 0);
+
+              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+
+              const updatedResponse = filteredResponse.map((item) => ({
+                ...item,
+                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+              }));
+
+              const finalResponse = [
+                ...updatedResponse,
+                ...result.filter((item) => item.PaxType === "INFT")
+              ];
+
+              // console.log('itemku4', finalResponse )
               
-              resultFareBreakdownTemp.push(result)
-              
+              totalFareAll.push(response?.data?.Total)
+              resultFareBreakdownTemp[index] = finalResponse
               // setFareTotal(fareTotal+response?.data?.Total)
             } catch (error) {
               console.error('Terjadi kesalahan saat mengambil detail harga:', error);
@@ -213,15 +232,10 @@ const OrderDetails = () => {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              // console.log('itemku5', response?.data?.Total)
-              totalFareAll.push(response?.data?.Total)
-              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareDetail(response?.data?.Details)
-
-              // setFareTotal(fareTotal+response?.data?.Total)
-
+  
               var totalAmountByPaxType = {};
-              fareDetail.forEach(function(item) {
+
+              response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
                 var amount = item.Amount;
             
@@ -237,14 +251,47 @@ const OrderDetails = () => {
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
-              resultFareBreakdownTemp.push(result)
+
+              // ubah response nyaaaaaa
+              const filteredResponse = result.filter(
+                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+              );
+
+              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
+              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
+
+              const sumTotal = result
+                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                .reduce((total, item) => total + item.TotalAmount, 0);
+
+              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+
+              const updatedResponse = filteredResponse.map((item) => ({
+                ...item,
+                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+              }));
+
+              const finalResponse = [
+                ...updatedResponse,
+                ...result.filter((item) => item.PaxType === "INFT")
+              ];
+
+              // console.log('itemku5', finalResponse )
+
+              // resultFareBreakdownTemp.push(finalResponse)
+              totalFareAll.push(response?.data?.Total)
+              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+              setFareDetail(response?.data?.Details)
+              resultFareBreakdownTemp[index] = finalResponse
+              // if(response.success){
+              // }
               
             } catch (error) {
               console.error('Terjadi kesalahan saat mengambil detail harga:', error);
             }
           }
         }
-
+        
         if(totalData === totalFareAll?.length){
           setIsLoading(false)
         }
@@ -279,6 +326,7 @@ const OrderDetails = () => {
                 "TotalAmount": totalAmountByPaxType[paxType]
             };
           });
+
           setResultFareBreakdown([result])
           setFareTotal(item?.Fare)
           setPriceOrignal(item?.Fare)
@@ -288,6 +336,8 @@ const OrderDetails = () => {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
+
+              // console.log('itemku6', response)
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -306,7 +356,31 @@ const OrderDetails = () => {
                 };
               });
 
-              setResultFareBreakdown([result])
+              // ubah response nyaaaaaa
+              const filteredResponse = result.filter(
+                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+              );
+
+              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
+              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
+
+              const sumTotal = result
+                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                .reduce((total, item) => total + item.TotalAmount, 0);
+
+              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+
+              const updatedResponse = filteredResponse.map((item) => ({
+                ...item,
+                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+              }));
+
+              const finalResponse = [
+                ...updatedResponse,
+                ...result.filter((item) => item.PaxType === "INFT")
+              ];
+
+              setResultFareBreakdown([finalResponse])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
               setFareTotal(response?.data?.Total)
@@ -321,6 +395,8 @@ const OrderDetails = () => {
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               setFareDetail(response?.data?.Details)
               setFareTotal(response?.data?.Total)
+
+              // console.log('itemku7', response)
 
               var totalAmountByPaxType = {};
               fareDetail.forEach(function(item) {
@@ -339,53 +415,48 @@ const OrderDetails = () => {
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
-              setResultFareBreakdown([result])
+
+
+              // ubah response nyaaaaaa
+              const filteredResponse = result.filter(
+                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+              );
+
+              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
+              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
+
+              const sumTotal = result
+                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                .reduce((total, item) => total + item.TotalAmount, 0);
+
+              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+
+              const updatedResponse = filteredResponse.map((item) => ({
+                ...item,
+                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+              }));
+
+              const finalResponse = [
+                ...updatedResponse,
+                ...result.filter((item) => item.PaxType === "INFT")
+              ];
+
+              setResultFareBreakdown([finalResponse])
+              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+              setFareDetail(response?.data?.Details)
+              setFareTotal(response?.data?.Total)
+
             } catch (error) {
-              
+               console.error('Terjadi kesalahan saat mengambil detail harga:', error);
             }
           }
         }
         setIsLoading(false)
-      // if(item?.IsConnecting === false){
-
-      //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-      //   try {
-      //     const response = await getDetailPrice(fareItem, jwt);
-      //   } catch (error) {
-      //     console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-      //   }
-      // } else {
-
-      //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-      //   try {
-      //     const response = await getDetailPrice(fareItem, jwt);
-      //     // console.log('iniresponse', response)
-      //   } catch (error) {
-      //     console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-      //   }
-
-      //   // item?.ConnectingFlights.map(async (item) => {
-      //   //   const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-      //   //   try {
-      //   //     const response = await getDetailPrice(fareItem, jwt);
-      //   //   } catch (error) {
-      //   //     console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-      //   //   }
-      //   // })
-      //   // const flight1 = item?.ConnectingFlights[0]
-      //   // const flight2 = item?.ConnectingFlights[1]
-      // }
-      // console.log('iniresponse', fareItem, response?.data, item)
-      // const response = await getDetailPrice(fareItem, jwt);
-      // setFareDetail(...fareDetail, Promise.resolve(response.data));
+      
     })
   }
   }, [query?.isRoundTrip, data?.flights, isDomestic, jwt, query]);
 
-  // console.log('itemku3', data, fareTotal, resultFareBreakdown)
-
-  // const payload = query;
-  // simplifyBodyDetailFlight(journey, query)
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({});
   const [totalPrice, setTotalPrice] = useState({});
@@ -394,118 +465,6 @@ const OrderDetails = () => {
   const priceArray = {
     isLoading: false
   }
-
-  // const price = useQuery(["getPriceFlightDetail", payload], async () => {
-  //   const response = await getDetailPrice(fareDetail);
-      // setTotalPrice({
-      //   subTotal:
-      //     response.data.priceFinalCustom -
-      //     response.data.priceMargin -
-      //     response.data.priceDiscount,
-      //   total: response.data.priceFinalCustom,
-      //   serviceFee: response.data.priceMargin,
-      //   discount: response.data.priceDiscount,
-      // });
-      // setForm({
-      //   ...form,
-      //   transaction: {
-      //     subTotal:
-      //       response.data.priceFinalCustom -
-      //       response.data.priceMargin -
-      //       response.data.priceDiscount,
-      //     total: response.data.priceFinalCustom,
-      //     serviceFee: response.data.priceMargin,
-      //     discount: response.data.priceDiscount,
-      //     downPayment: 0,
-      //   },
-      // });
-  //   return Promise.resolve(response.data);
-  // });
-
-  // const priceArray = useQuery(["getPriceFlightArray", payload, price.data],
-  //   async () => {
-  //     try {
-  //       const payloads = data.flights.map((item, index) =>
-  //         simplifyBodyDetailFlight(item, query)
-  //       );
-  //       let value;
-  //       if (payloads?.[0]?.isCombinedJourneys === true) {
-  //         // console.log("payloads", price.data?.journeys);
-  //         // let priceData = price.data;
-  //         // await price.data?.journeys?.[0]?.segments[0].fares?.[0]?.paxFares?.map(
-  //         //   (item, index) => {
-  //         //     const total = item?.total;
-  //         //     // jumlahkan basefare dengan basefare journey array ke 1
-  //         //     const total2 =
-  //         //       price.data?.journeys?.[1]?.segments[0].fares?.[0]?.paxFares?.[
-  //         //         index
-  //         //       ]?.total;
-  //         //     const totalBaseFare = (total + total2) / 2;
-
-  //         //     // totalFare.push(totalBaseFare);
-  //         //     priceData.journeys[0].segments[0].fares[0].paxFares[index].total =
-  //         //       totalBaseFare;
-  //         //     priceData.journeys[1].segments[0].fares[0].paxFares[index].total =
-  //         //       totalBaseFare;
-  //         //   }
-  //         // );
-  //         // console.log("priceData", priceData);
-  //         value = await Promise.all(
-  //           price.data?.journeys.map(async (item, index) => {
-  //             let detail;
-  //             if (price.data.connectingType == "SUM") {
-  //               detail = mappingPriceFlight(item?.segments, true);
-  //             } else {
-  //               detail = mappingPriceFlight(
-  //                 item?.segments[0]?.fares[0]?.paxFares
-  //               );
-  //             }
-  //             const total = sumTaxPrice(item?.segments[0]?.fares[0]?.paxFares);
-
-  //             return Promise.resolve({ detail, total });
-  //           })
-  //         );
-  //         //tax and totalbaseFare
-  //         let priceValue = value;
-  //         await value?.[0]?.detail?.map((item, index) => {
-  //           const tax = item?.tax;
-  //           const tax2 = value?.[1]?.detail?.[index]?.tax;
-  //           const taxTotal = (tax + tax2) / 2;
-  //           const totalBaseFare = item?.totalBaseFare;
-  //           const totalBaseFare2 = value?.[1]?.detail?.[index]?.totalBaseFare;
-  //           const totalBaseFareTotal = (totalBaseFare + totalBaseFare2) / 2;
-
-  //           priceValue[0].detail[index].tax = taxTotal;
-  //           priceValue[0].detail[index].totalBaseFare = totalBaseFareTotal;
-  //           priceValue[1].detail[index].tax = taxTotal;
-  //           priceValue[1].detail[index].totalBaseFare = totalBaseFareTotal;
-  //         });
-
-  //         value = priceValue;
-  //       } else {
-  //         value = await Promise.all(
-  //           payloads.map(async (item, index) => {
-  //             const response = await getDetailPrice(item);
-  //             const detail = mappingPriceFlight(
-  //               response?.data?.journeys[0].segments[0].fares[0].paxFares
-  //             );
-
-  //             const total = sumTaxPrice(
-  //               response?.data?.journeys[0].segments[0].fares[0].paxFares
-  //             );
-
-  //             return Promise.resolve({ detail, total });
-  //           })
-  //         );
-  //       }
-  //       return Promise.resolve(value);
-  //     } catch (error) {
-  //       console.error(error);
-
-  //       return Promise.reject(error);
-  //     }
-  //   }
-  // );
 
   const handleChange = (e, type) => {
     e.preventDefault();
@@ -555,11 +514,17 @@ const OrderDetails = () => {
       ...form,
       traveler: traveler,
       customer: customer,
-      prices: priceArray.data,
+      prices: resultFareBreakdown,
+      totalprice: fareTotal,
+      query: query,
+      isInternational: !isDomestic
     };
+
     mutation.mutate(payload);
   };
 
+  // console.log('itemku1', form, traveler, customer)
+  
   const handlePromo = (promoCode) => {
     const payload = {
       promo: promoCode,
@@ -569,8 +534,7 @@ const OrderDetails = () => {
     mutationPromo.mutate(payload);
   };
 
-  const mutation = useMutation(
-    async (form) => {
+  const mutation = useMutation(async (form) => {
       const response = await bookingFlight(form, jwt);
       return Promise.resolve(response);
     },
@@ -704,7 +668,7 @@ const OrderDetails = () => {
     );
   };
 
-  const TabContent = ({ type, onChoose, journey }) => {
+  const TabContent = ({ type, onChoose, journey, status }) => {
 
     const { query } = useSelector((state) => state.orderReducer);
     // const payload = simplifyBodyDetailFlight(journey, query);
@@ -738,7 +702,7 @@ const OrderDetails = () => {
             <HStack>
               {[
                 query.isRoundTrip == "true"
-                  ? "Round Trip - Pergi"
+                  ? `Round Trip - ${status}`
                   : "One Way",
                   type === "transit" ? 
                   (journey?.TotalTransit === 0 ? "Langsung" : `${journey?.TotalTransit} Transit`)
@@ -1093,10 +1057,7 @@ const OrderDetails = () => {
                       handlePromo={handlePromo}
                       isPromoAvailable={isPromoAvailable}
                       isLackField={isError}
-                      isKTP = { true
-                        // data?.flights?.find((item) => (item?.AirlineName === "Citilink" || item?.AirlineName === "AirAsia")
-                        // )
-                      }                      
+                      isKTP = {data?.flights?.find((item) => (item?.AirlineName === "Citilink" || item?.AirlineName === "AirAsia"))}                      
                     />
                   </GridItem>
                   <FlightPrice hidden={!isDesktop} />
@@ -1177,10 +1138,11 @@ const OrderDetails = () => {
                       <TabPanel p={0}>
                         <TabContent
                           type={
-                            data.flights[0].connectingType != "DIRECT"
-                              ? "transit"
-                              : "direct"
+                            data.flights[0].IsConnecting === false
+                              ? "direct"
+                              : "transit"
                           }
+                          status="Pergi"
                           onChoose={() => setIsChoosed(true)}
                           journey={data.flights[0]}
                         />
@@ -1189,14 +1151,15 @@ const OrderDetails = () => {
                         {query.isRoundTrip == "true" ? (
                           <TabContent
                             type={
-                              data.flights[0].connectingType != "DIRECT"
+                              data.flights[0].IsConnecting === true
                                 ? "transit"
                                 : "direct"
                             }
+                            status="Pulang"
                             journey={data.flights[1]}
                             onChoose={() => {
                               setIsChoosed(true)
-                              alert('ini kedua')
+                              // alert('ini kedua')
                             }}
                           />
                         ) : (

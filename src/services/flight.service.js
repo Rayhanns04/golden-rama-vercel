@@ -142,41 +142,110 @@ export const getDetailPrice = async (data, jwt) => {
 };
 
 export const bookingFlight = async (data, token) => {
-  const traveler = data.traveler.map((item) => {
-    const card = item.expired_date.split("-");
-    return {
-      paxType: item.paxType.toUpperCase(),
-      first_name: item.first_name,
-      last_name: item.last_name,
-      title: item.title,
-      dob: item.dob,
-      country: item.country != "" ? item.country : "ID",
-      phone: data.customer.phone,
-      phoneType: "M",
-      email: data.customer.email,
-      docs: {
-        ...(item.publisher_country == ""
-          ? {
-              cardType: "IN",
-              cardNum: item.passport_number,
-            }
-          : {
-              cardType: "PP",
-              cardNum: item.passport_number,
-              cardIssuePlace: item.publisher_country,
-              cardExpired: {
-                year: parseInt(card[0]),
-                month: parseInt(card[1]),
-                day: parseInt(card[2]),
-              },
-            }),
-      },
-    };
-  });
 
-  let payload = data;
-  payload.traveler = traveler;
-  payload = encryptData(JSON.stringify(payload));
+  let passenger = []
+  let segment = []
+  let airlineNumber = ''
+
+  data.traveler.map((item)=>{
+    const today = new Date();
+    const birthDate = new Date(item?.dob);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const passengerItem = {
+      index: item?.key + 1,
+      type: item?.paxType === 'ADT' ? 1 : item?.paxType === 'CHD' ? 2 : 3,
+      title: item?.title,
+      firstName: item?.first_name,
+      lastName: item?.last_name,
+      isSeniorCitizen: (age > 65) ? true : false,
+      birthDate: item?.dob,
+      email: item?.email,
+      homePhone: `${item?.mobile_phone}`,
+      mobilePhone: `${item?.mobile_phone}`,
+      otherPhone: `${item?.mobile_phone}`,
+      idNumber: item?.id_number,
+      nationality: item?.country,
+      adultAssoc: (item?.paxType === 'INF') ? 1 : null,
+      passportNumber: item?.passport_number,
+      passportExpire: item?.expired_date,
+      passportOrigin: item?.publisher_country,
+      emergencyFullName: item?.first_name,
+      emergencyPhone: `${item?.mobile_phone}`,
+      emergencyEmail: item?.email,
+      seats: [],
+      ssrs: []
+    };
+    return passenger.push(passengerItem);
+  })
+
+  data.journeys.flights.map((item, index)=>{
+    if(item?.TotalTransit === 0){
+      const segmentCurrent = item?.ClassObjects[0]
+      const segmentUpdate = {
+        classId: segmentCurrent.Id,
+        Airline: item?.Airline,
+        flightNumber: item?.Number,
+        origin: item?.Origin,
+        departDate: item?.DepartDate,
+        departTime: item?.DepartTime,
+        destination: item?.Destination,
+        arriveDate: item?.ArriveDate,
+        arriveTime: item?.ArriveTime,
+        classCode: segmentCurrent?.Code,
+        flightId: segmentCurrent?.FlightId,
+        num: 0,
+        seq: 0,
+      }
+      segment.push(segmentUpdate)
+      airlineNumber = item?.Airline
+    } else {
+      item?.ConnectingFlights.map((item2)=>{
+        const segmentCurrent2 = item2?.ClassObjects[0]
+        const segmentUpdate2 = {
+          classId: segmentCurrent2.Id,
+          Airline: item2?.Airline,
+          flightNumber: item2?.Number,
+          origin: item2?.Origin,
+          departDate: item2?.DepartDate,
+          departTime: item2?.DepartTime,
+          destination: item2?.Destination,
+          arriveDate: item2?.ArriveDate,
+          arriveTime: item2?.ArriveTime,
+          classCode: segmentCurrent2?.Code,
+          flightId: segmentCurrent2?.FlightId,
+          num: 0,
+          seq: 0,
+        }
+        segment.push(segmentUpdate2)
+        airlineNumber = item?.Airlin
+      })
+    }
+  })
+
+  const fullNameContact = data.customer.fullName.split(" ")
+
+  const bodyForm = {
+    isInternational: data?.isInternational,
+    contact : {
+      email: data?.customer?.email,
+      title: data?.traveler[0]?.title,
+      firstName: fullNameContact[0],
+      lastName: fullNameContact[fullNameContact?.length - 1],
+      homePhone: data?.customer?.phone,
+      mobilePhone: data?.customer?.phone,
+    },
+    passengers: passenger,
+    segment: segment,
+    callbackUri: "google.com",
+    flightType: "NonGds"
+  }
+
+  console.log('itemku1', bodyForm, data, airlineNumber)
+
+  let payload = bodyForm;
+  // payload.traveler = traveler;
+  // payload = encryptData(JSON.stringify(payload));
+
   try {
     const response = await axios.post(
       `${BASE_URL}/orders/flight/booking`,
@@ -188,6 +257,7 @@ export const bookingFlight = async (data, token) => {
         },
       }
     );
+    console.log('itemku1', response )
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);

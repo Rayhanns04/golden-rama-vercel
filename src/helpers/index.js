@@ -343,6 +343,15 @@ export function filterAirlines(flight, airlines) {
   return flightNow;
 }
 
+export function filterFlightType(flight, type){
+  const flightNow = []
+  // flight.map((item)=>{
+  //   if(item?.FlightType)
+  // })
+  console.log('itemku10', flight)
+  return flightNow
+}
+
 export function filterFacility(flight) {
   const result = filter(flight, {
     segments: [{ additionalBaggageSupport: true }],
@@ -436,15 +445,21 @@ export function sumTaxPrice(prices) {
 }
 
 export function convertArrayAirlines(airlines) {
-  const result = airlines
-    ?.map((item) => {
-      return ` 
-        ${item.AirlineName} • ${item.Number}`;
+
+  let result = ''
+  
+  if(airlines?.IsConnecting === false){
+    result = `${airlines.AirlineName} • ${airlines.Number}`
+  } else {
+    airlines.ConnectingFlights.map((it, index)=>{
+        result = `${it?.AirlineName} • ${it?.Number} ${airlines.ConnectingFlights?.length - 1 === index ? '' : '|' }`
     })
-    ?.join(" | ");
+  }
   return result;
 }
-
+  
+  
+  
 export function convertDateMonth(date) {
   const newDate = new Date(date);
   const result = `${newDate.getDate()} ${monthNames[newDate.getMonth()]}`;

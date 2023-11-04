@@ -2915,7 +2915,7 @@ export const  FlightDetails = ({ query, data, ...props }) => {
                           ? `/svg/flights/destination.svg`
                           : `/svg/flights/departure.svg`
                       }`,
-                      t: `${convertArrayAirlines(data?.flights)}`,
+                      t: `${convertArrayAirlines(item)}`,
                     },
                     {
                       i: "/svg/flights/date.svg",

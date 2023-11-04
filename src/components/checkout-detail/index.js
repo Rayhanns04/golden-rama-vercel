@@ -1048,21 +1048,27 @@ export const FormPerson = ({
   ...props
 }) => {
   // const drawerRef = useRef();
+
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const defaultForm = {
-    title: item.paxType == "ADT" ? "Mrs" : "Miss",
+    title: item.paxType == "ADT" ? "MR" : item.paxType == "CHD" ? "MSTR" : "INF",
     first_name: "",
     last_name: "",
+    id_number: "",
+    email: "",
+    mobile_phone: "",
     dob: date(addYears(new Date(), -21), "yyyy-MM-dd"),
     country: "",
     passport_number: "",
     publisher_country: "",
     expired_date: "",
   };
+
   if (item?.passport_number === null) {
     item.passport_number = "";
   }
+
   if (isAttraction) {
     defaultForm = {
       ...props.dynamicForm?.reduce((prev, val) => {
@@ -1070,9 +1076,11 @@ export const FormPerson = ({
       }, {}),
     };
   }
+
   const defaultYupValidation = {
     title: Yup.string().required("Title harap diisi"),
     first_name: Yup.string().required("Nama depan harap diisi"),
+    id_number: Yup.string().required("ID harap diisi"),
     last_name: Yup.string().notRequired(),
     dob: Yup.date()
       .max(
@@ -1081,17 +1089,17 @@ export const FormPerson = ({
       )
       .required("Tanggal lahir harap diisi"),
     country: Yup.string().required("Negara harap diisi"),
-    ...(isDomestic &&
-      isKTP && {
-        // no ktp di isi jika umur > 17
-        passport_number: Yup.string().when("dob", {
-          is: (dob) => {
-            return differenceInYears(new Date(), new Date(dob)) > 17;
-          },
-          then: Yup.string().required("Nomor KTP harap diisi"),
-          otherwise: Yup.string().notRequired(),
-        }),
-      }),
+    // ...(isDomestic &&
+    //   isKTP && {
+    //     // no ktp di isi jika umur > 17
+    //     passport_number: Yup.string().when("dob", {
+    //       is: (dob) => {
+    //         return differenceInYears(new Date(), new Date(dob)) > 17;
+    //       },
+    //       then: Yup.string().required("Nomor KTP harap diisi"),
+    //       otherwise: Yup.string().notRequired(),
+    //     }),
+    //   }),
     ...(isDomestic
       ? ""
       : {
@@ -1145,11 +1153,15 @@ export const FormPerson = ({
       passport_type: "KTP",
       publisher_country: "",
       passport: "",
+      id_number: "",
+      mobile_phone: ""
     };
 
     defaultYupValidation = {
       first_name: Yup.string().required("Nama Depan harap diisi"),
       last_name: Yup.string().notRequired(),
+      mobile_phone: Yup.number().notRequired(),
+      id_number: Yup.number().required("ID harap diisi"),
       gender: Yup.string().required("Gender harap diisi"),
       birthplace: Yup.string().required("Tempat Lahir harap diisi"),
       dob: Yup.date().required("Tanggal Lahir harap diisi"),
@@ -1170,12 +1182,13 @@ export const FormPerson = ({
           }),
     };
   }
+  
   const fields = [
     {
       name: "title",
       label: "Title",
       type: "radio",
-      options: item.paxType == "ADT" ? ["Mr", "Mrs", "Ms"] : ["Miss", "Mstr"],
+      options: item.paxType == "ADT" ? ["MR", "MRS"] : item.paxType == "CHD" ? ["MSTR", "MISS"] : ["INF"],
     },
     [
       {
@@ -1189,45 +1202,71 @@ export const FormPerson = ({
         type: "text",
       },
     ],
-    ...(isAttraction
-      ? [
-          {
-            name: "dob",
-            label: "Email",
-            type: "email",
-          },
-        ]
-      : [
-          {
-            name: "dob",
-            label: "Tanggal Lahir",
-            type: "date",
-          },
-        ]),
-    ...(isKTP && isDomestic
-      ? [
-          {
-            name: "passport_number",
-            label: "Nomor KTP",
-            type: "text",
-          },
-        ]
-      : ""),
+    [
+      {
+        name: "dob",
+        label: "Tanggal Lahir",
+        type: "date",
+      },
+    ],
+    {
+      name: "mobile_phone",
+      label: "Nomor Telepon",
+      type: "number",
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "email",
+    },
+    
+    // ...(isAttraction
+    //   ? [
+    //       {
+    //         name: "dob",
+    //         label: "Email",
+    //         type: "email",
+    //       },
+    //     ]
+    //   : [
+    //       {
+    //         name: "dob",
+    //         label: "Tanggal Lahir",
+    //         type: "date",
+    //       },
+    //     ]),
     {
       name: "country",
       label: "Kewarganegaraan",
       type: "select",
       options: countries,
     },
-    ...(isAttraction
-      ? [
-          {
-            name: "passport_number",
-            label: "Nomor Telepon",
-            type: "text",
-          },
-        ]
-      : isDomestic
+    [
+      {
+        name: "id_number",
+        label: "Nomor KTP / ID Number",
+        type: "text",
+      },
+    ],
+    // ...(isKTP && isDomestic
+    //   ? [
+    //       {
+    //         name: "id_number",
+    //         label: "Nomor KTP / ID Number",
+    //         type: "text",
+    //       },
+    //     ]
+    //   : ""),
+    // ...(isAttraction
+    //   ? [
+    //       {
+    //         name: "mobile_phone",
+    //         label: "Nomor Telepon",
+    //         type: "text",
+    //       },
+    //     ]
+    //   : 
+    ...(isDomestic
       ? ""
       : [
           {
@@ -1371,7 +1410,7 @@ export const FormPerson = ({
             title={title}
             // hideFooter
           >
-            <Stack spacing={"12px"}>
+            <Stack spacing={"6px"}>
               <Box>
                 <Text fontSize={{ base: "lg", md: "md" }} fontWeight="semibold">
                   Informasi Penumpang (
@@ -1428,9 +1467,9 @@ export const FormPerson = ({
                         : customFields
                       : isAttraction
                       ? fields
-                      : isKTP && isDomestic
-                      ? fields.slice(0, 5)
-                      : fields.slice(0, 4)
+                      : isDomestic
+                      ? fields.slice(0, 7)
+                      : fields.slice(0, 7)
                   }
                 />
               </Box>
@@ -1461,7 +1500,7 @@ export const FormPerson = ({
                                 item.name === "publisher_country"
                               );
                             })
-                          : fields.slice(4, fields.length)
+                          : fields.slice(7, fields.length)
                       }
                     />
                   </Box>
@@ -1476,6 +1515,9 @@ export const FormPerson = ({
     </>
   );
 };
+
+
+
 export const ContactInfo = ({ handleChange }) => {
   const { isLoggedIn, user } = useSelector((s) => s.authReducer);
   const users = {
