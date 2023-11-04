@@ -297,8 +297,6 @@ export function getAirlineAvailable(flight) {
 
 
 export function filterTransit(flight, transit) {
-  // console.log(flight, transit, "itemku0")
-
   const flightNow = []
 
   flight.map((item)=>{
@@ -345,10 +343,12 @@ export function filterAirlines(flight, airlines) {
 
 export function filterFlightType(flight, type){
   const flightNow = []
-  // flight.map((item)=>{
-  //   if(item?.FlightType)
-  // })
-  console.log('itemku10', flight)
+  
+  flight.map((item)=>{
+    if(item?.FlightType === type){
+      flightNow.push(item)
+    }
+  })
   return flightNow
 }
 

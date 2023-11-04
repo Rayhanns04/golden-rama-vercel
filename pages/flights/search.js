@@ -107,6 +107,8 @@ const SearchFlights = ({
   // data save all 
   const [currentJourneySave, setCurrentJourneySave] = useState([]) 
 
+  const [currentJourneyInFlightType, setCurrentJourneyInFligtType] = useState([]) 
+
 
   const [currentJourney, setCurrentJourney] = useState([]) 
   const [flights, setFlights] = useState([]);
@@ -129,9 +131,7 @@ const SearchFlights = ({
     { base: false, md: true },
     { ssr: false }
     );
-  
-  // console.log('itemku', position, currentJourney, currentJourneySave)
-  
+    
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
   const [flightType, setFlightType] = useState('all'); 
@@ -187,12 +187,14 @@ const SearchFlights = ({
       // console.log('Error occurred:', error);
     }
   };
-  
-  // console.log('itemku', currentJourney)
 
-  // useEffect(() => {
-  //   fetchFlight();
-  // }, []);
+  // useEffect(()=>{
+  //   if(position === 1){
+  //     setCurrentJourneyInFligtType(currentJourney)
+  //   }
+  // },[position])
+  
+  // console.log('itemku11', flightType, isLoading, position, currentJourneyInFlightType)
 
   useEffect(() => {
     if(statusSuccess === false){
@@ -236,9 +238,7 @@ const SearchFlights = ({
   },[sortBy])
 
   useEffect(()=>{
-    // if (filter.is_filtered) {
 
-    // } 
     const applyAllFilters = (flights) => {
       let filteredFlights = flights;
       
@@ -288,12 +288,26 @@ const SearchFlights = ({
   useEffect(()=>{
     if(flightType === 'all'){
       setCurrentJourney(currentJourneySave)
-      console.log('itemku12', "in filter all")
     } else {
-
-      console.log('itemku10', "in filter sendiri")
+      const updatedCurrentJourney = currentJourney.map((journey, index) => {
+        if (index === position) {
+          return {
+            ...journey,
+            Flights: filterFlightType(journey.Flights, flightType)
+          };
+        }
+        return journey;
+      });
+      setCurrentJourney(updatedCurrentJourney);
+      // console.log('itemku10', "in filter sendiri", updatedCurrentJourney)
     }
-  },[flightType])
+  },[flightType, position])
+
+  useEffect(() => {
+    if (inView && (totalData > flights?.length)  ) {
+      showMoreItems();
+    }
+  }, [inView]);
   
   const handleFilter = (filter, dataAirlines) => { 
     const initialFilter = {
@@ -309,20 +323,20 @@ const SearchFlights = ({
       is_smart_combo: query?.is_smart_combo == "true" ? true : false,
     };
 
-    // console.log("itemku", filter, initialFilter)
-
     if(JSON.stringify(filter) === JSON.stringify(initialFilter)){
       setIsLoading(true);
       if(position === 0){
         setCurrentJourney(currentJourneySave)
       } else {
-        console.log("ini nanti filter")
+        setCurrentJourney(currentJourneyInFlightType)
       }
-      // console.log('itemku', 'ini bener')
-      // setIsLoading(false);
     } else {
       setIsLoading(true);
-      setCurrentJourney(currentJourneySave)
+      if(position === 0){
+        setCurrentJourney(currentJourneySave)
+      } else {
+        setCurrentJourney(currentJourneyInFlightType)
+      }
       const filterBody = {
         min_price: filter?.min_price,
         max_price: filter?.max_price,
@@ -357,19 +371,9 @@ const SearchFlights = ({
     }, 1000);
   };
 
-  useEffect(() => {
-    if (inView && (totalData > flights?.length)  ) {
-      showMoreItems();
-    }
-  }, [inView]);
-
-  // console.log('itemku',inView, shownItems, statusSuccess, payload, props)
-
   const handleViewAll = () => {
     showMoreItems();
   };
-
-  console.log('itemku', flightType, filter.is_filtered)
 
   const handlePosition = (e, value, journey) => {
     e.preventDefault();
@@ -380,13 +384,41 @@ const SearchFlights = ({
       }
       setIsLoading(true);
       setCart([...cart, journey]);
-      if (query?.isRoundTrip === 'true' && cart?.length === 1 ) {
-        setFlights(currentJourney[1].Flights?.slice(0, shownItems));
-        // setTotalData(currentJourney[1].Flights?.length);
+
+      // console.log('itemku2', "jalan gk si", query?.isRoundTrip, position, position === 1, flightType)
+      if (query?.isRoundTrip === 'true') {
         window.scrollTo({ top: 0, behavior: "smooth" });
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
+        // console.log('itemkuresult', position + 1, flightType)
+        const updatedCurrentJourney = currentJourneySave.map((journeyCurrent, index) => {
+          if (index === 1) {
+              return {
+                ...journeyCurrent,
+                Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType)
+              };
+            }
+            return journeyCurrent;
+          });
+        setCurrentJourneyInFligtType(updatedCurrentJourney)
+
+        // console.log('itemkuresult',updatedCurrentJourney, currentJourneySave)
+
+        // setFlights(currentJourney[1].Flights?.slice(0, shownItems));
+        // // setTotalData(currentJourney[1].Flights?.length);
+        // if(flightType !== 'all'){
+        //   const updatedCurrentJourney = currentJourneySave.map((journey, index) => {
+        //     if (index === position) {
+        //       return {
+        //         ...journey,
+        //         Flights: filterFlightType(journey.Flights, flightType)
+        //       };
+        //     }
+        //     return journey;
+        //   });
+        //   setCurrentJourneyInFligtType(updatedCurrentJourney)
+        // }
+        // setTimeout(() => {
+        //   setIsLoading(false);
+        // }, 1000);
       }
       setTimeout(() => {
         setIsLoading(false);
@@ -479,11 +511,7 @@ const SearchFlights = ({
         </CustomFilterButton>
       </>
     );
-  };
-  
-  
-  const [airlineDataMaskapai, setAirlineDataMaskapai] = useState([])
-  
+  };  
 
   const FilterButton = ({ airlines, handleFilter }) => {
 
@@ -570,7 +598,11 @@ const SearchFlights = ({
       // },
     ];
 
-    data.airlines = getAirlineAvailable(currentJourneySave[position]?.Flights);
+    if(position === 0){
+      data.airlines = getAirlineAvailable(currentJourneySave[position]?.Flights);
+    } else {
+      data.airlines = getAirlineAvailable(currentJourneyInFlightType[position]?.Flights);
+    }
     // setAirlineDataMaskapai(getAirlineAvailable(airlines));
 
     const initialFilter = {
@@ -604,30 +636,6 @@ const SearchFlights = ({
         });
       }
     };
-    
-    // const handleChange = (type, item) => {
-    //   if (filter[type].includes(item.id)) {
-    //     setFilter({
-    //       ...filter,
-    //       [type]: filter[type].filter((i) => i !== item.id),
-    //     });
-    //   } else {
-    //     if(type === 'airlines'){
-    //       setFilter({
-    //       ...filter,
-    //       [type]: [...filter[type], item.name],
-    //       });  
-    //     } else {
-    //       setFilter({
-    //         ...filter,
-    //         [type]: [...filter[type], item.id],
-    //       });
-    //     }
-    //   }
-    // };
-
-    // console.log('itemfilter',initialFilter)
-
     return (
       <>
         <Button

@@ -240,8 +240,6 @@ export const bookingFlight = async (data, token) => {
     flightType: "NonGds"
   }
 
-  console.log('itemku1', bodyForm, data, airlineNumber)
-
   let payload = bodyForm;
   // payload.traveler = traveler;
   // payload = encryptData(JSON.stringify(payload));
@@ -257,7 +255,6 @@ export const bookingFlight = async (data, token) => {
         },
       }
     );
-    console.log('itemku1', response )
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);
