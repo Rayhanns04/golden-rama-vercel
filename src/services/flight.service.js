@@ -146,6 +146,7 @@ export const bookingFlight = async (data, token) => {
   let passenger = []
   let segment = []
   let airlineNumber = ''
+  let flightTypeCurrent = data?.journeys?.flights[0]?.FlightType
 
   data.traveler.map((item)=>{
     const today = new Date();
@@ -237,10 +238,11 @@ export const bookingFlight = async (data, token) => {
     passengers: passenger,
     segment: segment,
     callbackUri: "google.com",
-    flightType: "NonGds"
+    flightType: flightTypeCurrent
   }
 
   let payload = bodyForm;
+  console.log('itemku1', data, payload)
   // payload.traveler = traveler;
   // payload = encryptData(JSON.stringify(payload));
 

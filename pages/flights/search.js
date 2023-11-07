@@ -299,7 +299,6 @@ const SearchFlights = ({
         return journey;
       });
       setCurrentJourney(updatedCurrentJourney);
-      // console.log('itemku10', "in filter sendiri", updatedCurrentJourney)
     }
   },[flightType, position])
 
