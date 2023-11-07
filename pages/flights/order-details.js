@@ -458,8 +458,14 @@ const OrderDetails = () => {
   }, [query?.isRoundTrip, data?.flights, isDomestic, jwt, query]);
 
 
-  const [isPromoAvailable, setIsPromoAvailable] = useState({});
+  const [isPromoAvailable, setIsPromoAvailable] = useState({
+    available: false,
+    totalDiscount: 0,
+    promoCode: ""
+  });
   const [totalPrice, setTotalPrice] = useState({});
+
+  // console.log('itemku3', isPromoAvailable, form)
 
   // datasementara 
   const priceArray = {
@@ -523,7 +529,12 @@ const OrderDetails = () => {
     mutation.mutate(payload);
   };
 
-  // console.log('itemku1', form, traveler, customer)
+  console.log('itemku1', form, traveler,
+            customer,
+            resultFareBreakdown,
+            fareTotal,
+            query,
+            !isDomestic)
   
   const handlePromo = (promoCode) => {
     const payload = {
@@ -591,17 +602,19 @@ const OrderDetails = () => {
         setIsPromoAvailable({
           available: true,
           totalDiscount: response.promo_detail.discount_amount,
+          promoCode: response.promo_detail.promoCode
         });
         setForm({
           ...form,
           transaction: {
-            subTotal: totalPrice.total - form.transaction.serviceFee,
-            total: totalPrice.total - response.promo_detail.discount_amount,
-            discount: totalPrice.discount,
+            subTotal: fareTotal,
+            total: (fareTotal+serviceFee) - isPromoAvailable?.totalDiscount,
+            discount: isPromoAvailable?.totalDiscount,
             downPayment: 0,
-            promoCode: response.promo_detail.promoCode,
-            discountPromo: response.promo_detail.discount_amount,
+            promoCode: isPromoAvailable?.promoCode,
+            discountPromo: isPromoAvailable?.totalDiscount,
             unique_code: response?.unique_code || null,
+            serviceFee: serviceFee
           },
         });
       },
@@ -976,7 +989,7 @@ const OrderDetails = () => {
             color="brand.orange.400"
             w="full"
           >
-            IDR {convertRupiah(fareTotal+serviceFee)}
+            IDR {convertRupiah((fareTotal+serviceFee) - isPromoAvailable?.totalDiscount)}
           </Text>
         ) : (
           <Spinner></Spinner>

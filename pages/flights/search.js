@@ -106,14 +106,14 @@ const SearchFlights = ({
 
   // data save all 
   const [currentJourneySave, setCurrentJourneySave] = useState([]) 
-
   const [currentJourneyInFlightType, setCurrentJourneyInFligtType] = useState([]) 
-
 
   const [currentJourney, setCurrentJourney] = useState([]) 
   const [flights, setFlights] = useState([]);
   const [statusSuccess, setStatusSuccess] = useState(false);
   const [additionFee, setAdditionalFee] = useState();
+
+  console.log('itemku', currentJourney)
 
   const dispatch = useDispatch();
   const { ref: trigger, inView } = useInView();

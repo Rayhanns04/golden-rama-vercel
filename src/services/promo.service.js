@@ -240,6 +240,7 @@ export const checkPromo = async (data, jwt) => {
         },
       }
     );
+    console.log('itemku1', response.data)
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);

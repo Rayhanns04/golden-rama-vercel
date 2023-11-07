@@ -1049,6 +1049,8 @@ export const FormPerson = ({
 }) => {
   // const drawerRef = useRef();
 
+  console.log('itemkufield', item?.passportNumber)
+
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const defaultForm = {
@@ -1080,7 +1082,6 @@ export const FormPerson = ({
   const defaultYupValidation = {
     title: Yup.string().required("Title harap diisi"),
     first_name: Yup.string().required("Nama depan harap diisi"),
-    id_number: Yup.string().required("ID harap diisi"),
     last_name: Yup.string().notRequired(),
     dob: Yup.date()
       .max(
@@ -1089,6 +1090,20 @@ export const FormPerson = ({
       )
       .required("Tanggal lahir harap diisi"),
     country: Yup.string().required("Negara harap diisi"),
+    ...(item?.paxType === 'ADT'
+      ? {
+        id_number: Yup.string().required("ID harap diisi"),
+        mobile_phone: Yup.number().required("Mobile phone harap diisi"),
+        email: Yup.string().email().required("Email harap diisi"),
+      } : ""
+    ),
+    ...(item?.paxType === 'ADT' && item?.i === 0
+      ? {
+        emergency_fullname: Yup.string().required("Emergency fullname harap diisi"),
+        emergency_phone: Yup.number().required("Emergency phone harap diisi"),
+        emergency_email: Yup.string().email().required("Emergency email harap diisi"),
+      } : ""
+    ),
     // ...(isDomestic &&
     //   isKTP && {
     //     // no ktp di isi jika umur > 17
@@ -1154,7 +1169,10 @@ export const FormPerson = ({
       publisher_country: "",
       passport: "",
       id_number: "",
-      mobile_phone: ""
+      mobile_phone: "",
+      emergency_fullname: "",
+      emergency_phone: "",
+      emergency_email: ""
     };
 
     defaultYupValidation = {
@@ -1209,16 +1227,20 @@ export const FormPerson = ({
         type: "date",
       },
     ],
-    {
-      name: "mobile_phone",
-      label: "Nomor Telepon",
-      type: "number",
-    },
-    {
-      name: "email",
-      label: "Email",
-      type: "email",
-    },
+    ...(item?.paxType === 'ADT'
+      ? [
+        {
+          name: "mobile_phone",
+          label: "Nomor Telepon",
+          type: "number",
+        },
+        {
+          name: "email",
+          label: "Email",
+          type: "email",
+        },
+      ] : ""
+    ),
     
     // ...(isAttraction
     //   ? [
@@ -1241,13 +1263,15 @@ export const FormPerson = ({
       type: "select",
       options: countries,
     },
-    [
-      {
-        name: "id_number",
-        label: "Nomor KTP / ID Number",
-        type: "text",
-      },
-    ],
+    ...(item?.paxType === 'ADT'
+      ? [
+        {
+          name: "id_number",
+          label: "Nomor KTP / ID Number",
+          type: "text",
+        },
+      ] : ""
+    ),
     // ...(isKTP && isDomestic
     //   ? [
     //       {
@@ -1286,7 +1310,29 @@ export const FormPerson = ({
             type: "date",
           },
         ]),
+    ...(item?.paxType === 'ADT' && item?.i === 0
+        ? 
+        [
+          {
+            name: "emergency_fullname",
+            label: "Emergency Fullname",
+            type: "text",
+          },
+          {
+            name: "emergency_phone",
+            label: "Emergency Phone",
+            type: "number",
+          },
+          {
+            name: "emergency_email",
+            label: "Emergency Email",
+            type: "email",
+          },
+        ]
+        : ""
+    ),
   ];
+
   if (customFields) {
     fields = customFields;
   }
@@ -1467,15 +1513,38 @@ export const FormPerson = ({
                         : customFields
                       : isAttraction
                       ? fields
-                      : isDomestic
+                      : !isDomestic && item?.paxType === 'ADT'
                       ? fields.slice(0, 7)
-                      : fields.slice(0, 7)
+                      : isDomestic && item?.paxType === 'ADT'
+                      ? fields.slice(0, 7)
+                      : fields.slice(0, 4)
                   }
                 />
               </Box>
-              {!isDomestic && (
+              { item?.paxType === 'ADT' && item?.i === 0 && (
                 <>
-                  <Box py="12px">
+                  <Box pt="12px">
+                    <Text
+                      fontSize={{ base: "lg", md: "md" }}
+                      fontWeight="semibold"
+                    >
+                      Emergency Contact{" "}
+                      <span style={{ color: "red" }}>*</span>
+                    </Text>
+                  </Box>
+                  <Box pt={"12px"}>
+                    <GlobalForm
+                      person={item}
+                      fields={
+                        fields.slice(10, fields?.length)
+                      }
+                    />
+                  </Box>
+                </>
+              )}
+              {!isDomestic && item?.paxType === 'ADT' && (
+                <>
+                  <Box pt="12px">
                     <Text
                       fontSize={{ base: "lg", md: "md" }}
                       fontWeight="semibold"
@@ -1488,19 +1557,20 @@ export const FormPerson = ({
                       tanggal keberangkatan
                     </Text>
                   </Box>
-                  <Box py={"24px"}>
+                  <Box pt={"12px"}>
                     <GlobalForm
                       person={item}
                       fields={
-                        isInsurance
-                          ? fields.filter((item) => {
-                              return (
-                                item.name === "passport_type" ||
-                                item.name === "passport" ||
-                                item.name === "publisher_country"
-                              );
-                            })
-                          : fields.slice(7, fields.length)
+                        // isInsurance
+                        //   ? fields.filter((item) => {
+                        //       return (
+                        //         item.name === "passport_type" ||
+                        //         item.name === "passport" ||
+                        //         item.name === "publisher_country"
+                        //       );
+                        //     })
+                        //   : fields.slice(7, fields.length)
+                        fields.slice(7, 10)
                       }
                     />
                   </Box>

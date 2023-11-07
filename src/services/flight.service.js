@@ -152,6 +152,7 @@ export const bookingFlight = async (data, token) => {
     const today = new Date();
     const birthDate = new Date(item?.dob);
     const age = today.getFullYear() - birthDate.getFullYear();
+    
     const passengerItem = {
       index: item?.key + 1,
       type: item?.paxType === 'ADT' ? 1 : item?.paxType === 'CHD' ? 2 : 3,
@@ -161,25 +162,25 @@ export const bookingFlight = async (data, token) => {
       isSeniorCitizen: (age > 65) ? true : false,
       birthDate: item?.dob,
       email: item?.email,
-      homePhone: `${item?.mobile_phone}`,
-      mobilePhone: `${item?.mobile_phone}`,
+      homePhone: `${item?.mobile_phone}`, 
+      mobilePhone: (item?.paxType === 'INF') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`, // wajib
       otherPhone: `${item?.mobile_phone}`,
-      idNumber: item?.id_number,
+      idNumber: item?.id_number, // wajib
       nationality: item?.country,
-      adultAssoc: (item?.paxType === 'INF') ? 1 : null,
-      passportNumber: item?.passport_number,
-      passportExpire: item?.expired_date,
-      passportOrigin: item?.publisher_country,
-      emergencyFullName: item?.first_name,
-      emergencyPhone: `${item?.mobile_phone}`,
-      emergencyEmail: item?.email,
+      adultAssoc: (item?.paxType === 'INF') ? (item?.i + 1) : null,
+      passportNumber: item?.passport_number === undefined ? "" : item?.passport_number,
+      passportExpire: item?.expired_date === undefined ? "" : item?.expired_date,
+      passportOrigin: item?.publisher_country === undefined ? "" : item?.expired_date,
+      emergencyFullName: item?.first_name, // wajib
+      emergencyPhone: `${item?.mobile_phone}`, // wajib
+      emergencyEmail: item?.email, // wajib
       seats: [],
       ssrs: []
     };
     return passenger.push(passengerItem);
   })
 
-  data.journeys.flights.map((item, index)=>{
+  data.journeys.flights.map((item, indexJourney)=>{
     if(item?.TotalTransit === 0){
       const segmentCurrent = item?.ClassObjects[0]
       const segmentUpdate = {
@@ -194,13 +195,13 @@ export const bookingFlight = async (data, token) => {
         arriveTime: item?.ArriveTime,
         classCode: segmentCurrent?.Code,
         flightId: segmentCurrent?.FlightId,
-        num: 0,
+        num: indexJourney,
         seq: 0,
       }
       segment.push(segmentUpdate)
       airlineNumber = item?.Airline
     } else {
-      item?.ConnectingFlights.map((item2)=>{
+      item?.ConnectingFlights.map((item2, indexJourneyConnecting)=>{
         const segmentCurrent2 = item2?.ClassObjects[0]
         const segmentUpdate2 = {
           classId: segmentCurrent2.Id,
@@ -214,8 +215,8 @@ export const bookingFlight = async (data, token) => {
           arriveTime: item2?.ArriveTime,
           classCode: segmentCurrent2?.Code,
           flightId: segmentCurrent2?.FlightId,
-          num: 0,
-          seq: 0,
+          num: indexJourney,
+          seq: indexJourneyConnecting,
         }
         segment.push(segmentUpdate2)
         airlineNumber = item?.Airlin
@@ -236,23 +237,31 @@ export const bookingFlight = async (data, token) => {
       mobilePhone: data?.customer?.phone,
     },
     passengers: passenger,
-    segment: segment,
-    callbackUri: "google.com",
-    flightType: flightTypeCurrent
+    segments: segment,
+    callbackUri: "",
+    flightType: flightTypeCurrent,
+    transaction: {
+      promoCode: data?.transaction?.promoCode,
+      subTotal: data?.transaction?.subTotal,
+      total: data?.transaction?.total,
+      serviceFee: data?.transaction?.serviceFee,
+      discountPromo: data?.transaction?.discountPromo,
+      discount: data?.transaction?.discountPromo,
+      downPayment: data?.transaction?.downPayment
+    },
   }
 
   let payload = bodyForm;
-  console.log('itemku1', data, payload)
+  // console.log('itemku1', data, payload)
   // payload.traveler = traveler;
   // payload = encryptData(JSON.stringify(payload));
 
   try {
     const response = await axios.post(
-      `${BASE_URL}/orders/flight/booking`,
-      payload,
+      `${BASE_URL}/orders/flight/booking`,payload,
       {
         headers: {
-          "Content-Type": "text/plain",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       }
@@ -260,7 +269,6 @@ export const bookingFlight = async (data, token) => {
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);
-
     return Promise.reject(error);
   }
 };

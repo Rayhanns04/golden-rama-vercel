@@ -79,7 +79,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
           title={"Detail Penerbangan"}
           notrounded={type === "transit"}
           footer={
-            <CustomOrangeFullWidthButton mt={0} py={0} onClick={(e) => loginToast(() => handlePosition(e, position, item))}>
+            <CustomOrangeFullWidthButton mt={0} py={0} onClick={(e) => loginToast(() => handlePosition(e, 0, item))}>
               Pilih
             </CustomOrangeFullWidthButton>
           }
@@ -279,7 +279,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                           <Text
                             fontSize={{ base: "sm", md: "md" }}
                             fontWeight={"semibold"}>
-                            Bag {" "} {flight?.Facilities !== null ? flight?.Facilities[0]?.Value : ''}
+                            Bag {" "} {flight?.Facilities !== null ? flight?.Facilities[0]?.Value : '-'}
                           </Text>
                         ) : 
                         (
@@ -300,7 +300,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       </VStack>
                     </HStack>
                   </VStack>
-                  {item?.TotalTransit > 0 || index < journey.length - 1 && (
+                  {flight?.TotalTransit > 0 || index < journey?.length - 1 && (
                     <VStack
                       p={"12px"}
                       bg={"brand.blue.100"}
