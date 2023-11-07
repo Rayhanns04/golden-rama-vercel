@@ -72,7 +72,6 @@ export const getPromoListUsingPage = async (page, is_specific, sorting) => {
     const response = await axios.get(
       `${BASE_URL}/promos/getListPromo?${query}`
     );
-
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);

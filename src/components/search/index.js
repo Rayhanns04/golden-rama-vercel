@@ -33,24 +33,10 @@ export const SearchFilters = ({
   const isLoading = false;
   const MonthButton = () => {
     // date-fns get array of 4 months from current month
-    const month_name = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const period_month = Array.from({ length: 12 }, (_, i) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() + i);
-      return `${month_name[date.getMonth()]} ${date.getFullYear()}`;
+    const today = new Date();
+    const period_month = Array.from({ length: 13 }, (_, i) => {
+      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      return date.toLocaleDateString("en", {month: "long", year: "numeric"});
     });
     var min = new Date().getFullYear();
     var max = min + 2;
