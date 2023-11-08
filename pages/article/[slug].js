@@ -67,7 +67,7 @@ const ArticleDetail = () => {
         "@type": "Article",
         headline: article?.title,
         image: [
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/${article?.thumbnail.data.attributes.url}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}${article?.thumbnail.data.attributes.url}`,
         ],
         datePublished: article?.createdAt,
         dateModified: article?.updatedAt,
