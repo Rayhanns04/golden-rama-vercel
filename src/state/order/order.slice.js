@@ -16,6 +16,7 @@ export const orderSlice = createSlice({
     },
     checkoutData: (state, actions) => {
       state.orderDetail = actions.payload.orderDetail;
+      state.transaction = actions.payload.transaction;
     },
     resetDataFlight: (state) => {
       state.data = {};
@@ -23,6 +24,7 @@ export const orderSlice = createSlice({
       state.orderDetail = {};
       state.isDomestic = {};
       state.addFee = {}
+      state.transaction = {}
     },
   },
 });

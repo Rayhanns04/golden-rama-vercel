@@ -24,7 +24,7 @@ import {
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Layout from "../../src/components/layout";
 import {
   CustomFilterButton,
@@ -494,6 +494,8 @@ const OrderDetails = () => {
   const toast = useToast();
 
   const handleSubmit = () => {
+    console.log('itemkudata', customer?.fullName,customer?.email, customer?.phone)
+
     if (
       !customer?.fullName ||
       !customer?.email ||
@@ -515,6 +517,7 @@ const OrderDetails = () => {
         variant: "subtle",
       });
     }
+
     // return alert("Harap isi informasi kontak!");
     const payload = {
       ...form,
@@ -523,19 +526,23 @@ const OrderDetails = () => {
       prices: resultFareBreakdown,
       totalprice: fareTotal,
       query: query,
-      isInternational: !isDomestic
+      isInternational: !isDomestic,
+      transaction: {
+        subTotal: fareTotal,
+        total: (fareTotal+serviceFee) - isPromoAvailable?.totalDiscount,
+        discount: isPromoAvailable?.totalDiscount,
+        downPayment: 0,
+        promoCode: isPromoAvailable?.promoCode,
+        discountPromo: isPromoAvailable?.totalDiscount,
+        unique_code: isPromoAvailable?.unique_code || null,
+        serviceFee: serviceFee
+      },
     };
 
     mutation.mutate(payload);
   };
 
-  console.log('itemku1', form, traveler,
-            customer,
-            resultFareBreakdown,
-            fareTotal,
-            query,
-            !isDomestic)
-  
+   
   const handlePromo = (promoCode) => {
     const payload = {
       promo: promoCode,
@@ -543,25 +550,53 @@ const OrderDetails = () => {
       category: "flight",
     };
     mutationPromo.mutate(payload);
-  };
-
+  }
+  
   const mutation = useMutation(async (form) => {
       const response = await bookingFlight(form, jwt);
       return Promise.resolve(response);
-    },
+},
     {
       onSuccess: (response) => {
-        if (response?.messageChange != null) {
+        console.log('itemku2', response);
+        if(response.success === true){
+          dispatch(checkoutData({ 
+            orderDetail: response,  
+            transaction: {
+              subTotal: fareTotal,
+              total: (fareTotal+serviceFee) - isPromoAvailable?.totalDiscount,
+              discount: isPromoAvailable?.totalDiscount,
+              downPayment: 0,
+              promoCode: isPromoAvailable?.promoCode,
+              discountPromo: isPromoAvailable?.totalDiscount,
+              unique_code: isPromoAvailable?.unique_code || null,
+              serviceFee: serviceFee
+            },
+          }));
+          router.push({ pathname: "/flights/payment" });
+        } else {
           toast({
-            title: `${response?.messageChange}`,
+            title: "Booking Gagal",
+            description:
+              "Terjadi Kesalahan Server, Silahkan coba beberapa saat lagi!",
             status: "error",
+            duration: 5000,
             isClosable: true,
-            variant: "subtle",
-            timeOut: 10000,
           });
+          setIsError(true);
+          setTimeout(() => {
+            setIsError(false);
+          }, 3000);
         }
-        dispatch(checkoutData({ orderDetail: response }));
-        router.push({ pathname: "/flights/payment" });
+        // if (response?.messageChange != null) {
+        //   toast({
+        //     title: `${response?.messageChange}`,
+        //     status: "error",
+        //     isClosable: true,
+        //     variant: "subtle",
+        //     timeOut: 10000,
+        //   });
+        // }
       },
       onError: (error) => {
         if (error.response) {
@@ -602,20 +637,8 @@ const OrderDetails = () => {
         setIsPromoAvailable({
           available: true,
           totalDiscount: response.promo_detail.discount_amount,
-          promoCode: response.promo_detail.promoCode
-        });
-        setForm({
-          ...form,
-          transaction: {
-            subTotal: fareTotal,
-            total: (fareTotal+serviceFee) - isPromoAvailable?.totalDiscount,
-            discount: isPromoAvailable?.totalDiscount,
-            downPayment: 0,
-            promoCode: isPromoAvailable?.promoCode,
-            discountPromo: isPromoAvailable?.totalDiscount,
-            unique_code: response?.unique_code || null,
-            serviceFee: serviceFee
-          },
+          promoCode: response.promo_detail.promoCode,
+          unique_code: response?.unique_code
         });
       },
       onError: (error) => {
@@ -1096,7 +1119,7 @@ const OrderDetails = () => {
                         >
                           Rincian Harga
                         </Text>
-                        <FlightPriceDetails detail_prices={fareTotal+serviceFee} />
+                        <FlightPriceDetails loading={isLoading} isPromoAvailable={isPromoAvailable} detail_prices={fareTotal+serviceFee} />
                       </Box>
                       <FlightPrice hidden={isDesktop} />
                     </Stack>
@@ -1340,16 +1363,14 @@ const OrderDetails = () => {
                                 </VStack>
                                 <HStack justifyContent="space-between" py="16px">
                                   <Text>Total Pembayaran</Text>
-                                  {
-                                    isLoading ? 
-                                    <Spinner/> : (
-                                      <Text fontWeight="semibold">
-                                        IDR{" "}
-                                        {convertRupiah(fareTotal+serviceFee)}
-                                        {/* {convertRupiah(price?.data?.priceFinalCustom)} */}
-                                      </Text>
-                                    )
-                                  }
+                                  {!isLoading ? (
+                                    <Text fontWeight="semibold">
+                                    IDR{" "}
+                                    {convertRupiah(fareTotal+serviceFee)}
+                                  </Text>
+                                  ) : (
+                                    <Spinner></Spinner>
+                                  )}
                                 </HStack>
                               </>
                         {/* {!priceArray?.isLoading ? (

@@ -19,6 +19,24 @@ export default function (date, formatStr = "PP") {
   }
 }
 
+export function calculateTimeDifference(baseTime, timeArray) {
+  const [baseHours, baseMinutes] = baseTime.split(':').map(Number);
+  const baseTotalMinutes = baseHours * 60 + baseMinutes;
+
+  const totalMinutesArray = timeArray.reduce((total, time) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    return total + totalMinutes;
+  }, 0);
+
+  const timeDifference = baseTotalMinutes - totalMinutesArray;
+
+  const hours = Math.floor(timeDifference / 60);
+  const minutes = timeDifference % 60;
+
+  return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+}
+
 export function getMonthFromMonthName(name) {
   const monthsLong = {
     January: 1,

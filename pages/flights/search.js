@@ -113,7 +113,7 @@ const SearchFlights = ({
   const [statusSuccess, setStatusSuccess] = useState(false);
   const [additionFee, setAdditionalFee] = useState();
 
-  console.log('itemku', currentJourney)
+  // console.log('itemku', currentJourney)
 
   const dispatch = useDispatch();
   const { ref: trigger, inView } = useInView();

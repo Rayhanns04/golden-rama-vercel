@@ -51,9 +51,12 @@ const Payment = (props) => {
   const router = useRouter();
   const toast = useToast();
   const { paymentMethods, defaultPaymentMethod } = props;
-  const { data, query, orderDetail } = useSelector(
+  const { data, query, orderDetail, transaction } = useSelector(
     (state) => state.orderReducer
   );
+
+  console.log('itemku3', orderDetail, query, data, transaction )
+
   const [selectedPayment, setSelectedPayment] = useState(defaultPaymentMethod);
   const [isWaiting, setIsWaiting] = useState(false);
   const [paymentDetail, setPaymentDetail] = useState(null);
@@ -289,7 +292,7 @@ const Payment = (props) => {
                     },
                     {
                       t: "Total Pembayaran",
-                      p: `IDR ${convertRupiah(orderDetail.totalTransaction)}`,
+                      p: `IDR ${convertRupiah(transaction?.total)}`,
                     },
                     {
                       t: "Status Pembayaran",
@@ -531,7 +534,7 @@ const Payment = (props) => {
                     color="brand.orange.400"
                     w="full"
                   >
-                    IDR {convertRupiah(orderDetail.totalTransaction)}
+                    IDR {convertRupiah(transaction?.total)}
                   </Text>
                   <CustomOrangeFullWidthButton
                     isLoading={

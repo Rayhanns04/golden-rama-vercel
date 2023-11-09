@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useLoginToast } from "../../hooks";
 import { convertDateFlightPage, convertRupiah, convertTimeFlightPage, getClassCode, simplifyBodyDetailFlight } from "../../helpers";
+import { calculateTimeDifference } from "../../helpers/date";
 
 
 const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDesktop, isLoading, originData, handlePosition }) => {
@@ -144,6 +145,16 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
           </Stack> */}
           <Stack spacing={"24px"} py={"24px"}>
             {journey.map((flight, index) => {
+              // let durationFlight = flight?.Duration
+              // let durationPerFlight = []
+              // let durationTransit = calculateTimeDifference(durationFlight, durationPerFlight)
+
+              // if(flight?.TotalTransit > 0){
+              //   flight.ConnectingFlights.map((item, index)=>{
+              //     durationPerFlight.push(item?.Duration)
+              //   })
+
+              // }
               return (
                 <Stack key={index} spacing={"24px"}>
                   <HStack
@@ -311,7 +322,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       <Text
                         fontSize={{ base: "sm", md: "md" }}
                         color={"neutral.text.low"}>
-                        {`Transit selama ${flight?.Duration?.split(':')[0]} Jam ${flight?.Duration?.split(':')[1]} Menit di`}
+                        {`Transit selama ${flight?.ConnectingFlights?.[0]?.ClassObjects?.[0]?.TransitTime?.split(':')[0]} Jam ${flight?.ConnectingFlights?.[0]?.ClassObjects?.[0]?.TransitTime?.split(':')[1]} Menit di`}
                       </Text>
                       <Text
                         fontWeight={"semibold"}

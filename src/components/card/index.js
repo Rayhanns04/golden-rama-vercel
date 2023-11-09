@@ -32,6 +32,7 @@ import {
   Wrap,
   WrapItem,
   Tag,
+  Spinner,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import React, { Fragment, useEffect, useRef } from "react";
@@ -2811,6 +2812,7 @@ export const FlightListItem = ({
 export const FlightPriceDetails = ({
   detail_prices,
   isPromoAvailable,
+  loading,
   ...props
 }) => {
   return (
@@ -2827,9 +2829,13 @@ export const FlightPriceDetails = ({
         <Text fontSize={{ base: "sm", md: "md" }} color="neutral.text.medium">
           Total
         </Text>
-        <Text fontSize={{ base: "sm", md: "md" }} color="neutral.text.medium">
-          {convertRupiah(detail_prices)}
-        </Text>
+        {!loading ? (
+          <Text fontSize={{ base: "sm", md: "md" }} color="neutral.text.medium">
+            {convertRupiah(detail_prices)}
+          </Text>
+        ) : (
+          <Spinner></Spinner>
+        )}
       </HStack>
       {isPromoAvailable && isPromoAvailable.available && (
         <HStack w="full" justifyContent="space-between">

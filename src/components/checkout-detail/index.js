@@ -148,7 +148,7 @@ const CheckoutDetail = ({
               isPromoAvailable &&
               isPromoAvailable.available == false && (
                 <Text fontSize={{ base: "sm", md: "md" }} color="alert.failed">
-                  Promo tidak bisa digunakan
+                  {/* Promo tidak bisa digunakan */}
                 </Text>
               )
             )}
@@ -1049,8 +1049,6 @@ export const FormPerson = ({
 }) => {
   // const drawerRef = useRef();
 
-  console.log('itemkufield', item?.passportNumber)
-
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const defaultForm = {
@@ -1090,18 +1088,23 @@ export const FormPerson = ({
       )
       .required("Tanggal lahir harap diisi"),
     country: Yup.string().required("Negara harap diisi"),
-    ...(item?.paxType === 'ADT'
-      ? {
-        id_number: Yup.string().required("ID harap diisi"),
-        mobile_phone: Yup.number().required("Mobile phone harap diisi"),
-        email: Yup.string().email().required("Email harap diisi"),
-      } : ""
-    ),
+
+    id_number: Yup.string().required("ID harap diisi"),
+    mobile_phone: Yup.number().required("Mobile phone harap diisi"),
+    email: Yup.string().email().required("Email harap diisi"),
+    // ...(item?.paxType === 'ADT'
+    //   ? {
+    //     id_number: Yup.string().required("ID harap diisi"),
+    //     mobile_phone: Yup.number().required("Mobile phone harap diisi"),
+    //     email: Yup.string().email().required("Email harap diisi"),
+    //   } : ""
+    // ),
+
     ...(item?.paxType === 'ADT' && item?.i === 0
       ? {
         emergency_fullname: Yup.string().required("Emergency fullname harap diisi"),
-        emergency_phone: Yup.number().required("Emergency phone harap diisi"),
-        emergency_email: Yup.string().email().required("Emergency email harap diisi"),
+        emergency_phone: Yup.number().notOneOf([Yup.ref('mobile_phone')], 'Emergency phone seharusnya berbeda dengan Mobile Phone.').required("Emergency phone harap diisi"),
+        emergency_email: Yup.string().email().notOneOf([Yup.ref('email')], 'Emergency email seharusnya berbeda dengan Email.').required("Emergency email harap diisi"),
       } : ""
     ),
     // ...(isDomestic &&
@@ -1115,17 +1118,21 @@ export const FormPerson = ({
     //       otherwise: Yup.string().notRequired(),
     //     }),
     //   }),
-    ...(isDomestic
-      ? ""
-      : {
-          passport_number: Yup.string().required("Passport harap diisi"),
-          publisher_country: Yup.string().required(
-            "Negara penerbit harap diisi"
-          ),
-          expired_date: Yup.string().required(
-            "Tanggal habis berlaku harap diisi"
-          ),
-        }),
+
+
+    // && item?.paxType === 'CHD' && item?.paxType === 'INF'
+    ...(!isDomestic 
+      ? {
+        passport_number: Yup.string().required("Passport harap diisi"),
+        publisher_country: Yup.string().required(
+          "Negara penerbit harap diisi"
+        ),
+        expired_date: Yup.string().required(
+          "Tanggal habis berlaku harap diisi"
+        ),
+      }
+      : ""
+      ),
   };
 
   if (isAttraction) {
@@ -1227,21 +1234,31 @@ export const FormPerson = ({
         type: "date",
       },
     ],
-    ...(item?.paxType === 'ADT'
-      ? [
-        {
-          name: "mobile_phone",
-          label: "Nomor Telepon",
-          type: "number",
-        },
-        {
-          name: "email",
-          label: "Email",
-          type: "email",
-        },
-      ] : ""
-    ),
-    
+    // ...(item?.paxType === 'ADT'
+    //   ? [
+    //     {
+    //       name: "mobile_phone",
+    //       label: "Nomor Telepon",
+    //       type: "number",
+    //     },
+    //     {
+    //       name: "email",
+    //       label: "Email",
+    //       type: "email",
+    //     },
+    //   ] : ""
+    // ),
+    {
+      name: "mobile_phone",
+      label: "Nomor Telepon",
+      type: "number",
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "email",
+    },
+
     // ...(isAttraction
     //   ? [
     //       {
@@ -1263,15 +1280,20 @@ export const FormPerson = ({
       type: "select",
       options: countries,
     },
-    ...(item?.paxType === 'ADT'
-      ? [
-        {
-          name: "id_number",
-          label: "Nomor KTP / ID Number",
-          type: "text",
-        },
-      ] : ""
-    ),
+    // ...(item?.paxType === 'ADT'
+    //   ? [
+    //     {
+    //       name: "id_number",
+    //       label: "Nomor KTP / ID Number",
+    //       type: "text",
+    //     },
+    //   ] : ""
+    // ),
+    {
+      name: "id_number",
+      label: "Nomor KTP / ID Number",
+      type: "text",
+    },
     // ...(isKTP && isDomestic
     //   ? [
     //       {
@@ -1290,10 +1312,10 @@ export const FormPerson = ({
     //       },
     //     ]
     //   : 
-    ...(isDomestic
-      ? ""
-      : [
-          {
+
+    // ...(!isDomestic && item?.paxType !== 'INF'
+    ...(!isDomestic 
+      ? [{
             name: "passport_number",
             label: "Nomor Passport",
             type: "text",
@@ -1309,7 +1331,9 @@ export const FormPerson = ({
             label: "Tanggal Habis Berlaku",
             type: "date",
           },
-        ]),
+        ]
+      : ""
+      ),
     ...(item?.paxType === 'ADT' && item?.i === 0
         ? 
         [
@@ -1513,11 +1537,9 @@ export const FormPerson = ({
                         : customFields
                       : isAttraction
                       ? fields
-                      : !isDomestic && item?.paxType === 'ADT'
+                      : item?.paxType === 'ADT'
                       ? fields.slice(0, 7)
-                      : isDomestic && item?.paxType === 'ADT'
-                      ? fields.slice(0, 7)
-                      : fields.slice(0, 4)
+                      : fields.slice(0, 7) // harusnya 0, 4
                   }
                 />
               </Box>
@@ -1542,7 +1564,9 @@ export const FormPerson = ({
                   </Box>
                 </>
               )}
-              {!isDomestic && item?.paxType === 'ADT' && (
+
+              {/* !isDomestic && item?.paxType === 'ADT' */}
+              {!isDomestic && (
                 <>
                   <Box pt="12px">
                     <Text
@@ -1576,6 +1600,41 @@ export const FormPerson = ({
                   </Box>
                 </>
               )}
+
+              {/* {!isDomestic && item?.paxType === 'CHD' && (
+                <>
+                  <Box pt="12px">
+                    <Text
+                      fontSize={{ base: "lg", md: "md" }}
+                      fontWeight="semibold"
+                    >
+                      Informasi Identitas{" "}
+                      <span style={{ color: "red" }}>*</span>
+                    </Text>
+                    <Text color="neutral.text.medium">
+                      Pastikan masa berlaku paspor setidaknya 6 bulan dari
+                      tanggal keberangkatan
+                    </Text>
+                  </Box>
+                  <Box pt={"12px"}>
+                    <GlobalForm
+                      person={item}
+                      fields={
+                        // isInsurance
+                        //   ? fields.filter((item) => {
+                        //       return (
+                        //         item.name === "passport_type" ||
+                        //         item.name === "passport" ||
+                        //         item.name === "publisher_country"
+                        //       );
+                        //     })
+                        //   : fields.slice(7, fields.length)
+                        fields.slice(4, 7)
+                      }
+                    />
+                  </Box>
+                </>
+              )} */}
             </Stack>
           </CustomFilterButton>
         </Form>

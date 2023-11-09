@@ -153,6 +153,31 @@ export const bookingFlight = async (data, token) => {
     const birthDate = new Date(item?.dob);
     const age = today.getFullYear() - birthDate.getFullYear();
     
+    // const passengerItem = {
+    //   index: item?.key + 1,
+    //   type: item?.paxType === 'ADT' ? 1 : item?.paxType === 'CHD' ? 2 : 3,
+    //   title: item?.title,
+    //   firstName: item?.first_name,
+    //   lastName: item?.last_name,
+    //   isSeniorCitizen: (age > 65) ? true : false,
+    //   birthDate: item?.dob,
+    //   email: (item?.email === undefined) ? "" : item?.email,
+    //   homePhone: (item?.paxType === 'INF' || item?.paxType === 'CHD') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`, 
+    //   mobilePhone: (item?.paxType === 'INF' || item?.paxType === 'CHD') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`, // wajib
+    //   otherPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`,
+    //   idNumber: (item?.id_number === undefined ? "" : item?.id_number), // wajib
+    //   nationality: item?.country,
+    //   adultAssoc: (item?.paxType === 'INF') ? (item?.i + 1) : null,
+    //   passportNumber: item?.passport_number === undefined ? "" : item?.passport_number,
+    //   passportExpire: item?.expired_date === undefined ? "" : item?.expired_date,
+    //   passportOrigin: item?.publisher_country === undefined ? "" : item?.expired_date,
+    //   emergencyFullName: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_fullname}` : `${item?.emergency_fullname}`, // wajib
+    //   emergencyPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_phone}` : `${item?.emergency_phone}`, // wajib
+    //   emergencyEmail: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_email}` : `${item?.emergency_email}`, // wajib
+    //   seats: [],
+    //   ssrs: []
+    // };
+
     const passengerItem = {
       index: item?.key + 1,
       type: item?.paxType === 'ADT' ? 1 : item?.paxType === 'CHD' ? 2 : 3,
@@ -163,17 +188,17 @@ export const bookingFlight = async (data, token) => {
       birthDate: item?.dob,
       email: item?.email,
       homePhone: `${item?.mobile_phone}`, 
-      mobilePhone: (item?.paxType === 'INF') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`, // wajib
+      mobilePhone: `${item?.mobile_phone}`, // wajib
       otherPhone: `${item?.mobile_phone}`,
       idNumber: item?.id_number, // wajib
       nationality: item?.country,
       adultAssoc: (item?.paxType === 'INF') ? (item?.i + 1) : null,
-      passportNumber: item?.passport_number === undefined ? "" : item?.passport_number,
-      passportExpire: item?.expired_date === undefined ? "" : item?.expired_date,
-      passportOrigin: item?.publisher_country === undefined ? "" : item?.expired_date,
-      emergencyFullName: item?.first_name, // wajib
-      emergencyPhone: `${item?.mobile_phone}`, // wajib
-      emergencyEmail: item?.email, // wajib
+      passportNumber: item?.passport_number,
+      passportExpire: item?.expired_date,
+      passportOrigin: item?.publisher_country,
+      emergencyFullName: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_fullname}` : `${item?.emergency_fullname}`, // wajib
+      emergencyPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_phone}` : `${item?.emergency_phone}`, // wajib
+      emergencyEmail: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_email}` : `${item?.emergency_email}`, // wajib
       seats: [],
       ssrs: []
     };
@@ -228,6 +253,9 @@ export const bookingFlight = async (data, token) => {
 
   const bodyForm = {
     isInternational: data?.isInternational,
+    adult: Number(data?.query?.adult),
+    child: Number(data?.query?.child),
+    infant: Number(data?.query?.infant),
     contact : {
       email: data?.customer?.email,
       title: data?.traveler[0]?.title,
@@ -255,17 +283,18 @@ export const bookingFlight = async (data, token) => {
   // console.log('itemku1', data, payload)
   // payload.traveler = traveler;
   // payload = encryptData(JSON.stringify(payload));
-
   try {
     const response = await axios.post(
       `${BASE_URL}/orders/flight/booking`,payload,
       {
         headers: {
           "Content-Type": "application/json",
+          // "Content-Type": "text/plain",
           Authorization: `Bearer ${token}`,
         },
       }
     );
+    console.log('itemku', response)
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);
