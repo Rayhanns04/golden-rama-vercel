@@ -55,7 +55,7 @@ const Payment = (props) => {
     (state) => state.orderReducer
   );
 
-  console.log('itemku3', orderDetail, query, data, transaction )
+  // console.log('itemku3', orderDetail, query, data, transaction )
 
   const [selectedPayment, setSelectedPayment] = useState(defaultPaymentMethod);
   const [isWaiting, setIsWaiting] = useState(false);
@@ -80,7 +80,7 @@ const Payment = (props) => {
 
   const handlePayment = () => {
     const form = {
-      order_id: orderDetail.orderNumber,
+      order_id: orderDetail.orderNumber, // orderDetail.data.pnrid
     };
     if (!selectedPayment) {
       return toast({

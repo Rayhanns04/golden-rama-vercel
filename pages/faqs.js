@@ -15,7 +15,6 @@ import React from "react";
 import Layout from "../src/components/layout";
 import Breadcrumbs from "nextjs-breadcrumbs";
 import axios from "axios";
-import Image from "next/image";
 
 const FAQ = (props) => {
   const { faq: faqs, meta } = props;

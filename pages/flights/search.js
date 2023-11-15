@@ -113,6 +113,7 @@ const SearchFlights = ({
   const [statusSuccess, setStatusSuccess] = useState(false);
   const [additionFee, setAdditionalFee] = useState();
 
+  
   // console.log('itemku', currentJourney)
 
   const dispatch = useDispatch();
@@ -130,8 +131,9 @@ const SearchFlights = ({
   const isDesktop = useBreakpointValue(
     { base: false, md: true },
     { ssr: false }
-    );
+  );
     
+  // console.log('itemkuJourney', currentJourney, isLoading)
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
   const [flightType, setFlightType] = useState('all'); 
@@ -144,8 +146,10 @@ const SearchFlights = ({
       
       if (response.success === true) {
         setStatusSuccess(true);
+        setIsLoading(false)
         
         const schedules = response.data?.Schedules;
+
         schedules.map((item)=>{
           if(item.IsInternational){
             setIsInternational(true)
@@ -1000,6 +1004,7 @@ const SearchFlights = ({
         bg={"brand.blue.100"}
         as={"section"}
       />
+      
       <Box hidden={noresults} as={"section"} mx={"-24px"} px={"24px"}>
         {cart &&
           cart.map((item, index) => (
@@ -1112,6 +1117,7 @@ const SearchFlights = ({
           )}
         </HStack>
       </Box>
+
       <Box as={"section"} mx={"-24px"} p={"24px"} bg={"brand.blue.100"}>
         {!noresults ? (
           <Stack
@@ -1121,7 +1127,6 @@ const SearchFlights = ({
           >
             {currentJourney?.length !== 0 ? (
               currentJourney[position]?.Flights?.slice(0, shownItems).map((item, index) => {
-                // console.log("iniresponse", item);
                 return (
                   <>
                     <FlightItem 
@@ -1140,13 +1145,13 @@ const SearchFlights = ({
               })
             ) : (
               <>
-                {!isLoading ? (
+                {/* {(!isLoading && (currentJourney[0]?.Flights?.length === 0)) ? (
                   <NoResults href="/flights" />
                 ) : (
                   <Center>
                     <Spinner mx={"auto"} />
                   </Center>
-                )}
+                )} */}
               </>
             )}
             {shownItems <= totalData ? (
@@ -1227,6 +1232,14 @@ const SearchFlights = ({
           </Stack>
         ) : (
           <NoResults href="/flights" />
+        )}
+
+        {(!isLoading && (currentJourney[0]?.Flights?.length === 0)) ? (
+          <NoResults href="/flights" />
+        ) : (
+          <Center>
+            <Spinner mx={"auto"} />
+          </Center>
         )}
       </Box>
     </Layout>

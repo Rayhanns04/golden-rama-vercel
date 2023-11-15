@@ -1,5 +1,4 @@
 import { chakra, Box, Heading, Stack } from "@chakra-ui/react";
-import Image from "next/image";
 import React from "react";
 import { CustomOrangeFullWidthButton } from "../src/components/button";
 import { ErrorPage } from "../src/components/card";

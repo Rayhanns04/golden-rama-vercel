@@ -37,6 +37,23 @@ export function calculateTimeDifference(baseTime, timeArray) {
   return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
 }
 
+export function calculateTimeTotalTransitDifference(time2, time1) {
+  const [hours1, minutes1] = time1.split(":").map(Number);
+  const [hours2, minutes2] = time2.split(":").map(Number);
+
+  const date1 = new Date(0, 0, 0, hours1, minutes1);
+  const date2 = new Date(0, 0, 0, hours2, minutes2);
+
+  const timeDifferenceInMillis = date2 - date1;
+
+  const hoursDiff = Math.floor(timeDifferenceInMillis / 3600000);
+  const minutesDiff = Math.floor((timeDifferenceInMillis % 3600000) / 60000);
+
+  const formattedDiff = `${String(hoursDiff).padStart(2, "0")}:${String(minutesDiff).padStart(2, "0")}`;
+  
+  return formattedDiff;
+}
+
 export function getMonthFromMonthName(name) {
   const monthsLong = {
     January: 1,

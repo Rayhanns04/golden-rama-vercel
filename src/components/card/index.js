@@ -2450,7 +2450,7 @@ export const FlightListItem = ({
                         fontSize={{ base: "sm", md: "md" }}
                         color={"neutral.text.low"}
                       >
-                        {`Transit selama ${differenceDateLong(
+                        {`Transit selama ${differenceDate(
                           segments[index].arrivalDateTime,
                           segments[index + 1].departureDateTime
                         )} di`}

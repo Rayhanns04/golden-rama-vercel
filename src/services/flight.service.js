@@ -62,36 +62,37 @@ export const getFlights = async (data, issmartcombo) => {
       data: data,
     });
     const dataFlights = response.data;
-    if (
-      dataFlights?.filter?.[0]?.combinedJourneys?.length > 0 &&
-      dataFlights &&
-      issmartcombo == true
-    ) {
-      dataFlights.data[0].journeys = await dataFlights.data[0].journeys.concat(
-        dataFlights.filter[0].combinedJourneys?.map((item) => {
-          if (
-            item?.journeys?.[0]?.segments?.length > 0 &&
-            item?.journeys?.[0] !== undefined &&
-            item?.journeys?.[0] !== null &&
-            item !== undefined &&
-            item !== null
-          ) {
-            const data = {
-              ...item?.journeys?.[0],
-              isCombine: true,
-            };
-            return data;
-          }
-        })
-      );
-      //jika ada additionalData.data[0].journeys yang undefined maka hapus
-      dataFlights.data[0].journeys = await dataFlights.data[0].journeys.filter(
-        (item) => item !== undefined
-      );
-    }
+    // console.log('itemku3', dataFlights)
+    // if (
+    //   dataFlights?.filter?.[0]?.combinedJourneys?.length > 0 &&
+    //   dataFlights &&
+    //   issmartcombo == true
+    // ) {
+    //   dataFlights.data[0].journeys = await dataFlights.data[0].journeys.concat(
+    //     dataFlights.filter[0].combinedJourneys?.map((item) => {
+    //       if (
+    //         item?.journeys?.[0]?.segments?.length > 0 &&
+    //         item?.journeys?.[0] !== undefined &&
+    //         item?.journeys?.[0] !== null &&
+    //         item !== undefined &&
+    //         item !== null
+    //       ) {
+    //         const data = {
+    //           ...item?.journeys?.[0],
+    //           isCombine: true,
+    //         };
+    //         return data;
+    //       }
+    //     })
+    //   );
+    //   //jika ada additionalData.data[0].journeys yang undefined maka hapus
+    //   dataFlights.data[0].journeys = await dataFlights.data[0].journeys.filter(
+    //     (item) => item !== undefined
+    //   );
+    // }
     return Promise.resolve(dataFlights);
   } catch (error) {
-    console.error(error);
+    // console.error(error);
 
     return Promise.reject(error);
   }
@@ -132,7 +133,7 @@ export const getDetailPrice = async (data, jwt) => {
       },
     }
     );
-    // console.log('iniresponse', response, jwt)
+
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);
@@ -152,31 +153,6 @@ export const bookingFlight = async (data, token) => {
     const today = new Date();
     const birthDate = new Date(item?.dob);
     const age = today.getFullYear() - birthDate.getFullYear();
-    
-    // const passengerItem = {
-    //   index: item?.key + 1,
-    //   type: item?.paxType === 'ADT' ? 1 : item?.paxType === 'CHD' ? 2 : 3,
-    //   title: item?.title,
-    //   firstName: item?.first_name,
-    //   lastName: item?.last_name,
-    //   isSeniorCitizen: (age > 65) ? true : false,
-    //   birthDate: item?.dob,
-    //   email: (item?.email === undefined) ? "" : item?.email,
-    //   homePhone: (item?.paxType === 'INF' || item?.paxType === 'CHD') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`, 
-    //   mobilePhone: (item?.paxType === 'INF' || item?.paxType === 'CHD') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`, // wajib
-    //   otherPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD') ? `${data.traveler[item?.i].mobile_phone}` : `${item?.mobile_phone}`,
-    //   idNumber: (item?.id_number === undefined ? "" : item?.id_number), // wajib
-    //   nationality: item?.country,
-    //   adultAssoc: (item?.paxType === 'INF') ? (item?.i + 1) : null,
-    //   passportNumber: item?.passport_number === undefined ? "" : item?.passport_number,
-    //   passportExpire: item?.expired_date === undefined ? "" : item?.expired_date,
-    //   passportOrigin: item?.publisher_country === undefined ? "" : item?.expired_date,
-    //   emergencyFullName: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_fullname}` : `${item?.emergency_fullname}`, // wajib
-    //   emergencyPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_phone}` : `${item?.emergency_phone}`, // wajib
-    //   emergencyEmail: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_email}` : `${item?.emergency_email}`, // wajib
-    //   seats: [],
-    //   ssrs: []
-    // };
 
     const passengerItem = {
       index: item?.key + 1,
@@ -252,6 +228,7 @@ export const bookingFlight = async (data, token) => {
   const fullNameContact = data.customer.fullName.split(" ")
 
   const bodyForm = {
+    fareDetail: data?.fareDetail,
     isInternational: data?.isInternational,
     adult: Number(data?.query?.adult),
     child: Number(data?.query?.child),
@@ -280,12 +257,15 @@ export const bookingFlight = async (data, token) => {
   }
 
   let payload = bodyForm;
-  // console.log('itemku1', data, payload)
+  // console.log('itemku1', payload)
   // payload.traveler = traveler;
   // payload = encryptData(JSON.stringify(payload));
+
   try {
     const response = await axios.post(
-      `${BASE_URL}/orders/flight/booking`,payload,
+      `${BASE_URL}/orders/flight/booking`, {
+        data: payload
+      },
       {
         headers: {
           "Content-Type": "application/json",
@@ -294,10 +274,9 @@ export const bookingFlight = async (data, token) => {
         },
       }
     );
-    console.log('itemku', response)
     return Promise.resolve(response.data);
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     return Promise.reject(error);
   }
 };

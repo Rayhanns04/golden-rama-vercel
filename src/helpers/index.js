@@ -679,10 +679,7 @@ export function simplifyQuerySearch(query) {
 }
 
 export function simplifyJourneysFlight(journeys, query, isDomestic) {
-  // console.log('payload',journeys, query, isDomestic)
-
   let payload = {}
-
   if(journeys?.IsConnecting === false){
     payload = {
       isInternational: isDomestic,
@@ -699,21 +696,17 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
       extraData: journeys?.ClassObjects[0]?.ExtraData
     };
   } else {
-    
-
     const classId = []
     const flightId = []
     const tax = []
     const fare = []
-
-
+    
     journeys?.ConnectingFlights.map(async (item) => {
       classId.push(item?.ClassObjects[0]?.Id)
       flightId.push(item?.ClassObjects[0]?.FlightId)
       tax.push(item?.ClassObjects[0]?.Tax)
       fare.push(item?.ClassObjects[0]?.Fare)
     })
-    // console.log('iniresponse', fare.reduce((total, num) => total + num, 0))
 
     payload = {
       isInternational: isDomestic,
@@ -799,6 +792,8 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
   //   journeys: journey,
   //   isCombinedJourneys: isCombinedJourney,
   // };
+
+  // console.log('itemku', payload)
   return payload;
 }
 

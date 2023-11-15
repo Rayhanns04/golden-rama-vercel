@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useLoginToast } from "../../hooks";
 import { convertDateFlightPage, convertRupiah, convertTimeFlightPage, getClassCode, simplifyBodyDetailFlight } from "../../helpers";
-import { calculateTimeDifference } from "../../helpers/date";
+import { calculateTimeDifference, calculateTimeTotalTransitDifference } from "../../helpers/date";
 
 
 const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDesktop, isLoading, originData, handlePosition }) => {
@@ -322,7 +322,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       <Text
                         fontSize={{ base: "sm", md: "md" }}
                         color={"neutral.text.low"}>
-                        {`Transit selama ${flight?.ConnectingFlights?.[0]?.ClassObjects?.[0]?.TransitTime?.split(':')[0]} Jam ${flight?.ConnectingFlights?.[0]?.ClassObjects?.[0]?.TransitTime?.split(':')[1]} Menit di`}
+                        {`Transit selama ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index]?.ArriveTime)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index]?.ArriveTime)?.split(':')[1]} Menit di`}
                       </Text>
                       <Text
                         fontWeight={"semibold"}

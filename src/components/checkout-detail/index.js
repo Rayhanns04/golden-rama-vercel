@@ -684,6 +684,7 @@ export const DrawerPromo = ({
       console.log(error);
     },
   });
+  
   const handleSubmit = (values, action) => {
     const { promo } = values;
     return mutation.mutateAsync(values).catch((error) => {
@@ -1543,7 +1544,7 @@ export const FormPerson = ({
                   }
                 />
               </Box>
-              { item?.paxType === 'ADT' && item?.i === 0 && (
+              { !isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
                 <>
                   <Box pt="12px">
                     <Text
@@ -1559,6 +1560,28 @@ export const FormPerson = ({
                       person={item}
                       fields={
                         fields.slice(10, fields?.length)
+                      }
+                    />
+                  </Box>
+                </>
+              )}
+
+              { isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
+                <>
+                  <Box pt="12px">
+                    <Text
+                      fontSize={{ base: "lg", md: "md" }}
+                      fontWeight="semibold"
+                    >
+                      Emergency Contact{" "}
+                      <span style={{ color: "red" }}>*</span>
+                    </Text>
+                  </Box>
+                  <Box pt={"12px"}>
+                    <GlobalForm
+                      person={item}
+                      fields={
+                        fields.slice(7, fields?.length)
                       }
                     />
                   </Box>
