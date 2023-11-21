@@ -67,7 +67,7 @@ const ArticleDetail = () => {
         "@type": "Article",
         headline: article?.title,
         image: [
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/${article?.thumbnail.data.attributes.url}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}${article?.thumbnail.data.attributes.url}`,
         ],
         datePublished: article?.createdAt,
         dateModified: article?.updatedAt,
@@ -114,7 +114,7 @@ const ArticleDetail = () => {
         >
           <Skeleton isLoaded={!isLoading}>
             <Image
-              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${article?.thumbnail.data.attributes.url}`}
+              src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${article?.thumbnail.data.attributes.url}`}
               alt="photo"
               layout="fill"
               objectFit="cover"
@@ -212,7 +212,7 @@ export const getStaticProps = async (ctx) => {
         title: article?.metatitle,
         description: article?.metadescription,
         keyword: article?.metakeyword,
-        image: `${process.env.NEXT_PUBLIC_BACKEND_URL}/${article?.thumbnail.data.attributes.url}`,
+        image: `${process.env.NEXT_PUBLIC_BACKEND_URL}${article?.thumbnail.data.attributes.url}`,
       },
     },
     revalidate: 10,
