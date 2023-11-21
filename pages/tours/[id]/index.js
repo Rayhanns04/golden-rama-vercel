@@ -926,6 +926,7 @@ export const getStaticPaths = async () => {
 
 export const getStaticProps = async (ctx) => {
   const { id } = ctx.params;
+  console.log('itemtourid', id)
   let slug = {
     tourSlug: id,
   };

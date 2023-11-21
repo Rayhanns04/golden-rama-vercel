@@ -149,6 +149,8 @@ export const getToursV2 = async (filters) => {
       },
     });
 
+    console.log('itemtour', response)
+
     return Promise.resolve(response.data.data.tours);
   } catch (error) {
     console.error(error);

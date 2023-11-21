@@ -682,7 +682,7 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
   let payload = {}
   if(journeys?.IsConnecting === false){
     payload = {
-      isInternational: isDomestic,
+      isInternational: `${!isDomestic}`,
       airline: journeys?.Airline,
       adult: query.adult,
       child: query.child,
@@ -709,7 +709,7 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
     })
 
     payload = {
-      isInternational: isDomestic,
+      isInternational: `${!isDomestic}`,
       airline: journeys?.Airline,
       adult: query.adult,
       child: query.child,

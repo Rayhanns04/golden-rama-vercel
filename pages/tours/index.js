@@ -37,10 +37,12 @@ import { compact } from "underscore";
 const Tours = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
-
+  // console.log('itemtour1', props)
+  
   const { tour_type, sort, tour_duration, meta } = props;
 
   const [history, setHistory] = useLocalStorage("tour_search", []);
+
 
   const handleSubmit = (values, actions) => {
     setHistory((history) => {
@@ -342,6 +344,8 @@ const Tours = (props) => {
 
 export const getStaticProps = async (context) => {
   const tour_type = await getTourTagsV2();
+
+  // console.log('itemtour2', tour_type)
 
   const tour_duration = [
     { label: "< 10 Hari", value: "1" },

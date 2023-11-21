@@ -17,7 +17,6 @@ import {
   HStack,
   Icon,
   IconButton,
-  Link,
   LinkBox,
   LinkOverlay,
   SimpleGrid,
@@ -34,9 +33,11 @@ import {
   Tag,
   Spinner,
 } from "@chakra-ui/react";
+
 import Image from "next/image";
 import React, { Fragment, useEffect, useRef } from "react";
 import NextLink from "next/link";
+import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { CustomTags, CustomTagsOutlineIcon } from "../tags";
 import WeatherIcon from "../../../public/svg/icons/weather.svg";
@@ -426,9 +427,10 @@ export const Unauthorized = ({ withAuthButton }) => {
 
 export const TourItem = ({ item }) => {
   const { tags, name } = item;
+  console.log('itemtourdetail',item)
   const departures = item.departures.reduce((prev, item) => (prev = item));
   return (
-    <NextLink href={`/tours/${item.slug}`}>
+    <a href={`/tours/${item.slug}`}>
       <a rel="canonical">
         <LinkBox>
           <Stack
@@ -532,12 +534,12 @@ export const TourItem = ({ item }) => {
                       }`}
                     </Text>
                   </Stack>
-                  <Link
+                  <a
                     as="div"
                     fontSize={{ base: "sm", md: "md" }}
                     alignContent={"center"}
-                    color={"brand.blue.400"}
-                  >
+                    href={`/tours/${item.slug}`}
+                    color={"brand.blue.400"}>
                     Lihat Detail
                     {/* <Icon width="16" height="16" viewBox="0 0 16 16"> */}
                     <Icon
@@ -553,14 +555,14 @@ export const TourItem = ({ item }) => {
                         fill="#41778A"
                       />
                     </Icon>
-                  </Link>
+                  </a>
                 </HStack>
               </Stack>
             </Stack>
           </Stack>
         </LinkBox>
       </a>
-    </NextLink>
+    </a>
   );
 };
 export const PackageItem = ({ item }) => {

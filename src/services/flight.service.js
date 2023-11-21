@@ -133,11 +133,9 @@ export const getDetailPrice = async (data, jwt) => {
       },
     }
     );
-
     return Promise.resolve(response.data);
   } catch (error) {
     console.error(error);
-
     return Promise.reject(error);
   }
 };
@@ -229,7 +227,7 @@ export const bookingFlight = async (data, token) => {
 
   const bodyForm = {
     fareDetail: data?.fareDetail,
-    isInternational: data?.isInternational,
+    isInternational: `${data?.isInternational}`,
     adult: Number(data?.query?.adult),
     child: Number(data?.query?.child),
     infant: Number(data?.query?.infant),

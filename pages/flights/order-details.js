@@ -326,6 +326,12 @@ const OrderDetails = () => {
             fareDetailRequestTemp[index] = fareItem
             try {
               const response = await getDetailPrice(fareItem, jwt);
+
+              if(response.message === 'API request failed'){
+                setIsLoading(false)
+                return
+              }
+
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -383,6 +389,12 @@ const OrderDetails = () => {
             // setFareDetailRequest(prevFareDetailRequest => [...prevFareDetailRequest, fareItem]);            
             try {
               const response = await getDetailPrice(fareItem, jwt);
+
+              if(response.message === 'API request failed'){
+                setIsLoading(false)
+                return
+              }
+
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
@@ -681,7 +693,7 @@ const OrderDetails = () => {
     );
   };
 
-  const TabContent =  React.memo(({ type, onChoose, journey, status }) => {
+  const TabContent =  useCallback(({ type, onChoose, journey, status }) => {
     const { query } = useSelector((state) => state.orderReducer);
     const [flights, setFlights] = useState([])
     // const payload = simplifyBodyDetailFlight(journey, query);
@@ -958,7 +970,7 @@ const OrderDetails = () => {
         )} */}
       </Box>
     );
-  });
+  },[]);
 
   const FlightPrice = (props) => {
     return (
@@ -1348,13 +1360,6 @@ const OrderDetails = () => {
                                   )}
                                 </HStack>
                               </>
-                        {/* {!priceArray?.isLoading ? (
-                          
-                        ) : (
-                          <Center>
-                            <Spinner></Spinner>
-                          </Center>
-                        )} */}
                       </Box>
                       <Box
                         position={"sticky"}

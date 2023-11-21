@@ -55,8 +55,6 @@ const Payment = (props) => {
     (state) => state.orderReducer
   );
 
-  // console.log('itemku3', orderDetail, query, data, transaction )
-
   const [selectedPayment, setSelectedPayment] = useState(defaultPaymentMethod);
   const [isWaiting, setIsWaiting] = useState(false);
   const [paymentDetail, setPaymentDetail] = useState(null);
@@ -80,7 +78,7 @@ const Payment = (props) => {
 
   const handlePayment = () => {
     const form = {
-      order_id: orderDetail.orderNumber, // orderDetail.data.pnrid
+      order_id: orderDetail?.data?.orderNumber, // orderDetail.data.pnrid
     };
     if (!selectedPayment) {
       return toast({
@@ -118,7 +116,7 @@ const Payment = (props) => {
 
   const handleStatusPayment = () => {
     const form = {
-      orderNumber: orderDetail.orderNumber,
+      orderNumber: orderDetail.data.orderNumber,
     };
     mutationCheckStatusPayment.mutate(form);
   };

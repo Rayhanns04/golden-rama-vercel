@@ -142,8 +142,13 @@ const SearchFlights = ({
     try {
       setIsLoading(true);
       const response = await getFlights(payload, isSmartCombo);
-      // console.log('itemku', response, query);
+      console.log('itemku', response, query);
       
+      if(response.success === false){
+        setIsLoading(false)
+        setStatusSuccess(false);
+      }
+
       if (response.success === true) {
         setStatusSuccess(true);
         setIsLoading(false)
@@ -184,13 +189,14 @@ const SearchFlights = ({
         setTotalData(response.data?.Schedules[position]?.Flights?.length);
         setAdditionalFee(response.data?.Schedules[position]?.AdditionalFee);
         setIsLoading(false);
-      }
+      } 
     } catch (error) {
       setIsLoading(false);
       setStatusSuccess(false);
-      // console.log('Error occurred:', error);
     }
   };
+
+  console.log('itemku',isLoading, currentJourney)
 
   // useEffect(()=>{
   //   if(position === 1){
@@ -1234,12 +1240,14 @@ const SearchFlights = ({
           <NoResults href="/flights" />
         )}
 
-        {(!isLoading && (currentJourney[0]?.Flights?.length === 0)) ? (
-          <NoResults href="/flights" />
-        ) : (
+        {isLoading && (
           <Center>
             <Spinner mx={"auto"} />
           </Center>
+        )}
+
+        {(!isLoading && ((currentJourney[0]?.Flights?.length === 0) || (currentJourney?.length === 0)) ) && (
+          <NoResults href="/flights" />
         )}
       </Box>
     </Layout>
