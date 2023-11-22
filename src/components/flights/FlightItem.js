@@ -222,7 +222,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
             isLoaded={!isLoading}
           >
             <DetailButton
-              type={item.connectingType != "DIRECT" ? "transit" : "direct"}
+              type={item.IsConnecting ? "transit" : "direct"}
               item={item}
               query={query}
               isDesktop={isDesktop}

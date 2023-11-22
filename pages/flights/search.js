@@ -142,7 +142,7 @@ const SearchFlights = ({
     try {
       setIsLoading(true);
       const response = await getFlights(payload, isSmartCombo);
-      console.log('itemku', response, query);
+      // console.log('itemku', response, query);
       
       if(response.success === false){
         setIsLoading(false)
@@ -196,7 +196,7 @@ const SearchFlights = ({
     }
   };
 
-  console.log('itemku',isLoading, currentJourney)
+  // console.log('itemku',isLoading, currentJourney)
 
   // useEffect(()=>{
   //   if(position === 1){
@@ -1240,7 +1240,7 @@ const SearchFlights = ({
           <NoResults href="/flights" />
         )}
 
-        {isLoading && (
+        {isLoading && cart?.length < 1 && (
           <Center>
             <Spinner mx={"auto"} />
           </Center>
@@ -1314,9 +1314,6 @@ const SearchFlights = ({
 
 export async function getServerSideProps(context) {
   const { departureDate, returnDate, originCode, destinationCode, adult, child, infant, cabinClasses, airlines, isRoundTrip, is_smart_combo } = context.query;
-
-  // Gunakan nilai-nilai parameter yang diambil
-  // ...
 
   return {
     props: {

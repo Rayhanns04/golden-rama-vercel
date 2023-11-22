@@ -43,7 +43,6 @@ const Tours = (props) => {
 
   const [history, setHistory] = useLocalStorage("tour_search", []);
 
-
   const handleSubmit = (values, actions) => {
     setHistory((history) => {
       return _.uniq([values, ...history]);

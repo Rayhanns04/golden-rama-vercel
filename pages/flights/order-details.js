@@ -453,6 +453,8 @@ const OrderDetails = () => {
       setFareDetailRequest(fareDetailRequestTemp)
   }
   }, [query?.isRoundTrip, data?.flights]);
+
+  
   // isDomestic, jwt, query
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({
@@ -693,17 +695,16 @@ const OrderDetails = () => {
     );
   };
 
-  const TabContent =  useCallback(({ type, onChoose, journey, status }) => {
+  const TabContent = ({ type, onChoose, journey, status }) => {
     const { query } = useSelector((state) => state.orderReducer);
     const [flights, setFlights] = useState([])
-    // const payload = simplifyBodyDetailFlight(journey, query);
     const isDesktop = useBreakpointValue(
       { base: false, md: true },
       { ssr: false }
     );
     // const [detailPrice, setDetailPrice] = useState([]);
     // const [totalTaxPrice, setTotalTaxPrice] = useState(0);
-
+    // const payload = simplifyBodyDetailFlight(journey, query);
     useEffect(() => {
       if (journey?.TotalTransit === 0) {
         setFlights([journey]);
@@ -970,7 +971,7 @@ const OrderDetails = () => {
         )} */}
       </Box>
     );
-  },[]);
+  };
 
   const FlightPrice = (props) => {
     return (

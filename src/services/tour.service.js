@@ -149,7 +149,7 @@ export const getToursV2 = async (filters) => {
       },
     });
 
-    console.log('itemtour', response)
+    // console.log('itemtour', response)
 
     return Promise.resolve(response.data.data.tours);
   } catch (error) {
@@ -168,18 +168,20 @@ export const getTourBySlugV2 = async (slug) => {
         variables: slug,
       },
     });
+
     // console.log(
     // "🚀 ~ file: tour.service.js:163 ~ getTourBySlugV2 ~ response:",
     // response
     // );
     // hide departure date ketika date lebih kecil dari today yyyy-mm-dd
-    const today = new Date();
-    const departures = response.data.data.tour.departures;
-    const departureDate = departures.filter((item) => {
-      const date = new Date(item.date);
-      return date >= today;
-    });
-    response.data.data.tour.departures = departureDate;
+
+    // const today = new Date();
+    // const departures = response.data.data.tour.departures;
+    // const departureDate = departures.filter((item) => {
+    //   const date = new Date(item.date);
+    //   return date >= today;
+    // });
+    // response.data.data.tour.departures = departureDate;
     return Promise.resolve(response.data.data.tour);
   } catch (error) {
     console.error(error);
@@ -198,13 +200,13 @@ export const getTourBySlugWithIteneraryV2 = async (slug) => {
       },
     });
     // hide departure date ketika date lebih kecil dari today yyyy-mm-dd
-    const today = new Date();
-    const departures = response.data.data.tour.departures;
-    const departureDate = departures.filter((item) => {
-      const date = new Date(item.date);
-      return date >= today;
-    });
-    response.data.data.tour.departures = departureDate;
+    // const today = new Date();
+    // const departures = response.data.data.tour.departures;
+    // const departureDate = departures.filter((item) => {
+    //   const date = new Date(item.date);
+    //   return date >= today;
+    // });
+    // response.data.data.tour.departures = departureDate;
 
     // console.log(
     // "🚀 ~ file: tour.service.js:181 ~ getTourBySlugWithIteneraryV2 ~ response:",
@@ -367,6 +369,7 @@ export const getSlugTours = async () => {
         operationNameCustom: "toursV2Query",
       },
     });
+
     return Promise.resolve(response.data.data.tours);
   } catch (error) {
     return Promise.reject(error);

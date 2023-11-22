@@ -17,6 +17,7 @@ import {
   HStack,
   Icon,
   IconButton,
+  Link,
   LinkBox,
   LinkOverlay,
   SimpleGrid,
@@ -33,11 +34,9 @@ import {
   Tag,
   Spinner,
 } from "@chakra-ui/react";
-
 import Image from "next/image";
 import React, { Fragment, useEffect, useRef } from "react";
 import NextLink from "next/link";
-import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { CustomTags, CustomTagsOutlineIcon } from "../tags";
 import WeatherIcon from "../../../public/svg/icons/weather.svg";
@@ -164,7 +163,7 @@ export const ErrorPage = ({
     minH={"calc(100vh - 80px)"}
     // w={"full"}
   >
-    <Box position={"absolute"} zIndex={2} top={{ base: "320px", md: "280px" }}>
+    <Box position={"absolute"} zIndex={2} top={{ base: "380px", md: "280px" }}>
       <Heading textAlign={"center"} fontSize={"5xl"}>
         {errorCode}
       </Heading>
@@ -173,11 +172,11 @@ export const ErrorPage = ({
       </Heading>
     </Box>
     <NotFoundIcon style={{ transform: "scale(.8)" }} />
-    <Stack
+    {/* <Stack
       alignItems={"center"}
       justifyContent={"center"}
       position={"absolute"}
-      p={"24px"}
+      px={"24px"}
       zIndex={2}
       w={"full"}
       mx={"auto"}
@@ -228,7 +227,7 @@ export const ErrorPage = ({
           Kembali ke Beranda
         </CustomOrangeFullWidthButton>
       </NextLink>
-    </Stack>
+    </Stack> */}
   </Stack>
 );
 
@@ -427,10 +426,9 @@ export const Unauthorized = ({ withAuthButton }) => {
 
 export const TourItem = ({ item }) => {
   const { tags, name } = item;
-  console.log('itemtourdetail',item)
   const departures = item.departures.reduce((prev, item) => (prev = item));
   return (
-    <a href={`/tours/${item.slug}`}>
+    <NextLink href={`/tours/${item.slug}`}>
       <a rel="canonical">
         <LinkBox>
           <Stack
@@ -534,12 +532,12 @@ export const TourItem = ({ item }) => {
                       }`}
                     </Text>
                   </Stack>
-                  <a
+                  <Link
                     as="div"
                     fontSize={{ base: "sm", md: "md" }}
                     alignContent={"center"}
-                    href={`/tours/${item.slug}`}
-                    color={"brand.blue.400"}>
+                    color={"brand.blue.400"}
+                  >
                     Lihat Detail
                     {/* <Icon width="16" height="16" viewBox="0 0 16 16"> */}
                     <Icon
@@ -555,14 +553,14 @@ export const TourItem = ({ item }) => {
                         fill="#41778A"
                       />
                     </Icon>
-                  </a>
+                  </Link>
                 </HStack>
               </Stack>
             </Stack>
           </Stack>
         </LinkBox>
       </a>
-    </a>
+    </NextLink>
   );
 };
 export const PackageItem = ({ item }) => {
