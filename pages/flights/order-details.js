@@ -122,7 +122,7 @@ const OrderDetails = () => {
   const [fareDetailRequest, setFareDetailRequest] = useState([])
   const [resultFareBreakdown, setResultFareBreakdown] = useState([])
 
-  console.log('itemku4', fareDetail, fareDetailRequest)
+  // console.log('itemku4', fareDetail, fareDetailRequest)
   
   const dataQuery = {
     adult: query?.adult,
