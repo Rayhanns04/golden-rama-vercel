@@ -679,6 +679,7 @@ export function simplifyQuerySearch(query) {
 }
 
 export function simplifyJourneysFlight(journeys, query, isDomestic) {
+  // console.log('itemku3',journeys)
   let payload = {}
   if(journeys?.IsConnecting === false){
     payload = {
@@ -700,12 +701,14 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
     const flightId = []
     const tax = []
     const fare = []
+    const code = []
     
     journeys?.ConnectingFlights.map(async (item) => {
       classId.push(item?.ClassObjects[0]?.Id)
       flightId.push(item?.ClassObjects[0]?.FlightId)
       tax.push(item?.ClassObjects[0]?.Tax)
       fare.push(item?.ClassObjects[0]?.Fare)
+      code.push(item?.ClassObjects[0]?.Code)
     })
 
     payload = {
@@ -719,7 +722,7 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
       fare: parseInt(fare.reduce((total, num) => total + num, 0)),
       tax: parseInt(tax.reduce((total, num) => total + num, 0)),
       fareBasisCode: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.FareBasisCode,
-      code: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.Code,
+      code: code.join('#'),
       extraData: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.ExtraData
     };
     

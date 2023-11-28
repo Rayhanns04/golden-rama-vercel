@@ -170,12 +170,13 @@ export const bookingFlight = async (data, token) => {
       passportNumber: item?.passport_number,
       passportExpire: item?.expired_date,
       passportOrigin: item?.publisher_country,
-      emergencyFullName: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_fullname}` : `${item?.emergency_fullname}`, // wajib
-      emergencyPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_phone}` : `${item?.emergency_phone}`, // wajib
-      emergencyEmail: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_email}` : `${item?.emergency_email}`, // wajib
+      // emergencyFullName: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_fullname}` : `${item?.emergency_fullname}`, // wajib
+      // emergencyPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_phone}` : `${item?.emergency_phone}`, // wajib
+      // emergencyEmail: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_email}` : `${item?.emergency_email}`, // wajib
       seats: [],
       ssrs: []
     };
+
     return passenger.push(passengerItem);
   })
 
@@ -272,6 +273,7 @@ export const bookingFlight = async (data, token) => {
         },
       }
     );
+    // console.log('itemku', response)
     return Promise.resolve(response.data);
   } catch (error) {
     // console.error(error);

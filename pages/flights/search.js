@@ -80,14 +80,13 @@ import { sassTrue } from "sass";
 
 const SearchFlights = ({
   additionalData,
-  totalFlight,
+  dataQuery,
   noresults,
-  ...props
+  dataflights
 }) => {
   // let noresults = false
   const router = useRouter();
-  const dataQuery = router.query;
-  
+  // const dataQuery = router.query;
   let query = {
     departureDate: dataQuery?.departureDate,
     returnDate: dataQuery?.returnDate,
@@ -105,13 +104,13 @@ const SearchFlights = ({
   const payload = query;
 
   // data save all 
-  const [currentJourneySave, setCurrentJourneySave] = useState([]) 
+  const [currentJourneySave, setCurrentJourneySave] = useState(dataflights?.currentJourneySave) 
   const [currentJourneyInFlightType, setCurrentJourneyInFligtType] = useState([]) 
 
-  const [currentJourney, setCurrentJourney] = useState([]) 
-  const [flights, setFlights] = useState([]);
-  const [statusSuccess, setStatusSuccess] = useState(false);
-  const [additionFee, setAdditionalFee] = useState();
+  const [currentJourney, setCurrentJourney] = useState(dataflights?.currentJourney) 
+  const [flights, setFlights] = useState(dataflights?.flights);
+  const [statusSuccess, setStatusSuccess] = useState(dataflights?.status);
+  const [additionFee, setAdditionalFee] = useState(dataflights?.additionalFee);
 
   
   // console.log('itemku', currentJourney)
@@ -121,19 +120,18 @@ const SearchFlights = ({
   const [sortBy, setSortBy] = useState("Harga Terendah");
   const [filter, setFilter] = useState({});
   const [shownItems, setShownItems] = useState(15);
-  const [totalData, setTotalData] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [totalData, setTotalData] = useState(dataflights?.totalData);
+  const [isLoading, setIsLoading] = useState(dataflights?.loading);
   const [position, setPosition] = useState(0);
   const [cart, setCart] = useState([]);
   const [checkoutPage, setCheckoutPage] = useState(false);
   const [isSmartCombo, setIsSmartCombo] = useState(true)
-  const [isInternational, setIsInternational] = useState(false);
+  const [isInternational, setIsInternational] = useState(dataflights?.isInternational);
   const isDesktop = useBreakpointValue(
     { base: false, md: true },
     { ssr: false }
   );
     
-  // console.log('itemkuJourney', currentJourney, isLoading)
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
   const [flightType, setFlightType] = useState('all'); 
@@ -143,7 +141,7 @@ const SearchFlights = ({
       setIsLoading(true);
       const response = await getFlights(payload, isSmartCombo);
       // console.log('itemku', response, query);
-      
+
       if(response.success === false){
         setIsLoading(false)
         setStatusSuccess(false);
@@ -172,19 +170,9 @@ const SearchFlights = ({
           return journey; 
         });
 
-        // console.log('itemku2', updatedCurrentJourney)
-
         setCurrentJourney(updatedCurrentJourney);
         setCurrentJourneySave(updatedCurrentJourney);
 
-        // setCurrentJourney();
-        
-        // setCurrentJourney(response?.data?.Schedules);
-        // setCurrentJourneySave((currentJourney) => {
-        //   const updatedJourney = [...currentJourney];
-        //   updatedJourney[position].Flights = lowestPriceFlights;
-        //   return updatedJourney;
-        // });
         setFlights(response.data?.Schedules[position]?.Flights?.slice(0, shownItems));
         setTotalData(response.data?.Schedules[position]?.Flights?.length);
         setAdditionalFee(response.data?.Schedules[position]?.AdditionalFee);
@@ -195,16 +183,6 @@ const SearchFlights = ({
       setStatusSuccess(false);
     }
   };
-
-  // console.log('itemku',isLoading, currentJourney)
-
-  // useEffect(()=>{
-  //   if(position === 1){
-  //     setCurrentJourneyInFligtType(currentJourney)
-  //   }
-  // },[position])
-  
-  // console.log('itemku11', flightType, isLoading, position, currentJourneyInFlightType)
 
   useEffect(() => {
     if(statusSuccess === false){
@@ -1315,21 +1293,102 @@ const SearchFlights = ({
 export async function getServerSideProps(context) {
   const { departureDate, returnDate, originCode, destinationCode, adult, child, infant, cabinClasses, airlines, isRoundTrip, is_smart_combo } = context.query;
 
-  return {
-    props: {
-      departureDate,
-      returnDate,
-      originCode,
-      destinationCode,
-      adult,
-      child,
-      infant,
-      cabinClasses,
-      airlines,
-      isRoundTrip,
-      is_smart_combo
-    }
+  let query = {
+    departureDate: departureDate,
+    returnDate: returnDate,
+    originCode: originCode,
+    destinationCode: destinationCode,
+    adult: adult,
+    child: child,
+    infant: infant,
+    cabinClasses: [cabinClasses],
+    airlines: airlines,
+    isRoundTrip: isRoundTrip,
+    is_smart_combo: is_smart_combo,
   };
+  const payload = query;
+  let status = false
+  let loading = false;
+  let isInternational = false
+  let additionalFee = 0
+  let totalData = 0
+  let flights = []
+  let currentJourney = []
+  let currentJourneySave = []
+
+  try {
+    loading = true
+    const response = await getFlights(payload, is_smart_combo);
+
+    if(response.success === false){
+      loading = false
+      status = false
+    }
+
+    if (response.success === true) {
+      status = true;
+      loading = false;
+      
+      const schedules = response.data?.Schedules;
+
+      schedules.map((item)=>{
+        if(item.IsInternational){
+          isInternational = true 
+        }
+      })
+
+      const lowestPriceFlights = schedules[0]?.Flights.slice(0).sort((a, b) => a.Fare - b.Fare);
+
+      const updatedCurrentJourney = response.data?.Schedules?.map((journey, index) => {
+        if (index === 0) {
+          return {
+            ...journey,
+            Flights: lowestPriceFlights
+          };
+        }
+        return journey; 
+      });
+
+      currentJourney = updatedCurrentJourney
+      currentJourneySave = updatedCurrentJourney
+
+      flights = response.data?.Schedules[0]?.Flights?.slice(0, 15)
+      totalData = response.data?.Schedules[0]?.Flights?.length
+      additionalFee = response.data?.Schedules[0]?.AdditionalFee;
+      loading = false;
+    }
+    
+    return {
+      props: {
+        dataQuery: {
+          departureDate: departureDate,
+          returnDate: returnDate,
+          originCode: originCode,
+          destinationCode: destinationCode,
+          adult: adult,
+          child: child,
+          infant: infant,
+          cabinClasses: cabinClasses,
+          airlines: airlines,
+          isRoundTrip: isRoundTrip,
+          is_smart_combo: is_smart_combo,
+        },
+        dataflights : {
+          status: status,
+          loading: loading,
+          isInternational: isInternational,
+          additionalFee: additionalFee,
+          totalData:  totalData,
+          flights: flights,
+          currentJourney: currentJourney,
+          currentJourneySave: currentJourneySave,
+        }
+      }
+    };
+  } catch (error) {
+    loading  = false;
+    status = false
+  }
 }
 
 export default SearchFlights;

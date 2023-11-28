@@ -61,6 +61,7 @@ const OrderDetails = () => {
   const [isError, setIsError] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const [statusFareDetail, setStatusFareDetail] = useState(true)
   const [isTimeOpen, setIsTimeOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState(60 * 5);
@@ -83,7 +84,7 @@ const OrderDetails = () => {
     (state) => state.orderReducer
   );
 
-  // console.log('itemkudomestic', isDomestic)
+  
 
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const [isChoosed, setIsChoosed] = useState(false);
@@ -92,9 +93,7 @@ const OrderDetails = () => {
   });
   
   const {journeys} = form;
-
-  // console.log('itemku',journeys, data)
-
+ 
   const [customer, setCustomer] = useState({
     fullName: isLoggedIn ? user?.full_name : "",
     email: isLoggedIn ? user?.email : "",
@@ -118,17 +117,18 @@ const OrderDetails = () => {
   totalPrice;
   
   const [fareTotal, setFareTotal] = useState()
-  const [fareDetail, setFareDetail] = useState()
-  const [fareDetailRequest, setFareDetailRequest] = useState([])
+  const [fareDetail, setFareDetail] = useState([])
   const [serviceFee, setServiceFee] = useState(20000)
+  const [fareDetailRequest, setFareDetailRequest] = useState([])
   const [resultFareBreakdown, setResultFareBreakdown] = useState([])
+
+  // console.log('itemku4', fareDetail, fareDetailRequest)
   
   const dataQuery = {
     adult: query?.adult,
     child: query?.child,
     infant: query?.infant
   }
-
   
   useEffect(() => {
     if(query?.isRoundTrip === 'true'){
@@ -137,6 +137,7 @@ const OrderDetails = () => {
       setIsLoading(true)
       let resultFareBreakdownTemp = []
       let fareDetailRequestTemp = []
+      let fareDetail = []
 
       data?.flights?.map(async (item, index)=>{
         if(item?.FlightType === 'GdsBfm'){
@@ -169,9 +170,17 @@ const OrderDetails = () => {
         } else if (item?.FlightType === 'NonGds'){
           if(item?.IsConnecting === false && item?.IsMultiClass === false){
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-            // setFareDetailRequest(prevFareDetailRequest => [...prevFareDetailRequest, fareItem]);
             try {
               const response = await getDetailPrice(fareItem, jwt);
+              // console.log('itemku5', response)
+              fareDetail[index] = response?.data
+              if(response?.success === false){
+                setIsLoading(false)
+                setStatusFareDetail(false)
+              } else {
+                setStatusFareDetail(true)
+              }
+
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -189,17 +198,13 @@ const OrderDetails = () => {
                 };
               });
 
-              // console.log('itemkuNonGds', response)
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareDetail(response?.data?.Details)
+              // setFareDetail(response?.data?.Details)
 
               // ubah response nyaaaaaa
               const filteredResponse = result.filter(
                 (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
               );
-
-              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
-              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
 
               const sumTotal = result
                 .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
@@ -216,21 +221,26 @@ const OrderDetails = () => {
                 ...updatedResponse,
                 ...result.filter((item) => item.PaxType === "INFT")
               ];
-
-              // console.log('itemku4', finalResponse )
               
               totalFareAll.push(response?.data?.Total)
               resultFareBreakdownTemp[index] = finalResponse
               fareDetailRequestTemp[index] = fareItem
-              // setFareTotal(fareTotal+response?.data?.Total)
             } catch (error) {
               console.error('Terjadi kesalahan saat mengambil detail harga:', error);
             }
           } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-            // setFareDetailRequest(prevFareDetailRequest => [...prevFareDetailRequest, fareItem]);
             try {
               const response = await getDetailPrice(fareItem, jwt);
+              // console.log('itemku5', response)
+              fareDetail[index] = response?.data
+              if(response?.success === false){
+                setIsLoading(false)
+                setStatusFareDetail(false)
+              } else {
+                setStatusFareDetail(true)
+              }
+
               var totalAmountByPaxType = {};
               response?.data?.Details.forEach(function(item) {
                 var paxType = item.Code;
@@ -253,9 +263,6 @@ const OrderDetails = () => {
                 (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
               );
 
-              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
-              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
-
               const sumTotal = result
                 .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
                 .reduce((total, item) => total + item.TotalAmount, 0);
@@ -274,7 +281,7 @@ const OrderDetails = () => {
 
               totalFareAll.push(response?.data?.Total)
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareDetail(response?.data?.Details)
+              // setFareDetail(response?.data?.Details)
               resultFareBreakdownTemp[index] = finalResponse
               fareDetailRequestTemp[index] = fareItem
             } catch (error) {
@@ -288,9 +295,12 @@ const OrderDetails = () => {
         setResultFareBreakdown(resultFareBreakdownTemp)
         setFareDetailRequest(fareDetailRequestTemp)
         setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
-      })      
+
+      }) 
+      setFareDetail(fareDetail)     
     } else {
       let fareDetailRequestTemp = []
+      let fareDetail = []
 
       data?.flights?.map(async (item, index)=>{
         setIsLoading(true)
@@ -326,7 +336,7 @@ const OrderDetails = () => {
             fareDetailRequestTemp[index] = fareItem
             try {
               const response = await getDetailPrice(fareItem, jwt);
-
+              fareDetail[index] = response?.data
               if(response.message === 'API request failed'){
                 setIsLoading(false)
                 return
@@ -376,7 +386,7 @@ const OrderDetails = () => {
 
               setResultFareBreakdown([finalResponse])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareDetail(response?.data?.Details)
+              // setFareDetail(response?.data?.Details)
               setFareTotal(response?.data?.Total)
               
             } catch (error) {
@@ -386,10 +396,9 @@ const OrderDetails = () => {
           } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             fareDetailRequestTemp[index] = fareItem
-            // setFareDetailRequest(prevFareDetailRequest => [...prevFareDetailRequest, fareItem]);            
             try {
               const response = await getDetailPrice(fareItem, jwt);
-
+              fareDetail[index] = response?.data
               if(response.message === 'API request failed'){
                 setIsLoading(false)
                 return
@@ -419,9 +428,6 @@ const OrderDetails = () => {
                 (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
               );
 
-              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
-              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
-
               const sumTotal = result
                 .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
                 .reduce((total, item) => total + item.TotalAmount, 0);
@@ -440,7 +446,6 @@ const OrderDetails = () => {
 
               setResultFareBreakdown([finalResponse])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareDetail(response?.data?.Details)
               setFareTotal(response?.data?.Total)
             } catch (error) {
               setFareDetailRequest([])
@@ -451,17 +456,18 @@ const OrderDetails = () => {
         setIsLoading(false)
       })
       setFareDetailRequest(fareDetailRequestTemp)
+      setFareDetail(fareDetail)
   }
   }, [query?.isRoundTrip, data?.flights]);
 
-  
-  // isDomestic, jwt, query
+  // console.log('itemku', isLoading, statusFareDetail)
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({
     available: false,
     totalDiscount: 0,
     promoCode: ""
   });
+
   const [totalPrice, setTotalPrice] = useState({});
 
   const handleChange = (e, type) => {
@@ -486,8 +492,7 @@ const OrderDetails = () => {
   const toast = useToast();
 
   const handleSubmit = () => {
-    // console.log('itemkudata', customer?.fullName,customer?.email, customer?.phone)
-
+  
     if (
       !customer?.fullName ||
       !customer?.email ||
@@ -510,7 +515,13 @@ const OrderDetails = () => {
       });
     }
 
-    // return alert("Harap isi informasi kontak!");
+    const updatedFareDetail = fareDetailRequest.map((fare, index) => {
+      if (fareDetail[index]) {
+        return { ...fare, fare: fareDetail[index].Total };
+      }
+      return fare;
+    });
+
     const payload = {
       ...form,
       traveler: traveler,
@@ -529,7 +540,7 @@ const OrderDetails = () => {
         unique_code: isPromoAvailable?.unique_code || null,
         serviceFee: serviceFee
       },
-      fareDetail: fareDetailRequest
+      fareDetail: updatedFareDetail
     };
 
     mutation.mutate(payload);
@@ -654,36 +665,44 @@ const OrderDetails = () => {
           justifyContent="space-between"
           alignItems="center"
         >
-          <Text
-            fontSize="lg"
-            fontWeight="semibold"
-            color="brand.orange.400"
-            w="full"
-            whiteSpace={"nowrap"}
-          >
-              {
-                isLoading ? 
-                <Spinner/> : 
-                <>IDR {convertRupiah(fareTotal+serviceFee)}</>
-              }
-            <Text
-              fontSize={"xs"}
-              color="neutral.text.low"
-              fontWeight={"normal"}
-              as={"span"}
-            >
-              per pax
-            </Text>
-          </Text>
+          {
+            isLoading ? (
+              <Spinner />
+            ) : !isLoading && statusFareDetail ? (
+              <Text
+                fontSize="lg"
+                fontWeight="semibold"
+                color="brand.orange.400"
+                w="full"
+                whiteSpace={"nowrap"}
+              >
+                  {
+                    isLoading ? 
+                    <Spinner/> : 
+                    <>IDR {convertRupiah(fareTotal+serviceFee)}</>
+                  }
+                <Text
+                  fontSize={"xs"}
+                  color="neutral.text.low"
+                  fontWeight={"normal"}
+                  as={"span"}
+                >
+                  per pax
+                </Text>
+              </Text>
+            ) : (
+              ""
+            )
+          }
           <CustomOrangeFullWidthButton
-            maxW={"180px"}
+            maxW={`${!isLoading && statusFareDetail ? '180px' : '100%' } `}
             onClick={() => setIsChoosed(true)}
             // disabled={price.isLoading && !price.data?.priceFinalCustom}
           >
             {
               isLoading ? (
                 <Spinner />
-              ) : fareTotal !== undefined ? (
+              ) : (fareTotal !== undefined && (statusFareDetail !== false)) ? (
                 "Pilih Tiket"
               ) : (
                 "Tiket Tidak Tersedia"
@@ -1351,14 +1370,18 @@ const OrderDetails = () => {
                                 </VStack>
                                 <HStack justifyContent="space-between" py="16px">
                                   <Text>Total Pembayaran</Text>
-                                  {!isLoading ? (
-                                    <Text fontWeight="semibold">
-                                    IDR{" "}
-                                    {convertRupiah(fareTotal+serviceFee)}
-                                  </Text>
-                                  ) : (
-                                    <Spinner></Spinner>
-                                  )}
+                                  {
+                                    isLoading ? (
+                                      <Spinner />
+                                    ) : !isLoading && statusFareDetail ? (
+                                      <Text fontWeight="semibold">
+                                        IDR{" "}
+                                        {convertRupiah(fareTotal+serviceFee)}
+                                      </Text>
+                                    ) : (
+                                      "-"
+                                    )
+                                  }
                                 </HStack>
                               </>
                       </Box>

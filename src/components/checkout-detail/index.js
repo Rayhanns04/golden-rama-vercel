@@ -1101,13 +1101,14 @@ export const FormPerson = ({
     //   } : ""
     // ),
 
-    ...(item?.paxType === 'ADT' && item?.i === 0
-      ? {
-        emergency_fullname: Yup.string().required("Emergency fullname harap diisi"),
-        emergency_phone: Yup.number().notOneOf([Yup.ref('mobile_phone')], 'Emergency phone seharusnya berbeda dengan Mobile Phone.').required("Emergency phone harap diisi"),
-        emergency_email: Yup.string().email().notOneOf([Yup.ref('email')], 'Emergency email seharusnya berbeda dengan Email.').required("Emergency email harap diisi"),
-      } : ""
-    ),
+    // ...(item?.paxType === 'ADT' && item?.i === 0
+    //   ? {
+    //     emergency_fullname: Yup.string().required("Emergency fullname harap diisi"),
+    //     emergency_phone: Yup.number().notOneOf([Yup.ref('mobile_phone')], 'Emergency phone seharusnya berbeda dengan Mobile Phone.').required("Emergency phone harap diisi"),
+    //     emergency_email: Yup.string().email().notOneOf([Yup.ref('email')], 'Emergency email seharusnya berbeda dengan Email.').required("Emergency email harap diisi"),
+    //   } : ""
+    // ),
+
     // ...(isDomestic &&
     //   isKTP && {
     //     // no ktp di isi jika umur > 17
@@ -1544,7 +1545,7 @@ export const FormPerson = ({
                   }
                 />
               </Box>
-              { !isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
+              {/* { !isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
                 <>
                   <Box pt="12px">
                     <Text
@@ -1564,9 +1565,9 @@ export const FormPerson = ({
                     />
                   </Box>
                 </>
-              )}
+              )} */}
 
-              { isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
+              {/* { isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
                 <>
                   <Box pt="12px">
                     <Text
@@ -1586,7 +1587,7 @@ export const FormPerson = ({
                     />
                   </Box>
                 </>
-              )}
+              )} */}
 
               {/* !isDomestic && item?.paxType === 'ADT' */}
               {!isDomestic && (
