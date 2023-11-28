@@ -57,12 +57,10 @@ export const getRecommendedAirports = async () => {
 
 export const getFlights = async (data, issmartcombo) => {
   try {
-    // console.log('responseReq', data)
     const response = await axios.post(`${BASE_URL}/orders/flight/available`, {
       data: data,
     });
     const dataFlights = response.data;
-    // console.log('itemku3', dataFlights)
     // if (
     //   dataFlights?.filter?.[0]?.combinedJourneys?.length > 0 &&
     //   dataFlights &&
@@ -256,7 +254,6 @@ export const bookingFlight = async (data, token) => {
   }
 
   let payload = bodyForm;
-  // console.log('itemku1', payload)
   // payload.traveler = traveler;
   // payload = encryptData(JSON.stringify(payload));
 
@@ -273,10 +270,8 @@ export const bookingFlight = async (data, token) => {
         },
       }
     );
-    // console.log('itemku', response)
     return Promise.resolve(response.data);
   } catch (error) {
-    // console.error(error);
     return Promise.reject(error);
   }
 };

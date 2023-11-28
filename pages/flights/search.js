@@ -112,9 +112,6 @@ const SearchFlights = ({
   const [statusSuccess, setStatusSuccess] = useState(dataflights?.status);
   const [additionFee, setAdditionalFee] = useState(dataflights?.additionalFee);
 
-  
-  // console.log('itemku', currentJourney)
-
   const dispatch = useDispatch();
   const { ref: trigger, inView } = useInView();
   const [sortBy, setSortBy] = useState("Harga Terendah");
@@ -135,12 +132,13 @@ const SearchFlights = ({
   const [originData, setOriginData] = useState('')
   const [destinationData, setDestinationData] = useState('')
   const [flightType, setFlightType] = useState('all'); 
+  const [flightGroupingId, setFlightGroupingId] = useState(); 
+  const [flightAirline, setFlightAriline] = useState(); 
   
   const fetchFlight = async () => {
     try {
       setIsLoading(true);
       const response = await getFlights(payload, isSmartCombo);
-      // console.log('itemku', response, query);
 
       if(response.success === false){
         setIsLoading(false)
@@ -222,7 +220,6 @@ const SearchFlights = ({
       return journey; 
     });
     setCurrentJourney(updatedCurrentJourney);
-    // console.log('itemku', updatedCurrentJourney)
   },[sortBy])
 
   useEffect(()=>{
@@ -273,6 +270,8 @@ const SearchFlights = ({
     // }
   },[filter])
 
+  // console.log('itemku11', cart)
+
   useEffect(()=>{
     if(flightType === 'all'){
       setCurrentJourney(currentJourneySave)
@@ -281,7 +280,7 @@ const SearchFlights = ({
         if (index === position) {
           return {
             ...journey,
-            Flights: filterFlightType(journey.Flights, flightType)
+            Flights: filterFlightType(journey.Flights, flightType, flightGroupingId, dataQuery?.isRoundTrip, flightAirline)
           };
         }
         return journey;
@@ -339,8 +338,6 @@ const SearchFlights = ({
         is_filtered: filter?.is_filtered === false ? true : true,
         is_smart_combo: filter?.is_smart_combo,
       }
-
-      // console.log('itemku', 'salah satu')
       setFilter(filterBody);
     }
     setTimeout(() => {
@@ -366,46 +363,29 @@ const SearchFlights = ({
     e.preventDefault();
     if (!(e.target.innerHTML === "Detail")) {
       setFlightType(journey?.FlightType)
+      setFlightGroupingId(journey?.GroupingId)
+      setFlightAriline(journey?.Airline)
+
       if(cart?.length === 0){
         setPosition(position + 1);
       }
       setIsLoading(true);
       setCart([...cart, journey]);
 
-      // console.log('itemku2', "jalan gk si", query?.isRoundTrip, position, position === 1, flightType)
       if (query?.isRoundTrip === 'true') {
         window.scrollTo({ top: 0, behavior: "smooth" });
-        // console.log('itemkuresult', position + 1, flightType)
-        const updatedCurrentJourney = currentJourneySave.map((journeyCurrent, index) => {
+
+
+        const updatedCurrentJourney = currentJourney.map((journeyCurrent, index) => {
           if (index === 1) {
               return {
                 ...journeyCurrent,
-                Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType)
+                Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType, journey?.GroupingId, dataQuery?.isRoundTrip, journey?.Airline)
               };
             }
             return journeyCurrent;
-          });
+        });
         setCurrentJourneyInFligtType(updatedCurrentJourney)
-
-        // console.log('itemkuresult',updatedCurrentJourney, currentJourneySave)
-
-        // setFlights(currentJourney[1].Flights?.slice(0, shownItems));
-        // // setTotalData(currentJourney[1].Flights?.length);
-        // if(flightType !== 'all'){
-        //   const updatedCurrentJourney = currentJourneySave.map((journey, index) => {
-        //     if (index === position) {
-        //       return {
-        //         ...journey,
-        //         Flights: filterFlightType(journey.Flights, flightType)
-        //       };
-        //     }
-        //     return journey;
-        //   });
-        //   setCurrentJourneyInFligtType(updatedCurrentJourney)
-        // }
-        // setTimeout(() => {
-        //   setIsLoading(false);
-        // }, 1000);
       }
       setTimeout(() => {
         setIsLoading(false);
@@ -416,7 +396,6 @@ const SearchFlights = ({
   const SortButton = ({ sortByState }) => {
     const [sortBy, setSortBy] = sortByState;
     const [value, setValue] = useState("Harga Terendah");
-    // console.log('itemku99', value)
     const data = [
       "Harga Terendah",
       "Harga Tertinggi",
@@ -538,10 +517,10 @@ const SearchFlights = ({
       departure_times: times,
       arrival_times: times,
       others: [
-        {
-          id: "1",
-          name: "Bisa Refund",
-        },
+        // {
+        //   id: "1",
+        //   name: "Bisa Refund",
+        // },
       ],
       // facilities: [
       //   {
@@ -572,11 +551,11 @@ const SearchFlights = ({
         type: "checkbox",
         extendable: false,
       },
-      {
-        name: "Lainnya",
-        label: "others",
-        type: "checkbox",
-      },
+      // {
+      //   name: "Lainnya",
+      //   label: "others",
+      //   type: "checkbox",
+      // },
       // {
       //   name: "Fasilitas",
       //   label: "facilities",
@@ -590,7 +569,6 @@ const SearchFlights = ({
     } else {
       data.airlines = getAirlineAvailable(currentJourneyInFlightType[position]?.Flights);
     }
-    // setAirlineDataMaskapai(getAirlineAvailable(airlines));
 
     const initialFilter = {
       min_price: 0,
@@ -1041,6 +1019,8 @@ const SearchFlights = ({
                   setCart([]);
                   setIsLoading(true);
                   setFlightType('all')
+                  setFlightGroupingId(null)
+                  setFlightAriline(0)
                   const currentFlight = currentJourney[0]?.Flights;
                   setTotalData(currentFlight.length);
                   setFlights(currentFlight.slice(0, shownItems));
@@ -1354,7 +1334,7 @@ export async function getServerSideProps(context) {
 
       flights = response.data?.Schedules[0]?.Flights?.slice(0, 15)
       totalData = response.data?.Schedules[0]?.Flights?.length
-      additionalFee = response.data?.Schedules[0]?.AdditionalFee;
+      additionalFee = response.data?.Schedules[0]?.AdditionalFee || null;
       loading = false;
     }
     

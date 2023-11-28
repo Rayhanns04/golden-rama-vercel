@@ -61,7 +61,9 @@ const OrderDetails = () => {
   const [isError, setIsError] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
-  const [statusFareDetail, setStatusFareDetail] = useState(true)
+  const [statusFareDetail, setStatusFareDetail] = useState([])
+  const statusCheckout = !statusFareDetail?.includes(false);
+
   const [isTimeOpen, setIsTimeOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [remainingTime, setRemainingTime] = useState(60 * 5);
@@ -84,7 +86,7 @@ const OrderDetails = () => {
     (state) => state.orderReducer
   );
 
-  
+  const totalDataFlight = data?.flights?.length
 
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const [isChoosed, setIsChoosed] = useState(false);
@@ -121,8 +123,6 @@ const OrderDetails = () => {
   const [serviceFee, setServiceFee] = useState(20000)
   const [fareDetailRequest, setFareDetailRequest] = useState([])
   const [resultFareBreakdown, setResultFareBreakdown] = useState([])
-
-  // console.log('itemku4', fareDetail, fareDetailRequest)
   
   const dataQuery = {
     adult: query?.adult,
@@ -138,6 +138,7 @@ const OrderDetails = () => {
       let resultFareBreakdownTemp = []
       let fareDetailRequestTemp = []
       let fareDetailTemp = []
+      let statusTemp = []
 
       data?.flights?.map(async (item, index)=>{
         if(item?.FlightType === 'GdsBfm'){
@@ -166,19 +167,18 @@ const OrderDetails = () => {
 
           resultFareBreakdownTemp[index] = result
           totalFareAll.push(item?.Fare)
-          
+          statusTemp[index] = true
         } else if (item?.FlightType === 'NonGds'){
-          if(item?.IsConnecting === false && item?.IsMultiClass === false){
+          if(item?.IsConnecting === false){
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              // console.log('itemku5', response)
               fareDetailTemp[index] = response?.data
               if(response?.success === false){
                 setIsLoading(false)
-                setStatusFareDetail(false)
+                statusTemp[index] = false
               } else {
-                setStatusFareDetail(true)
+                statusTemp[index] = true
               }
 
               var totalAmountByPaxType = {};
@@ -199,19 +199,13 @@ const OrderDetails = () => {
               });
 
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              // setFareDetail(response?.data?.Details)
-
-              // ubah response nyaaaaaa
               const filteredResponse = result.filter(
                 (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
               );
-
               const sumTotal = result
                 .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
                 .reduce((total, item) => total + item.TotalAmount, 0);
-
               const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-
               const updatedResponse = filteredResponse.map((item) => ({
                 ...item,
                 TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
@@ -232,13 +226,12 @@ const OrderDetails = () => {
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              // console.log('itemku5', response)
               fareDetailTemp[index] = response?.data
               if(response?.success === false){
                 setIsLoading(false)
-                setStatusFareDetail(false)
+                statusTemp[index] = false
               } else {
-                setStatusFareDetail(true)
+                statusTemp[index] = true
               }
 
               var totalAmountByPaxType = {};
@@ -250,38 +243,29 @@ const OrderDetails = () => {
                 }
                 totalAmountByPaxType[paxType] += amount;
               });
-
               var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
                 return {
                     "PaxType": paxType,
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
-
-              // ubah response nyaaaaaa
               const filteredResponse = result.filter(
                 (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
               );
-
               const sumTotal = result
                 .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
                 .reduce((total, item) => total + item.TotalAmount, 0);
-
               const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-
               const updatedResponse = filteredResponse.map((item) => ({
                 ...item,
                 TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
               }));
-
               const finalResponse = [
                 ...updatedResponse,
                 ...result.filter((item) => item.PaxType === "INFT")
               ];
-
               totalFareAll.push(response?.data?.Total)
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              // setFareDetail(response?.data?.Details)
               resultFareBreakdownTemp[index] = finalResponse
               fareDetailRequestTemp[index] = fareItem
             } catch (error) {
@@ -289,18 +273,20 @@ const OrderDetails = () => {
             }
           }
         }
+
         if(totalData === totalFareAll?.length){
           setIsLoading(false)
         }
         setResultFareBreakdown(resultFareBreakdownTemp)
         setFareDetailRequest(fareDetailRequestTemp)
         setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
-
       }) 
+      setStatusFareDetail(statusTemp)
       setFareDetail(fareDetailTemp)     
     } else {
       let fareDetailRequestTemp = []
       let fareDetailTemp = []
+      let statusTemp = []
 
       data?.flights?.map(async (item, index)=>{
         setIsLoading(true)
@@ -330,6 +316,7 @@ const OrderDetails = () => {
 
           setResultFareBreakdown([result])
           setFareTotal(item?.Fare)
+          statusTemp[index] = true
         } else if (item?.FlightType === 'NonGds'){
           if(item?.IsConnecting === false){
             const fareItem = simplifyJourneysFlight(item, query, isDomestic)
@@ -337,9 +324,11 @@ const OrderDetails = () => {
             try {
               const response = await getDetailPrice(fareItem, jwt);
               fareDetailTemp[index] = response?.data
-              if(response.message === 'API request failed'){
+              if(response?.success === false){
                 setIsLoading(false)
-                return
+                statusTemp[index] = false
+              } else {
+                statusTemp[index] = true
               }
 
               var totalAmountByPaxType = {};
@@ -365,9 +354,6 @@ const OrderDetails = () => {
                 (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
               );
 
-              const totalADT = result.find((item) => item.PaxType === "ADT")?.TotalAmount;
-              const totalCHD = result.find((item) => item.PaxType === "CHD")?.TotalAmount;
-
               const sumTotal = result
                 .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
                 .reduce((total, item) => total + item.TotalAmount, 0);
@@ -386,9 +372,7 @@ const OrderDetails = () => {
 
               setResultFareBreakdown([finalResponse])
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              // setFareDetail(response?.data?.Details)
               setFareTotal(response?.data?.Total)
-              
             } catch (error) {
               setFareDetailRequest([])
               console.error('Terjadi kesalahan saat mengambil detail harga:', error);
@@ -399,9 +383,11 @@ const OrderDetails = () => {
             try {
               const response = await getDetailPrice(fareItem, jwt);
               fareDetailTemp[index] = response?.data
-              if(response.message === 'API request failed'){
+              if(response?.success === false){
                 setIsLoading(false)
-                return
+                statusTemp[index] = false
+              } else {
+                statusTemp[index] = true
               }
 
               setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
@@ -457,10 +443,9 @@ const OrderDetails = () => {
       })
       setFareDetailRequest(fareDetailRequestTemp)
       setFareDetail(fareDetailTemp)
+      setStatusFareDetail(statusTemp)
   }
   }, [query?.isRoundTrip, data?.flights]);
-
-  console.log('itemku', fareDetail, fareDetailRequest)
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({
     available: false,
@@ -540,7 +525,7 @@ const OrderDetails = () => {
         unique_code: isPromoAvailable?.unique_code || null,
         serviceFee: serviceFee
       },
-      fareDetail: updatedFareDetail //updatedFareDetail
+      fareDetail: updatedFareDetail 
     };
 
     mutation.mutate(payload);
@@ -666,9 +651,7 @@ const OrderDetails = () => {
           alignItems="center"
         >
           {
-            isLoading ? (
-              <Spinner />
-            ) : !isLoading && statusFareDetail ? (
+            !isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? (
               <Text
                 fontSize="lg"
                 fontWeight="semibold"
@@ -694,21 +677,29 @@ const OrderDetails = () => {
               ""
             )
           }
-          <CustomOrangeFullWidthButton
-            maxW={`${!isLoading && statusFareDetail ? '180px' : '100%' } `}
-            onClick={() => setIsChoosed(true)}
-            // disabled={price.isLoading && !price.data?.priceFinalCustom}
-          >
-            {
-              isLoading ? (
-                <Spinner />
-              ) : (fareTotal !== undefined && (statusFareDetail !== false)) ? (
-                "Pilih Tiket"
-              ) : (
-                "Tiket Tidak Tersedia"
-              )
-            }
-          </CustomOrangeFullWidthButton>
+          {
+            isLoading ? (
+              <Center width="100%">
+                <Spinner></Spinner>
+              </Center>
+            ) : (fareTotal !== undefined && statusCheckout && (statusFareDetail?.length === totalDataFlight)) ? (
+              <CustomOrangeFullWidthButton
+                maxW={`${!isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? '180px' : '100%' } `}
+                onClick={() => setIsChoosed(true)}
+                // disabled={price.isLoading && !price.data?.priceFinalCustom}
+              >
+                Pilih Tiket
+              </CustomOrangeFullWidthButton>
+            ) : (
+              <CustomOrangeFullWidthButton
+                maxW={`${!isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? '180px' : '100%' } `}
+                onClick={() => router.back()}
+                // disabled={price.isLoading && !price.data?.priceFinalCustom}
+              >
+                Tiket Tidak Tersedia
+              </CustomOrangeFullWidthButton>
+            )
+          }
         </HStack>
       </Box>
     );
@@ -1224,165 +1215,170 @@ const OrderDetails = () => {
                           Detail Harga
                         </Text>
                               <>
-                                <VStack
-                                  alignItems="start"
-                                  py={"16px"}
-                                  // borderBottom="1px dashed #9E9E9E"
-                                  >
-                                  <>
-                                    {
-                                      journeys .flights.map((item, index) => (
+                                {
+                                  isLoading ? (
+                                    <Center width='100%'>
+                                      <Spinner />
+                                    </Center>
+                                  ) : !isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? (
+                                    <>
+                                      <VStack
+                                        alignItems="start"
+                                        py={"16px"}
+                                        // borderBottom="1px dashed #9E9E9E"
+                                        >
                                         <>
-                                          <Text
-                                            color="brand.blue.400"
-                                            fontWeight="semibold"
-                                            fontSize={"sm"}
-                                            key={index}
-                                          >
-                                            Tiket penerbangan {index + 1} •{" "}
-                                            {
-                                              item?.IsConnecting === false ? item?.AirlineName : item?.ConnectingFlights[0]?.AirlineName
-                                            }
+                                          {
+                                            journeys .flights.map((item, index) => (
+                                              <>
+                                                <Text
+                                                  color="brand.blue.400"
+                                                  fontWeight="semibold"
+                                                  fontSize={"sm"}
+                                                  key={index}
+                                                >
+                                                  Tiket penerbangan {index + 1} •{" "}
+                                                  {
+                                                    item?.IsConnecting === false ? item?.AirlineName : item?.ConnectingFlights[0]?.AirlineName
+                                                  }
+                                                </Text>
+                                                {
+                                                  isLoading ? 
+                                                  (
+                                                    <Center width="100%">
+                                                      <Spinner></Spinner>
+                                                    </Center>
+                                                  ): (
+                                                    <>
+                                                      {
+                                                        dataQuery.adult !== "0" && (
+                                                          <HStack
+                                                            w="full"
+                                                            justifyContent="space-between"
+                                                            // pt={2}
+                                                          >
+                                                            <Text fontSize="sm" color="neutral.text.medium">
+                                                              Dewasa (x{dataQuery?.adult})
+                                                            </Text>
+                                                            {
+                                                              resultFareBreakdown[index]?.map((item, index) => {
+                                                                if(item?.PaxType === "ADT" || item?.PaxType === "1"){
+                                                                  return (
+                                                                    <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                                      IDR {convertRupiah(item?.TotalAmount)}
+                                                                    </Text>
+                                                                  )
+                                                                } 
+                                                              })
+                                                            }
+                                                          </HStack>
+                                                        )
+                                                      }
+
+                                                      {
+                                                        dataQuery.child !== "0" && (
+                                                          <HStack
+                                                            w="full"
+                                                            justifyContent="space-between"
+                                                          >
+                                                            <Text fontSize="sm" color="neutral.text.medium">
+                                                              Anak-anak (x{dataQuery?.child})
+                                                            </Text>
+                                                            {
+                                                              resultFareBreakdown[index]?.map((item, index) => {
+                                                                if(item?.PaxType === "CHD" || item?.PaxType === "2"){
+                                                                  return (
+                                                                    <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                                      IDR {convertRupiah(item?.TotalAmount)}
+                                                                    </Text>
+                                                                  )
+                                                                } 
+                                                              })
+                                                            }
+                                                          </HStack>
+                                                        )
+                                                      }
+
+                                                      {
+                                                        dataQuery.infant !== "0" && (
+                                                          <HStack
+                                                            w="full"
+                                                            justifyContent="space-between"
+                                                          >
+                                                            <Text fontSize="sm" color="neutral.text.medium">
+                                                              Bayi (x{dataQuery?.infant})
+                                                            </Text>
+                                                            {
+                                                              resultFareBreakdown[index]?.map((item, index) => {
+                                                                if(item?.PaxType === "INF" || item?.PaxType === "INFT" || item?.PaxType === "3"){
+                                                                  return (
+                                                                    <Text key={index} fontSize="sm" color="neutral.text.medium">
+                                                                      {
+                                                                        item?.TotalAmount !== 0 ? (
+                                                                          `IDR ${convertRupiah(item?.TotalAmount)}`
+                                                                        ) : (`IDR 0`)
+                                                                      }
+                                                                    </Text>
+                                                                  )
+                                                                } 
+                                                              })
+                                                            }
+                                                          </HStack>
+                                                        )
+                                                      }
+                                                    </>
+                                                  )
+                                                }
+                                                
+                                              </>
+                                            ))
+                                          }
+                                          <Divider variant={"dashed"} />
+                                        </>
+                                        <HStack
+                                          w="full"
+                                          justifyContent="space-between"
+                                          pt={4}
+                                        >
+                                          <Text fontSize="sm" color="neutral.text.medium">
+                                            Pajak
+                                          </Text>
+                                          <Text fontSize="sm" color="neutral.text.medium">
+                                            Sudah Termasuk
+                                            {/* IDR {convertRupiah(i.total)} */}
+                                          </Text>
+                                        </HStack>
+                                        <HStack w="full" justifyContent="space-between">
+                                          <Text fontSize="sm" color="neutral.text.medium">
+                                            Service Fee
                                           </Text>
                                           {
-                                            isLoading ? 
-                                            (
-                                              <Center width="100%">
-                                                <Spinner></Spinner>
-                                              </Center>
-                                            ): (
-                                              <>
-                                                {
-                                                  dataQuery.adult !== "0" && (
-                                                    <HStack
-                                                      w="full"
-                                                      justifyContent="space-between"
-                                                      // pt={2}
-                                                    >
-                                                      <Text fontSize="sm" color="neutral.text.medium">
-                                                        Dewasa (x{dataQuery?.adult})
-                                                      </Text>
-                                                      {
-                                                        resultFareBreakdown[index]?.map((item, index) => {
-                                                          if(item?.PaxType === "ADT"){
-                                                            return (
-                                                              <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                                IDR {convertRupiah(item?.TotalAmount)}
-                                                              </Text>
-                                                            )
-                                                          } 
-                                                        })
-                                                      }
-                                                    </HStack>
-                                                  )
-                                                }
-
-                                                {
-                                                  dataQuery.child !== "0" && (
-                                                    <HStack
-                                                      w="full"
-                                                      justifyContent="space-between"
-                                                    >
-                                                      <Text fontSize="sm" color="neutral.text.medium">
-                                                        Anak-anak (x{dataQuery?.child})
-                                                      </Text>
-                                                      {
-                                                        resultFareBreakdown[index]?.map((item, index) => {
-                                                          if(item?.PaxType === "CHD"){
-                                                            return (
-                                                              <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                                IDR {convertRupiah(item?.TotalAmount)}
-                                                              </Text>
-                                                            )
-                                                          } 
-                                                        })
-                                                      }
-                                                    </HStack>
-                                                  )
-                                                }
-
-                                                {
-                                                  dataQuery.infant !== "0" && (
-                                                    <HStack
-                                                      w="full"
-                                                      justifyContent="space-between"
-                                                    >
-                                                      <Text fontSize="sm" color="neutral.text.medium">
-                                                        Bayi (x{dataQuery?.infant})
-                                                      </Text>
-                                                      {
-                                                        resultFareBreakdown[index]?.map((item, index) => {
-                                                          if(item?.PaxType === "INF" || item?.PaxType === "INFT"){
-                                                            return (
-                                                              <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                                {
-                                                                  item?.TotalAmount !== 0 ? (
-                                                                    `IDR ${convertRupiah(item?.TotalAmount)}`
-                                                                  ) : (`IDR 0`)
-                                                                }
-                                                              </Text>
-                                                            )
-                                                          } 
-                                                        })
-                                                      }
-                                                    </HStack>
-                                                  )
-                                                }
-                                              </>
+                                            isLoading ? (
+                                              <Spinner />
+                                            ) : !isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? (
+                                              <Text fontSize="sm" color="neutral.text.medium">
+                                                IDR{" "}
+                                                {convertRupiah(serviceFee)}
+                                              </Text>
+                                            ) : (
+                                              "-"
                                             )
                                           }
-                                          
-                                        </>
-                                      ))
-                                    }
-                                    <Divider variant={"dashed"} />
-                                  </>
-                                  <HStack
-                                    w="full"
-                                    justifyContent="space-between"
-                                    pt={4}
-                                  >
-                                    <Text fontSize="sm" color="neutral.text.medium">
-                                      Pajak
-                                    </Text>
-                                    <Text fontSize="sm" color="neutral.text.medium">
-                                      Sudah Termasuk
-                                      {/* IDR {convertRupiah(i.total)} */}
-                                    </Text>
-                                  </HStack>
-                                  <HStack w="full" justifyContent="space-between">
-                                    <Text fontSize="sm" color="neutral.text.medium">
-                                      Service Fee
-                                    </Text>
-                                    {
-                                      isLoading ? 
-                                      <Spinner/> :
-                                      (
-                                        <Text fontSize="sm" color="neutral.text.medium">
-                                          IDR{" "}
-                                          {convertRupiah(serviceFee)}
-                                          {/* {convertRupiah(price?.data?.priceMargin ?? 0)} */}
-                                        </Text>
-                                      )
-                                    }
-                                  </HStack>
-                                  <Divider variant={"dashed"} />
-                                </VStack>
-                                <HStack justifyContent="space-between" py="16px">
-                                  <Text>Total Pembayaran</Text>
-                                  {
-                                    isLoading ? (
-                                      <Spinner />
-                                    ) : !isLoading && statusFareDetail ? (
+                                        </HStack>
+                                        <Divider variant={"dashed"} />
+                                      </VStack>
+                                      <HStack justifyContent="space-between" py="16px">
+                                      <Text>Total Pembayaran</Text>
                                       <Text fontWeight="semibold">
-                                        IDR{" "}
-                                        {convertRupiah(fareTotal+serviceFee)}
-                                      </Text>
-                                    ) : (
-                                      "-"
-                                    )
-                                  }
-                                </HStack>
+                                          IDR{" "}
+                                          {convertRupiah(fareTotal+serviceFee)}
+                                        </Text>
+                                      </HStack>
+                                    </>
+                                  ) : (
+                                    "-"
+                                  )
+                                }
                               </>
                       </Box>
                       <Box

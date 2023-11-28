@@ -301,7 +301,6 @@ export function filterTransit(flight, transit) {
 
   flight.map((item)=>{
     transit.map((trans)=>{
-      // console.log('itemku3', item?.TotalTransit === Number(trans), item?.TotalTransit, trans, typeof(item?.TotalTransit), typeof(trans))
       if(item?.TotalTransit === Number(trans)){
         flightNow.push(item)
       }
@@ -341,11 +340,11 @@ export function filterAirlines(flight, airlines) {
   return flightNow;
 }
 
-export function filterFlightType(flight, type){
+export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline){
   const flightNow = []
   
   flight.map((item)=>{
-    if(item?.FlightType === type){
+    if(item?.FlightType === type && item?.GroupingId === groupId && item?.Airline === flightAirline){
       flightNow.push(item)
     }
   })
@@ -361,10 +360,7 @@ export function filterFacility(flight) {
 
 export function filterPrice(flight, minPrice, maxPrice) {
   const flights = flight.map((item) => {
-    // const totalPrice = sumPriceFare(item?.Fare);
-
     const totalPrice = item?.Fare;
-    // console.log('itemku11', flights, result, minPrice, maxPrice, totalPrice)
     if (totalPrice >= minPrice && totalPrice <= maxPrice) {
       return item;
     }
@@ -679,7 +675,6 @@ export function simplifyQuerySearch(query) {
 }
 
 export function simplifyJourneysFlight(journeys, query, isDomestic) {
-  // console.log('itemku3',journeys)
   let payload = {}
   if(journeys?.IsConnecting === false){
     payload = {
@@ -727,76 +722,6 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
     };
     
   }
-
-  // const journey = journeys.map((item) => {
-    // const segmentData = item.segments.map((segment, index) => {
-    //   const flightDesignator = {
-    //     opSuffix: segment.flightDesignator.opSuffix,
-    //     carrierCode: segment.flightDesignator.carrierCode,
-    //     flightNumber: segment.flightDesignator.flightNumber,
-    //   };
-    //   if (item.connectingType == "THROUGH" && index == 0) {
-    //     return {
-    //       ...segment,
-    //       flightDesignator: flightDesignator,
-    //       fareCode: item.segments[0].fares[0].fareCode,
-    //       // fares: item.segments[0].fares,
-    //       fareGroupCode: item.segments[0].fares[0].fareGroupCode,
-    //       // arrivalDateTime: segment.arrivalDateTime,
-    //       // departureDateTime: segment.departureDateTime,
-    //       // origin: segment.origin,
-    //       // destination: segment.destination,
-    //     };
-    //   }
-    //   if (item.connectingType == "THROUGH" && index != 0) {
-    //     return {
-    //       ...segment,
-    //       flightDesignator: flightDesignator,
-    //       fareGroupCode: item.segments[0].fares[0].fareGroupCode,
-    //       // arrivalDateTime: segment.arrivalDateTime,
-    //       // departureDateTime: segment.departureDateTime,
-    //       // origin: segment.origin,
-    //       // destination: segment.destination,
-    //     };
-    //   }
-    //   return {
-    //     ...segment,
-    //     flightDesignator: flightDesignator,
-    //     fareCode: segment.fares[0].fareCode,
-    //     fareGroupCode: segment.fares[0].fareGroupCode,
-    //     // arrivalDateTime: segment.arrivalDateTime,
-    //     // departureDateTime: segment.departureDateTime,
-    //     // origin: segment.origin,
-    //     // destination: segment.destination,
-    //   };
-    // });
-    // return {
-    //   ...item,
-    //   vendorCode: item.vendorCode,
-    //   journeyKey: item?.journeyKey,
-    //   connectingType: item?.connectingType,
-    //   segments: segmentData,
-    // };
-  // });
-
-  // const isCombinedJourney =
-  //   journeys?.[0]?.isCombine &&
-  //   journeys?.[1]?.isCombine &&
-  //   journeys?.[0]?.vendorCode == "GUA"
-  //     ? true
-  //     : false;
-      
-  // const payload = {
-  //   originCode: query.originCode,
-  //   destinationCode: query.destinationCode,
-  //   adult: query.adult,
-  //   child: query.child,
-  //   infant: query.infant,
-  //   journeys: journey,
-  //   isCombinedJourneys: isCombinedJourney,
-  // };
-
-  // console.log('itemku', payload)
   return payload;
 }
 
@@ -1181,7 +1106,6 @@ export function mappingPriceFlight(price, isSUMCombine = false) {
 
 export function sortFlight(sort, data) {
   const index = dataSortFlight.findIndex((e) => e === sort);
-  // console.log('itemku', data)
   let result;
   switch (index) {
     case 0:
@@ -1290,7 +1214,6 @@ export function sumPriceFareFinal(segments, type = "DIRECT") {
 }
 
 export function filterFlightDepartureAndArrival(flights, type, times) {
-  // console.log('itemku', flights)
   let arrayResult = [];
   times.forEach((time) => {
     let filterTime = find(filterTimeFlight, { id: parseInt(time) });
