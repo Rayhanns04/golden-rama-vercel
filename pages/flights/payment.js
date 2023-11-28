@@ -449,7 +449,7 @@ const Payment = (props) => {
             <FlightDetails query={query} data={data} hidden={!isDesktop} />
             <SimpleGrid
               maxW={{ lg: "container.lg", xl: "container.xl" }}
-              mx={"auto"}
+              mx={4}
               spacing={12}
               columns={[1, 1, 1, 2]}
             >

@@ -122,7 +122,7 @@ const OrderDetails = () => {
   const [fareDetailRequest, setFareDetailRequest] = useState([])
   const [resultFareBreakdown, setResultFareBreakdown] = useState([])
 
-  // console.log('itemku4', fareDetail, fareDetailRequest)
+  console.log('itemku4', fareDetail, fareDetailRequest)
   
   const dataQuery = {
     adult: query?.adult,
@@ -137,7 +137,7 @@ const OrderDetails = () => {
       setIsLoading(true)
       let resultFareBreakdownTemp = []
       let fareDetailRequestTemp = []
-      let fareDetail = []
+      let fareDetailTemp = []
 
       data?.flights?.map(async (item, index)=>{
         if(item?.FlightType === 'GdsBfm'){
@@ -173,7 +173,7 @@ const OrderDetails = () => {
             try {
               const response = await getDetailPrice(fareItem, jwt);
               // console.log('itemku5', response)
-              fareDetail[index] = response?.data
+              fareDetailTemp[index] = response?.data
               if(response?.success === false){
                 setIsLoading(false)
                 setStatusFareDetail(false)
@@ -233,7 +233,7 @@ const OrderDetails = () => {
             try {
               const response = await getDetailPrice(fareItem, jwt);
               // console.log('itemku5', response)
-              fareDetail[index] = response?.data
+              fareDetailTemp[index] = response?.data
               if(response?.success === false){
                 setIsLoading(false)
                 setStatusFareDetail(false)
@@ -297,10 +297,10 @@ const OrderDetails = () => {
         setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
 
       }) 
-      setFareDetail(fareDetail)     
+      setFareDetail(fareDetailTemp)     
     } else {
       let fareDetailRequestTemp = []
-      let fareDetail = []
+      let fareDetailTemp = []
 
       data?.flights?.map(async (item, index)=>{
         setIsLoading(true)
@@ -336,7 +336,7 @@ const OrderDetails = () => {
             fareDetailRequestTemp[index] = fareItem
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              fareDetail[index] = response?.data
+              fareDetailTemp[index] = response?.data
               if(response.message === 'API request failed'){
                 setIsLoading(false)
                 return
@@ -398,7 +398,7 @@ const OrderDetails = () => {
             fareDetailRequestTemp[index] = fareItem
             try {
               const response = await getDetailPrice(fareItem, jwt);
-              fareDetail[index] = response?.data
+              fareDetailTemp[index] = response?.data
               if(response.message === 'API request failed'){
                 setIsLoading(false)
                 return
@@ -456,11 +456,11 @@ const OrderDetails = () => {
         setIsLoading(false)
       })
       setFareDetailRequest(fareDetailRequestTemp)
-      setFareDetail(fareDetail)
+      setFareDetail(fareDetailTemp)
   }
   }, [query?.isRoundTrip, data?.flights]);
 
-  // console.log('itemku', isLoading, statusFareDetail)
+  console.log('itemku', fareDetail, fareDetailRequest)
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({
     available: false,
@@ -540,7 +540,7 @@ const OrderDetails = () => {
         unique_code: isPromoAvailable?.unique_code || null,
         serviceFee: serviceFee
       },
-      fareDetail: updatedFareDetail
+      fareDetail: updatedFareDetail //updatedFareDetail
     };
 
     mutation.mutate(payload);
