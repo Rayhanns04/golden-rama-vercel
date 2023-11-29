@@ -785,12 +785,8 @@ const SearchFlights = ({
     );
   };
 
-  // const departureDateTime = additionalData.data?.[0]?.journeys?.[0]?.segments?.[0]?.departureDateTime;
-
   const departureDateTime = query?.departureDate;
   const returnDateTime = query?.returnDate;
-  // console.log(cart)
-  // console.log('departure date',departureDateTime)
 
   return (
     <Layout
@@ -1211,64 +1207,6 @@ const SearchFlights = ({
     </Layout>
   );
 };
-
-// export async function getServerSideProps(ctx) {
-//   const query = simplifyQuerySearch(ctx.query);
-//   console.log(ctx)
-
-//   let additionalData, totalFlight, noresults = false;
-//   console.log('additionalData', additionalData)
-//   try {
-//     additionalData = await getFlights(query, query?.is_smart_combo);
-//     // if (additionalData.data[0].journeys.length === 0) {
-//     //   noresults = true;
-//     //   additionalData = false;
-//     //   totalFlight = 0;
-//     // }
-//     // if (additionalData.filter?.[0]?.combinedJourneys?.length > 0) {
-//     //   additionalData.data[0].journeys = additionalData.data[0].journeys.concat(
-//     //     additionalData.filter[0].combinedJourneys?.map((item) => {
-//     //       if (
-//     //         item?.journeys?.[0]?.segments?.length > 0 &&
-//     //         item?.journeys?.[0] !== undefined &&
-//     //         item?.journeys?.[0] !== null &&
-//     //         item !== undefined &&
-//     //         item !== null
-//     //       ) {
-//     //         const data = {
-//     //           ...item?.journeys?.[0],
-//     //           isCombine: true,
-//     //         };
-//     //         return data;
-//     //       }
-//     //     })
-//     //   );
-//     // }
-//     // //jika ada additionalData.data[0].journeys yang undefined maka hapus
-//     // additionalData.data[0].journeys = additionalData.data[0].journeys.filter(
-//     //   (item) => item !== undefined
-//     // );
-//     // console.log("additionalData", additionalData.data[0].journeys.length);
-//   } catch (error) {
-//     console.error(error);
-
-//     noresults = true;
-//     additionalData = false;
-//     totalFlight = 0;
-//   }
-
-//   return {
-//     props: {
-//       additionalData,
-//       noresults,
-//       // totalFlight: totalFlight ?? additionalData.data.length,
-//       totalFlight: totalFlight,
-//       meta: {
-//         title: "Hasil Pencarian Tiket",
-//       },
-//     },
-//   };
-// }
 
 export async function getServerSideProps(context) {
   const { departureDate, returnDate, originCode, destinationCode, adult, child, infant, cabinClasses, airlines, isRoundTrip, is_smart_combo } = context.query;
