@@ -20,7 +20,7 @@ const OrderSuccess = (props) => {
         t: "Booking Ref",
         p: `${orderDetail.order_details[0]?.product_issued?.reference || "-"}`,
       },
-      { t: "Metode Pembayaran", p: `${statusBank.product_name}` },
+      { t: "Metode Pembayaran", p: (orderDetail.useEspay ? `${statusBank.product_name}` : "Travel Card") },
       {
         t: "Produk",
         p: `${orderDetail.order_details[0].product.details.name}, ${orderDetail.order_details[0].product.details.rooms[0].rates[0].rooms} Kamar`,
@@ -73,6 +73,7 @@ export const getServerSideProps = async (ctx) => {
 
   const orderDetail = await getOrderDetailHotel({ orderNumber: orderNumber });
   const statusBank = await checkStatus({ orderNumber: orderNumber });
+  orderDetail.useEspay = (statusBank ? true : false);
   return {
     props: {
       orderDetail,

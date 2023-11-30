@@ -87,9 +87,9 @@ export const checkStatus = async (data) => {
     );
     return Promise.resolve(response.data);
   } catch (error) {
-    console.error(error);
-
-    return Promise.reject(error);
+    // console.error(error.response);
+    // return Promise.reject(error);
+    return false;
   }
 };
 

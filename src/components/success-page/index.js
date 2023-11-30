@@ -31,7 +31,7 @@ const SuccessPage = ({ details, orderDetail }) => {
   const { asPath } = router;
   const { status: statusOrder } = router.query;
   const path = asPath.split("/")[1];
-  const { status, orderNumber } = orderDetail;
+  const { status, orderNumber, useEspay } = orderDetail;
   const { isLoggedIn } = useSelector((s) => s.authReducer);
   const { data: statusPayment, isLoading } = useQuery(
     ["checkStatus", orderNumber],
@@ -39,21 +39,26 @@ const SuccessPage = ({ details, orderDetail }) => {
       const data = {
         orderNumber,
       };
-      const res = await checkStatus(data);
-      const isCreditCard = res?.product_name?.split(" ")[0] == "Credit";
-      if (res?.tx_status == "IP" && statusOrder == "cancel") {
-        await cancelStatus({
-          ...data,
-          isCreditCard,
-        });
+      if (useEspay) {
+        const res = await checkStatus(data);
+        const isCreditCard = res?.product_name?.split(" ")[0] == "Credit";
+        if (res?.tx_status == "IP" && statusOrder == "cancel") {
+          await cancelStatus({
+            ...data,
+            isCreditCard,
+          });
+        }
+        return res;
       }
-      return res;
+      return false;
     }
   );
   let isSuccess = ["booking"].includes(status);
   if (path != "cruises" || path != "packages") {
     isSuccess = ["paid", "confirmed"].includes(status);
-    isSuccess = isSuccess && statusPayment?.tx_status == "S";
+    if (useEspay) {
+      isSuccess = isSuccess && statusPayment?.tx_status == "S";
+    }
   }
   // React.useEffect(() => {
   //   if (isSuccess) {
