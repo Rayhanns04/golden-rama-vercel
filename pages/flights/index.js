@@ -137,7 +137,7 @@ const Flights = (props) => {
           bg={"brand.blue.100"}
           as={"section"}
         >
-          <Stack px={"24px"}>
+          <Stack px={"0px"}>
             <Heading
               color={"neutral.text.high"}
               fontSize={{ base: "md", md: "lg" }}

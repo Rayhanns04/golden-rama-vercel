@@ -2981,7 +2981,7 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
   return (
     <Swiper
       spaceBetween={12}
-      slidesOffsetBefore={24}
+      slidesOffsetBefore={0}
       slidesOffsetAfter={24}
       slidesPerView={1}
       cssMode={false}

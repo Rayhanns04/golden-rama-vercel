@@ -30,7 +30,7 @@ import {
   CustomFilterButton,
   CustomOrangeFullWidthButton,
 } from "../../src/components/button";
-import CheckoutDetail from "../../src/components/checkout-detail";
+import CheckoutDetail from "../../src/components/checkout-detail/flights";
 import { useDispatch, useSelector } from "react-redux";
 import {
   bookingFlight,

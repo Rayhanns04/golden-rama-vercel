@@ -148,7 +148,7 @@ const CheckoutDetail = ({
               isPromoAvailable &&
               isPromoAvailable.available == false && (
                 <Text fontSize={{ base: "sm", md: "md" }} color="alert.failed">
-                  {/* Promo tidak bisa digunakan */}
+                  Promo tidak bisa digunakan
                 </Text>
               )
             )}
@@ -684,7 +684,6 @@ export const DrawerPromo = ({
       console.log(error);
     },
   });
-  
   const handleSubmit = (values, action) => {
     const { promo } = values;
     return mutation.mutateAsync(values).catch((error) => {
@@ -1049,27 +1048,21 @@ export const FormPerson = ({
   ...props
 }) => {
   // const drawerRef = useRef();
-
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const defaultForm = {
-    title: item.paxType == "ADT" ? "MR" : item.paxType == "CHD" ? "MSTR" : "INF",
+    title: item.paxType == "ADT" ? "Mrs" : "Miss",
     first_name: "",
     last_name: "",
-    id_number: "",
-    email: "",
-    mobile_phone: "",
     dob: date(addYears(new Date(), -21), "yyyy-MM-dd"),
     country: "",
     passport_number: "",
     publisher_country: "",
     expired_date: "",
   };
-
   if (item?.passport_number === null) {
     item.passport_number = "";
   }
-
   if (isAttraction) {
     defaultForm = {
       ...props.dynamicForm?.reduce((prev, val) => {
@@ -1077,7 +1070,6 @@ export const FormPerson = ({
       }, {}),
     };
   }
-
   const defaultYupValidation = {
     title: Yup.string().required("Title harap diisi"),
     first_name: Yup.string().required("Nama depan harap diisi"),
@@ -1089,52 +1081,28 @@ export const FormPerson = ({
       )
       .required("Tanggal lahir harap diisi"),
     country: Yup.string().required("Negara harap diisi"),
-
-    id_number: Yup.string().required("ID harap diisi"),
-    mobile_phone: Yup.number().required("Mobile phone harap diisi"),
-    email: Yup.string().email().required("Email harap diisi"),
-    // ...(item?.paxType === 'ADT'
-    //   ? {
-    //     id_number: Yup.string().required("ID harap diisi"),
-    //     mobile_phone: Yup.number().required("Mobile phone harap diisi"),
-    //     email: Yup.string().email().required("Email harap diisi"),
-    //   } : ""
-    // ),
-
-    // ...(item?.paxType === 'ADT' && item?.i === 0
-    //   ? {
-    //     emergency_fullname: Yup.string().required("Emergency fullname harap diisi"),
-    //     emergency_phone: Yup.number().notOneOf([Yup.ref('mobile_phone')], 'Emergency phone seharusnya berbeda dengan Mobile Phone.').required("Emergency phone harap diisi"),
-    //     emergency_email: Yup.string().email().notOneOf([Yup.ref('email')], 'Emergency email seharusnya berbeda dengan Email.').required("Emergency email harap diisi"),
-    //   } : ""
-    // ),
-
-    // ...(isDomestic &&
-    //   isKTP && {
-    //     // no ktp di isi jika umur > 17
-    //     passport_number: Yup.string().when("dob", {
-    //       is: (dob) => {
-    //         return differenceInYears(new Date(), new Date(dob)) > 17;
-    //       },
-    //       then: Yup.string().required("Nomor KTP harap diisi"),
-    //       otherwise: Yup.string().notRequired(),
-    //     }),
-    //   }),
-
-
-    // && item?.paxType === 'CHD' && item?.paxType === 'INF'
-    ...(!isDomestic 
-      ? {
-        passport_number: Yup.string().required("Passport harap diisi"),
-        publisher_country: Yup.string().required(
-          "Negara penerbit harap diisi"
-        ),
-        expired_date: Yup.string().required(
-          "Tanggal habis berlaku harap diisi"
-        ),
-      }
-      : ""
-      ),
+    ...(isDomestic &&
+      isKTP && {
+        // no ktp di isi jika umur > 17
+        passport_number: Yup.string().when("dob", {
+          is: (dob) => {
+            return differenceInYears(new Date(), new Date(dob)) > 17;
+          },
+          then: Yup.string().required("Nomor KTP harap diisi"),
+          otherwise: Yup.string().notRequired(),
+        }),
+      }),
+    ...(isDomestic
+      ? ""
+      : {
+          passport_number: Yup.string().required("Passport harap diisi"),
+          publisher_country: Yup.string().required(
+            "Negara penerbit harap diisi"
+          ),
+          expired_date: Yup.string().required(
+            "Tanggal habis berlaku harap diisi"
+          ),
+        }),
   };
 
   if (isAttraction) {
@@ -1151,11 +1119,9 @@ export const FormPerson = ({
       }, {}),
     };
   }
-
   if (customForm) {
     defaultForm = customForm;
   }
-  
   if (isInsurance) {
     defaultForm = {
       first_name: "",
@@ -1177,18 +1143,10 @@ export const FormPerson = ({
       passport_type: "KTP",
       publisher_country: "",
       passport: "",
-      id_number: "",
-      mobile_phone: "",
-      emergency_fullname: "",
-      emergency_phone: "",
-      emergency_email: ""
     };
-
     defaultYupValidation = {
       first_name: Yup.string().required("Nama Depan harap diisi"),
       last_name: Yup.string().notRequired(),
-      mobile_phone: Yup.number().notRequired(),
-      id_number: Yup.number().required("ID harap diisi"),
       gender: Yup.string().required("Gender harap diisi"),
       birthplace: Yup.string().required("Tempat Lahir harap diisi"),
       dob: Yup.date().required("Tanggal Lahir harap diisi"),
@@ -1209,13 +1167,12 @@ export const FormPerson = ({
           }),
     };
   }
-  
   const fields = [
     {
       name: "title",
       label: "Title",
       type: "radio",
-      options: item.paxType == "ADT" ? ["MR", "MRS"] : item.paxType == "CHD" ? ["MSTR", "MISS"] : ["INF"],
+      options: item.paxType == "ADT" ? ["Mr", "Mrs", "Ms"] : ["Miss", "Mstr"],
     },
     [
       {
@@ -1229,95 +1186,48 @@ export const FormPerson = ({
         type: "text",
       },
     ],
-    [
-      {
-        name: "dob",
-        label: "Tanggal Lahir",
-        type: "date",
-      },
-    ],
-    // ...(item?.paxType === 'ADT'
-    //   ? [
-    //     {
-    //       name: "mobile_phone",
-    //       label: "Nomor Telepon",
-    //       type: "number",
-    //     },
-    //     {
-    //       name: "email",
-    //       label: "Email",
-    //       type: "email",
-    //     },
-    //   ] : ""
-    // ),
-    {
-      name: "mobile_phone",
-      label: "Nomor Telepon",
-      type: "number",
-    },
-    {
-      name: "email",
-      label: "Email",
-      type: "email",
-    },
-
-    // ...(isAttraction
-    //   ? [
-    //       {
-    //         name: "dob",
-    //         label: "Email",
-    //         type: "email",
-    //       },
-    //     ]
-    //   : [
-    //       {
-    //         name: "dob",
-    //         label: "Tanggal Lahir",
-    //         type: "date",
-    //       },
-    //     ]),
+    ...(isAttraction
+      ? [
+          {
+            name: "dob",
+            label: "Email",
+            type: "email",
+          },
+        ]
+      : [
+          {
+            name: "dob",
+            label: "Tanggal Lahir",
+            type: "date",
+          },
+        ]),
+    ...(isKTP && isDomestic
+      ? [
+          {
+            name: "passport_number",
+            label: "Nomor KTP",
+            type: "text",
+          },
+        ]
+      : ""),
     {
       name: "country",
       label: "Kewarganegaraan",
       type: "select",
       options: countries,
     },
-    // ...(item?.paxType === 'ADT'
-    //   ? [
-    //     {
-    //       name: "id_number",
-    //       label: "Nomor KTP / ID Number",
-    //       type: "text",
-    //     },
-    //   ] : ""
-    // ),
-    {
-      name: "id_number",
-      label: "Nomor KTP / ID Number",
-      type: "text",
-    },
-    // ...(isKTP && isDomestic
-    //   ? [
-    //       {
-    //         name: "id_number",
-    //         label: "Nomor KTP / ID Number",
-    //         type: "text",
-    //       },
-    //     ]
-    //   : ""),
-    // ...(isAttraction
-    //   ? [
-    //       {
-    //         name: "mobile_phone",
-    //         label: "Nomor Telepon",
-    //         type: "text",
-    //       },
-    //     ]
-    //   : 
-
-    // ...(!isDomestic && item?.paxType !== 'INF'
-    ...(!isDomestic 
-      ? [{
+    ...(isAttraction
+      ? [
+          {
+            name: "passport_number",
+            label: "Nomor Telepon",
+            type: "text",
+          },
+        ]
+      : isDomestic
+      ? ""
+      : [
+          {
             name: "passport_number",
             label: "Nomor Passport",
             type: "text",
@@ -1333,32 +1243,8 @@ export const FormPerson = ({
             label: "Tanggal Habis Berlaku",
             type: "date",
           },
-        ]
-      : ""
-      ),
-    ...(item?.paxType === 'ADT' && item?.i === 0
-        ? 
-        [
-          {
-            name: "emergency_fullname",
-            label: "Emergency Fullname",
-            type: "text",
-          },
-          {
-            name: "emergency_phone",
-            label: "Emergency Phone",
-            type: "number",
-          },
-          {
-            name: "emergency_email",
-            label: "Emergency Email",
-            type: "email",
-          },
-        ]
-        : ""
-    ),
+        ]),
   ];
-
   if (customFields) {
     fields = customFields;
   }
@@ -1482,7 +1368,7 @@ export const FormPerson = ({
             title={title}
             // hideFooter
           >
-            <Stack spacing={"6px"}>
+            <Stack spacing={"12px"}>
               <Box>
                 <Text fontSize={{ base: "lg", md: "md" }} fontWeight="semibold">
                   Informasi Penumpang (
@@ -1539,60 +1425,15 @@ export const FormPerson = ({
                         : customFields
                       : isAttraction
                       ? fields
-                      : item?.paxType === 'ADT'
-                      ? fields.slice(0, 7)
-                      : fields.slice(0, 7) // harusnya 0, 4
+                      : isKTP && isDomestic
+                      ? fields.slice(0, 5)
+                      : fields.slice(0, 4)
                   }
                 />
               </Box>
-              {/* { !isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
-                <>
-                  <Box pt="12px">
-                    <Text
-                      fontSize={{ base: "lg", md: "md" }}
-                      fontWeight="semibold"
-                    >
-                      Emergency Contact{" "}
-                      <span style={{ color: "red" }}>*</span>
-                    </Text>
-                  </Box>
-                  <Box pt={"12px"}>
-                    <GlobalForm
-                      person={item}
-                      fields={
-                        fields.slice(10, fields?.length)
-                      }
-                    />
-                  </Box>
-                </>
-              )} */}
-
-              {/* { isDomestic && item?.paxType === 'ADT' && item?.i === 0 && (
-                <>
-                  <Box pt="12px">
-                    <Text
-                      fontSize={{ base: "lg", md: "md" }}
-                      fontWeight="semibold"
-                    >
-                      Emergency Contact{" "}
-                      <span style={{ color: "red" }}>*</span>
-                    </Text>
-                  </Box>
-                  <Box pt={"12px"}>
-                    <GlobalForm
-                      person={item}
-                      fields={
-                        fields.slice(7, fields?.length)
-                      }
-                    />
-                  </Box>
-                </>
-              )} */}
-
-              {/* !isDomestic && item?.paxType === 'ADT' */}
               {!isDomestic && (
                 <>
-                  <Box pt="12px">
+                  <Box py="12px">
                     <Text
                       fontSize={{ base: "lg", md: "md" }}
                       fontWeight="semibold"
@@ -1605,60 +1446,24 @@ export const FormPerson = ({
                       tanggal keberangkatan
                     </Text>
                   </Box>
-                  <Box pt={"12px"}>
+                  <Box py={"24px"}>
                     <GlobalForm
                       person={item}
                       fields={
-                        // isInsurance
-                        //   ? fields.filter((item) => {
-                        //       return (
-                        //         item.name === "passport_type" ||
-                        //         item.name === "passport" ||
-                        //         item.name === "publisher_country"
-                        //       );
-                        //     })
-                        //   : fields.slice(7, fields.length)
-                        fields.slice(7, 10)
+                        isInsurance
+                          ? fields.filter((item) => {
+                              return (
+                                item.name === "passport_type" ||
+                                item.name === "passport" ||
+                                item.name === "publisher_country"
+                              );
+                            })
+                          : fields.slice(4, fields.length)
                       }
                     />
                   </Box>
                 </>
               )}
-
-              {/* {!isDomestic && item?.paxType === 'CHD' && (
-                <>
-                  <Box pt="12px">
-                    <Text
-                      fontSize={{ base: "lg", md: "md" }}
-                      fontWeight="semibold"
-                    >
-                      Informasi Identitas{" "}
-                      <span style={{ color: "red" }}>*</span>
-                    </Text>
-                    <Text color="neutral.text.medium">
-                      Pastikan masa berlaku paspor setidaknya 6 bulan dari
-                      tanggal keberangkatan
-                    </Text>
-                  </Box>
-                  <Box pt={"12px"}>
-                    <GlobalForm
-                      person={item}
-                      fields={
-                        // isInsurance
-                        //   ? fields.filter((item) => {
-                        //       return (
-                        //         item.name === "passport_type" ||
-                        //         item.name === "passport" ||
-                        //         item.name === "publisher_country"
-                        //       );
-                        //     })
-                        //   : fields.slice(7, fields.length)
-                        fields.slice(4, 7)
-                      }
-                    />
-                  </Box>
-                </>
-              )} */}
             </Stack>
           </CustomFilterButton>
         </Form>
@@ -1668,9 +1473,6 @@ export const FormPerson = ({
     </>
   );
 };
-
-
-
 export const ContactInfo = ({ handleChange }) => {
   const { isLoggedIn, user } = useSelector((s) => s.authReducer);
   const users = {
