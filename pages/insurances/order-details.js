@@ -571,19 +571,20 @@ const InsuranceOrderDetails = (props) => {
       customers.some((item) => {
         return !item.first_name;
       })
-    )
+    ) {
       setIsError(true);
-    setTimeout(() => {
-      setIsError(false);
-    }, 3000);
-    return toast({
-      position: "top",
-      title: "Harap isi informasi kontak!",
-      status: "error",
-      duration: 9000,
-      isClosable: true,
-      variant: "subtle",
-    });
+      setTimeout(() => {
+        setIsError(false);
+      }, 3000);
+      return toast({
+        position: "top",
+        title: "Harap isi informasi kontak!",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+        variant: "subtle",
+      });
+    }
     let journeys = {
       ...form,
       transaction: {
