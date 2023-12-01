@@ -134,7 +134,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
       <Divider variant={"dashed"} />
       <Flex justifyContent={"space-between"} alignItems="flex-end">
         <Box>
-          <Text color={"neutral.text.low"} fontSize={"xs"}>
+          {/* <Text color={"neutral.text.low"} fontSize={"xs"}>
             Mulai Dari
           </Text>
           <Text fontWeight={"bold"} color="brand.orange.400">
@@ -153,7 +153,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
             >
               /Pax
             </Text>
-          </Text>
+          </Text> */}
         </Box>
         <CustomOrangeFullWidthButton
           onClick={ticket.firstAvailabilityDate != false ? onOpen : null}
@@ -931,21 +931,23 @@ export const Total = ({
             const pricePerPax = participant * data?.prices?.[type]?.[0];
             const paxMarkup = ticket[`${item}RecommendedMarkup`];
             let total;
+            total = pricePerPax;
             //change markup from number to percentage if rekomenedMarkup is more than 100
-            if (ticket[`${item}RecommendedMarkup`] > 100) {
-              total = pricePerPax + paxMarkup;
-            }
-            if (ticket[`${item}RecommendedMarkup`] < 100) {
-              total = pricePerPax + percentage(pricePerPax, paxMarkup);
-            }
-            if (participant === 0) total = 0;
-            let GateRatePrice;
-            GateRatePrice = ticket[`${item}GateRatePrice`] * participant;
-            if (participant === 0) GateRatePrice = 0;
+            // if (ticket[`${item}RecommendedMarkup`] > 100) {
+            //   total = pricePerPax + paxMarkup;
+            // }
+            // if (ticket[`${item}RecommendedMarkup`] < 100) {
+            //   total = pricePerPax + percentage(pricePerPax, paxMarkup);
+            // }
+            // if (participant === 0) total = 0;
+            // let GateRatePrice;
+            // GateRatePrice = ticket[`${item}GateRatePrice`] * participant;
+            // if (participant === 0) GateRatePrice = 0;
             // console.log(participant * data?.prices?.[type]?.[0], 'pricePerPax')
             // console.log(percentage(pricePerPax, paxMarkup))
             return {
-              values: total > GateRatePrice ? total : GateRatePrice,
+              values: total
+              // values: total > GateRatePrice ? total : GateRatePrice,
             };
           }),
           "values"
@@ -1050,15 +1052,15 @@ export const PriceDetails = ({ ticket, uuid }) => {
                   break;
               }
               const paxMarkup = ticket[`${item.type}RecommendedMarkup`];
-              let perPaxPrice;
-              if (ticket[`${item.type}RecommendedMarkup`] > 100) {
-                perPaxPrice = data?.prices?.[type]?.[0] + paxMarkup;
-              }
-              if (ticket[`${item.type}RecommendedMarkup`] < 100) {
-                perPaxPrice =
-                  data?.prices?.[type]?.[0] +
-                  percentage(data?.prices?.[type]?.[0], paxMarkup);
-              }
+              let perPaxPrice = data?.prices?.[type]?.[0];
+              // if (ticket[`${item.type}RecommendedMarkup`] > 100) {
+              //   perPaxPrice = data?.prices?.[type]?.[0] + paxMarkup;
+              // }
+              // if (ticket[`${item.type}RecommendedMarkup`] < 100) {
+              //   perPaxPrice =
+              //     data?.prices?.[type]?.[0] +
+              //     percentage(data?.prices?.[type]?.[0], paxMarkup);
+              // }
               return (
                 <Tr key={i}>
                   <Td>
@@ -1074,16 +1076,21 @@ export const PriceDetails = ({ ticket, uuid }) => {
                   <Td p={0} textAlign={"right"}>
                     <Skeleton isLoaded={!isLoading}>
                       <Text>
-                        {isError
-                          ? "Error"
-                          : !perPaxPrice
-                          ? 0
-                          : (perPaxPrice > ticket[`${item.type}GateRatePrice`]
-                              ? perPaxPrice
-                              : ticket[`${item.type}GateRatePrice`]
-                            ).toLocaleString("id-ID", {
-                              maximumFractionDigits: 0,
-                            })}
+                        {
+                          isError
+                            ? "Error"
+                            : ( !perPaxPrice
+                            ? 0
+                            :
+                              // (perPaxPrice > ticket[`${item.type}GateRatePrice`]
+                              //   ? perPaxPrice
+                              //   : ticket[`${item.type}GateRatePrice`]
+                              // )
+                              perPaxPrice.toLocaleString("id-ID", {
+                                maximumFractionDigits: 0,
+                              })
+                            )
+                        }
                       </Text>
                     </Skeleton>
                   </Td>

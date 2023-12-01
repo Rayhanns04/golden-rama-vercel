@@ -209,7 +209,6 @@ const CheckoutDetail = ({
                 isPromoAvailable={isPromoAvailable}
               />
             ) : router.pathname.startsWith("/tours") ||
-              router.pathname.startsWith("/attractions") ||
               router.pathname.startsWith("/cruises") ||
               router.pathname.startsWith("/packages") ? (
               <Stack mb={"-24px"} mx={"-24px"} px={"24px"} pt={"16px"}>
@@ -261,6 +260,8 @@ const CheckoutDetail = ({
                   </>
                 ))}
               </Stack>
+            ) : router.pathname.startsWith("/attractions") ? (
+              <Stack mb={"-24px"} mx={"-24px"} px={"24px"} pt={"16px"}></Stack>
             ) : router.pathname.startsWith("/insurances") ? (
               <Box py={"12px"}>
                 {/* <Divider variant={"dashed"} /> */}
