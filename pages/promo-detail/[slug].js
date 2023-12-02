@@ -56,29 +56,52 @@ const ArticleDetail = () => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const promos = await getAllArticlesByType("promo");
-  const paths = promos.map((promo) => ({
-    params: { slug: promo.attributes.slug },
-  }));
-  return {
-    paths,
-    fallback: true,
-  };
+// export const getStaticPaths = async () => {
+//   const promos = await getAllArticlesByType("promo");
+//   const paths = promos.map((promo) => ({
+//     params: { slug: promo.attributes.slug },
+//   }));
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// };
+
+// export const getStaticProps = async (ctx) => {
+//   const { slug } = ctx.params;
+//   const article = await getArticlePromoDetailBySlug(slug);
+//   return {
+//     props: {
+//       meta: {
+//         title: article?.title,
+//         description: article?.description,
+//       },
+//     },
+//     revalidate: 10,
+//   };
+// };
+
+export const getServerSideProps = async (ctx) => {
+  try {
+    const { slug } = ctx.params;
+    const article = await getArticlePromoDetailBySlug(slug);
+
+    return {
+      props: {
+        meta: {
+          title: article?.title,
+          description: article?.description,
+        },
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    // Handle errors as needed
+    return {
+      notFound: true,
+    };
+  }
 };
 
-export const getStaticProps = async (ctx) => {
-  const { slug } = ctx.params;
-  const article = await getArticlePromoDetailBySlug(slug);
-  return {
-    props: {
-      meta: {
-        title: article?.title,
-        description: article?.description,
-      },
-    },
-    revalidate: 10,
-  };
-};
 
 export default ArticleDetail;

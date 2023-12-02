@@ -196,48 +196,91 @@ const ToursCountry = (props) => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const countries = await getCountries("");
-  const paths = countries.map((country) => ({
-    params: { country: country.attributes.isoCode2 },
-  }));
-  return {
-    paths,
-    fallback: true,
-  };
-};
+// export const getStaticPaths = async () => {
+//   const countries = await getCountries("");
+//   const paths = countries.map((country) => ({
+//     params: { country: country.attributes.isoCode2 },
+//   }));
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// };
 
-export const getStaticProps = async (ctx) => {
-  const tour_type = await getTourTagsV2();
-  const { country } = ctx.params;
+// export const getStaticProps = async (ctx) => {
+//   const tour_type = await getTourTagsV2();
+//   const { country } = ctx.params;
 
-  const detailCountry = await getCountriesFromIsoCode(country);
-  const tour_duration = [
-    { label: "< 10 Hari", value: "1" },
-    { label: "> 10 Hari", value: "2" },
-  ];
+//   const detailCountry = await getCountriesFromIsoCode(country);
+//   const tour_duration = [
+//     { label: "< 10 Hari", value: "1" },
+//     { label: "> 10 Hari", value: "2" },
+//   ];
 
-  const sort = [
-    { label: "Harga Terendah", value: "LOWEST_PRICE" },
-    { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
-    { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
-    { label: "Durasi Terlama", value: "LONGEST_DURATION" },
-  ];
+//   const sort = [
+//     { label: "Harga Terendah", value: "LOWEST_PRICE" },
+//     { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+//     { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+//     { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+//   ];
 
-  return {
-    props: {
-      tour_type,
-      tour_duration,
-      sort,
-      meta: {
-        title: `Paket Tour ${detailCountry?.[0]?.attributes?.name ?? ""}`,
-        description: `Paket Tour ${
-          detailCountry?.[0]?.attributes?.name ?? ""
-        }, ${detailCountry?.[0]?.attributes?.description ?? ""} `,
-        image: `https://prod1-api.goldenrama.com${detailCountry?.[0]?.attributes?.image?.data?.attributes?.url}`,
+//   return {
+//     props: {
+//       tour_type,
+//       tour_duration,
+//       sort,
+//       meta: {
+//         title: `Paket Tour ${detailCountry?.[0]?.attributes?.name ?? ""}`,
+//         description: `Paket Tour ${
+//           detailCountry?.[0]?.attributes?.name ?? ""
+//         }, ${detailCountry?.[0]?.attributes?.description ?? ""} `,
+//         image: `https://prod1-api.goldenrama.com${detailCountry?.[0]?.attributes?.image?.data?.attributes?.url}`,
+//       },
+//     },
+//     revalidate: 10,
+//   };
+// };
+
+export const getServerSideProps = async (ctx) => {
+  try {
+    const tour_type = await getTourTagsV2();
+    const { country } = ctx.params;
+
+    const detailCountry = await getCountriesFromIsoCode(country);
+    const tour_duration = [
+      { label: "< 10 Hari", value: "1" },
+      { label: "> 10 Hari", value: "2" },
+    ];
+
+    const sort = [
+      { label: "Harga Terendah", value: "LOWEST_PRICE" },
+      { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+      { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+      { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+    ];
+
+    return {
+      props: {
+        tour_type,
+        tour_duration,
+        sort,
+        meta: {
+          title: `Paket Tour ${detailCountry?.[0]?.attributes?.name ?? ""}`,
+          description: `Paket Tour ${
+            detailCountry?.[0]?.attributes?.name ?? ""
+          }, ${detailCountry?.[0]?.attributes?.description ?? ""} `,
+          image: `https://prod1-api.goldenrama.com${detailCountry?.[0]?.attributes?.image?.data?.attributes?.url}`,
+        },
       },
-    },
-    revalidate: 10,
-  };
+    };
+  } catch (error) {
+    console.error(error);
+    // Handle errors as needed
+    return {
+      notFound: true,
+    };
+  }
 };
+
+
 export default ToursCountry;

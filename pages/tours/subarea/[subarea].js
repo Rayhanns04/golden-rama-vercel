@@ -303,49 +303,94 @@ const ToursSubArea = (props) => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const subAreas = await getTourSubAreas();
-  const paths = subAreas.map((subArea) => ({
-    params: { subarea: subArea.attributes.slug },
-  }));
-  return {
-    paths,
-    fallback: true,
-  };
-};
+// export const getStaticPaths = async () => {
+//   const subAreas = await getTourSubAreas();
+//   const paths = subAreas.map((subArea) => ({
+//     params: { subarea: subArea.attributes.slug },
+//   }));
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// };
 
-export const getStaticProps = async (ctx) => {
-  const tour_type = await getTourTagsV2();
-  const { subarea } = ctx.params;
-  const newsubarea = subarea.split("-").slice(1).join("-");
-  const details = await getTourSubAreaWithCountries(newsubarea);
-  const tour_duration = [
-    { label: "< 10 Hari", value: "1" },
-    { label: "> 10 Hari", value: "2" },
-  ];
+// export const getStaticProps = async (ctx) => {
+//   const tour_type = await getTourTagsV2();
+//   const { subarea } = ctx.params;
+//   const newsubarea = subarea.split("-").slice(1).join("-");
+//   const details = await getTourSubAreaWithCountries(newsubarea);
+//   const tour_duration = [
+//     { label: "< 10 Hari", value: "1" },
+//     { label: "> 10 Hari", value: "2" },
+//   ];
 
-  const sort = [
-    { label: "Harga Terendah", value: "LOWEST_PRICE" },
-    { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
-    { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
-    { label: "Durasi Terlama", value: "LONGEST_DURATION" },
-  ];
+//   const sort = [
+//     { label: "Harga Terendah", value: "LOWEST_PRICE" },
+//     { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+//     { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+//     { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+//   ];
 
-  return {
-    props: {
-      tour_type,
-      tour_duration,
-      sort,
-      meta: {
-        title: details?.attributes?.subtitle || null,
-        description: details?.attributes?.description || null,
-        image: `https://prod1-api.goldenrama.com${
-          details?.attributes?.countries?.data?.[0]?.attributes?.image_mobile
-            ?.data?.attributes?.formats?.medium?.url || null
-        }`,
+//   return {
+//     props: {
+//       tour_type,
+//       tour_duration,
+//       sort,
+//       meta: {
+//         title: details?.attributes?.subtitle || null,
+//         description: details?.attributes?.description || null,
+//         image: `https://prod1-api.goldenrama.com${
+//           details?.attributes?.countries?.data?.[0]?.attributes?.image_mobile
+//             ?.data?.attributes?.formats?.medium?.url || null
+//         }`,
+//       },
+//     },
+//     revalidate: 10,
+//   };
+// };
+
+export const getServerSideProps = async (ctx) => {
+  try {
+    const tour_type = await getTourTagsV2();
+    const { subarea } = ctx.params;
+    const newsubarea = subarea.split("-").slice(1).join("-");
+    const details = await getTourSubAreaWithCountries(newsubarea);
+    const tour_duration = [
+      { label: "< 10 Hari", value: "1" },
+      { label: "> 10 Hari", value: "2" },
+    ];
+
+    const sort = [
+      { label: "Harga Terendah", value: "LOWEST_PRICE" },
+      { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+      { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+      { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+    ];
+
+    return {
+      props: {
+        tour_type,
+        tour_duration,
+        sort,
+        meta: {
+          title: details?.attributes?.subtitle || null,
+          description: details?.attributes?.description || null,
+          image: `https://prod1-api.goldenrama.com${
+            details?.attributes?.countries?.data?.[0]?.attributes?.image_mobile
+              ?.data?.attributes?.formats?.medium?.url || null
+          }`,
+        },
       },
-    },
-    revalidate: 10,
-  };
+    };
+  } catch (error) {
+    console.error(error);
+    // Handle errors as needed
+    return {
+      notFound: true,
+    };
+  }
 };
+
+
+
 export default ToursSubArea;
