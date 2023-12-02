@@ -87,7 +87,7 @@ const InsuranceOrderDetails = (props) => {
   };
   const additionalCoverageTotal = insuranceDetail.additionalCoverage
       ? insuranceDetail.additionalCoverage.reduce((acc, obj) => {
-        if (obj.ID === 122) {
+        if (obj.Name === "Proteksi Covid-19/Covid- 19 Protection") {
           const day = differenceInDays(
               new Date(insuranceDetail.travel_end_date),
               new Date(insuranceDetail.travel_start_date)
@@ -167,7 +167,7 @@ const InsuranceOrderDetails = (props) => {
           ? insuranceDetail.additionalCoverage?.map((item, index) => {
             let total;
 
-            if (item.ID === 122) {
+            if (item.Name === "Proteksi Covid-19/Covid- 19 Protection") {
               const day = differenceInDays(
                   new Date(insuranceDetail.travel_end_date),
                   new Date(insuranceDetail.travel_start_date)
