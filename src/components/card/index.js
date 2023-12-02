@@ -1393,7 +1393,9 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
             <SelectionButton title={"Cakupan Tambahan"}>
               <Stack m={"-24px"} p={"24px"} spacing="24px" bg="brand.blue.100">
                 <>
-                  {additionalCoverage.data?.map((item, index) => (
+                  {additionalCoverage.data
+                      ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
+                      .map((item, index) => (
                     <Stack
                       spacing={"12px"}
                       key={index}
@@ -1439,7 +1441,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
                                 IDR{" "}
                                 {item.MainRate.toLocaleString("id-ID", {
                                   maximumFractionDigits: 0,
-                                })} {item.ID === 122 ? " /pax /day" : ""}
+                                })} {item.Name === "Proteksi Covid-19/Covid- 19 Protection" ? " /pax /day" : ""}
                               </Text>
                             </Box>
                           </Checkbox>
