@@ -314,46 +314,87 @@ const ToursArea = (props) => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const areas = await getTourAreas();
-  const paths = areas.map((area) => ({
-    params: { area: area.attributes.slug },
-  }));
-  return {
-    paths,
-    fallback: true,
-  };
-};
+// export const getStaticPaths = async () => {
+//   const areas = await getTourAreas();
+//   const paths = areas.map((area) => ({
+//     params: { area: area.attributes.slug },
+//   }));
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// };
 
-export const getStaticProps = async (ctx) => {
-  const tour_type = await getTourTagsV2();
-  const { area } = ctx.params;
-  const details = await getTourAreaWithSubAreas(area);
-  const tour_duration = [
-    { label: "< 10 Hari", value: "1" },
-    { label: "> 10 Hari", value: "2" },
-  ];
+// export const getStaticProps = async (ctx) => {
+//   const tour_type = await getTourTagsV2();
+//   const { area } = ctx.params;
+//   const details = await getTourAreaWithSubAreas(area);
+//   const tour_duration = [
+//     { label: "< 10 Hari", value: "1" },
+//     { label: "> 10 Hari", value: "2" },
+//   ];
 
-  const sort = [
-    { label: "Harga Terendah", value: "LOWEST_PRICE" },
-    { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
-    { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
-    { label: "Durasi Terlama", value: "LONGEST_DURATION" },
-  ];
+//   const sort = [
+//     { label: "Harga Terendah", value: "LOWEST_PRICE" },
+//     { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+//     { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+//     { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+//   ];
 
-  return {
-    props: {
-      tour_type,
-      tour_duration,
-      sort,
-      meta: {
-        title: details?.attributes?.subtitle,
-        description: details?.attributes?.description,
-        image: `https://prod1-api.goldenrama.com${details?.attributes?.image?.data?.attributes?.url}`,
+//   return {
+//     props: {
+//       tour_type,
+//       tour_duration,
+//       sort,
+//       meta: {
+//         title: details?.attributes?.subtitle,
+//         description: details?.attributes?.description,
+//         image: `https://prod1-api.goldenrama.com${details?.attributes?.image?.data?.attributes?.url}`,
+//       },
+//     },
+//     revalidate: 10,
+//   };
+// };
+
+export const getServerSideProps = async (ctx) => {
+  try {
+    const tour_type = await getTourTagsV2();
+    const { area } = ctx.params;
+    const details = await getTourAreaWithSubAreas(area);
+    const tour_duration = [
+      { label: "< 10 Hari", value: "1" },
+      { label: "> 10 Hari", value: "2" },
+    ];
+
+    const sort = [
+      { label: "Harga Terendah", value: "LOWEST_PRICE" },
+      { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+      { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+      { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+    ];
+
+    return {
+      props: {
+        tour_type,
+        tour_duration,
+        sort,
+        meta: {
+          title: details?.attributes?.subtitle,
+          description: details?.attributes?.description,
+          image: `https://prod1-api.goldenrama.com${details?.attributes?.image?.data?.attributes?.url}`,
+        },
       },
-    },
-    revalidate: 10,
-  };
+    };
+  } catch (error) {
+    console.error(error);
+    // Handle errors as needed
+    return {
+      notFound: true,
+    };
+  }
 };
+
+
+
 
 export default ToursArea;

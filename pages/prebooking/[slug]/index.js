@@ -145,19 +145,87 @@ const Prebooking = (props) => {
 };
 
 // Get Static Paths Nextjs
-export const getStaticPaths = async () => {
-  const prebookings = await getAllPrebooking();
-  const paths = prebookings.data.map((item) => {
-    return {
-      params: {
-        slug: item.attributes.slug,
-      },
-    };
-  });
-  return { paths, fallback: "blocking" };
-};
+// export const getStaticPaths = async () => {
+//   const prebookings = await getAllPrebooking();
+//   const paths = prebookings.data.map((item) => {
+//     return {
+//       params: {
+//         slug: item.attributes.slug,
+//       },
+//     };
+//   });
+//   return { paths, fallback: "blocking" };
+// };
 
-export const getStaticProps = async (ctx) => {
+// export const getStaticProps = async (ctx) => {
+//   try {
+//     const { slug } = ctx.params;
+//     const classes = [
+//       { label: "Economy", value: "E" },
+//       { label: "Premium Economy", value: "PE" },
+//       { label: "Business Class", value: "B" },
+//       { label: "First Class", value: "F" },
+//     ];
+
+//     const prebooking = await getPrebooking(slug);
+//     const fields = [
+//       {
+//         name: "departure",
+//         label: "Asal",
+//       },
+//       {
+//         name: "destination",
+//         label: "Tujuan",
+//       },
+//       {
+//         name: "departure_date",
+//         label: "Tanggal Pergi",
+//       },
+//       {
+//         name: "return_date",
+//         label: "Tanggal Pulang",
+//       },
+//       {
+//         name: "class",
+//         label: "Kelas Penerbangan",
+//       },
+//       [
+//         {
+//           name: "adult",
+//           label: "Dewasa",
+//           description: "Lebih dari 12 tahun",
+//         },
+//         {
+//           name: "child",
+//           label: "Anak",
+//           description: "2 - 11 tahun",
+//         },
+//         {
+//           name: "infant",
+//           label: "Bayi",
+//           description: "6 bulan - 1 tahun",
+//         },
+//       ],
+//     ];
+
+//     return {
+//       props: {
+//         classes,
+//         fields,
+//         prebooking,
+//         meta: {
+//           title: prebooking.name,
+//         },
+//       },
+//       revalidate: 10,
+//     };
+//   } catch (error) {
+//     console.error(error);
+//     // return { notFound: true };
+//   }
+// };
+
+export const getServerSideProps = async (ctx) => {
   try {
     const { slug } = ctx.params;
     const classes = [
@@ -217,12 +285,12 @@ export const getStaticProps = async (ctx) => {
           title: prebooking.name,
         },
       },
-      revalidate: 10,
     };
   } catch (error) {
     console.error(error);
-    // return { notFound: true };
+    return { notFound: true };
   }
 };
+
 
 export default Prebooking;

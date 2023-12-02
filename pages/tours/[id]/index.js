@@ -74,6 +74,7 @@ import { checkoutData } from "../../../src/state/tour/tour.slice";
 import { TnC } from "../../../src/components/card";
 import { useLoginToast } from "../../../src/hooks";
 import moment from "moment";
+import { redirect } from "next/dist/server/api-utils";
 
 const TourDetail = (props) => {
   const { details, meta } = props;
@@ -353,7 +354,7 @@ const TourDetail = (props) => {
               <Heading color={"brand.blue.400"} fontSize={"20px"}>
                 Itinerary Perjalanan
               </Heading>
-              <Accordion allowMultiple mx={"-24px"}>
+              <Accordion allowMultiple mx={"0px"}>
                 {!itenerary.isLoading &&
                   itenerary.data?.departure?.itineraries.map((item, index) => (
                     <AccordionItem
@@ -873,6 +874,7 @@ const TourDetail = (props) => {
           px={"24px"}
           id={"terms-and-conditions"}
           py={"24px"}
+          mb={"4px"}
           as={"section"}
         >
           <TnC />
@@ -880,6 +882,7 @@ const TourDetail = (props) => {
         <Stack
           mx={{ base: "-24px", md: "auto" }}
           px={"24px"}
+          pt={"24px"}
           roundedTop="xl"
           maxW={{ lg: "container.lg", xl: "container.xl" }}
           position={{ base: "sticky", md: "sticky" }}
@@ -913,32 +916,71 @@ const TourDetail = (props) => {
 
 export default TourDetail;
 
-export const getStaticPaths = async () => {
-  const tours = await getSlugTours();
-  const paths = tours.map((tour) => ({
-    params: { id: tour.slug },
-  }));
-  return {
-    paths,
-    fallback: "blocking",
-  };
-};
+// export const getStaticPaths = async () => {
+//   const tours = await getSlugTours();
+//   console.log('itemtour3', tours)
+//   const paths = tours.map((tour) => ({
+//     params: { id: tour.slug },
+//   }));
+//   return {
+//     paths,
+//     fallback: "blocking",
+//   };
+// };
 
-export const getStaticProps = async (ctx) => {
+// export const getStaticProps = async (ctx) => {
+//   const { id } = ctx.params;
+//   let slug = {
+//     tourSlug: id,
+//   };
+//   const details = await getTourBySlugV2(slug);
+
+//   if (!details) {
+//     return {
+//       redirect: {
+//         destination: '/404',
+//         permanent: false,
+//       },
+//     };
+//   }
+
+//   return {
+//     props: {
+//       details,
+//       meta: {
+//         title: details?.name || "",
+//         description: details?.description || "",
+//         image: details?.pictures?.[0]?.thumbnailUrl || "",
+//       },
+//     },
+//     revalidate: true,
+//   };
+// };
+
+export const getServerSideProps = async (ctx) => {
   const { id } = ctx.params;
   let slug = {
     tourSlug: id,
   };
   const details = await getTourBySlugV2(slug);
+
+  if (!details || (details?.departures?.length < 1 || details?.groups?.length < 1)) {
+    return {
+      redirect: {
+        destination: '/404',
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       details,
       meta: {
-        title: details.name,
-        description: details.description,
+        title: details?.name || "",
+        description: details?.description || "",
         image: details?.pictures?.[0]?.thumbnailUrl || "",
       },
     },
-    revalidate: 10,
   };
 };
