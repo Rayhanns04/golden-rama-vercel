@@ -60,7 +60,7 @@ const Article = ({ meta }) => {
                     <LinkBox borderRadius="12px" bg="white" overflow="clip">
                       <AspectRatio position="relative" ratio={366 / 148}>
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item?.attributes.thumbnail.data?.attributes.url}`}
+                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${item?.attributes.thumbnail.data?.attributes.url}`}
                           alt="unsplash"
                           layout="fill"
                         />

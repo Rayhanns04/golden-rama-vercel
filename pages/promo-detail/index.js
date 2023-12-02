@@ -40,6 +40,7 @@ const PromoDetail = () => {
         },
       }
     );
+
   return (
     <Layout type="nested" pagetitle="Promo Detail">
       <Box py="24px">
@@ -54,35 +55,37 @@ const PromoDetail = () => {
         {!isLoading ? (
           <SimpleGrid columns={[1, 1, 2, 3]} gap="24px">
             {data.pages.map((group, i) =>
-              group.data.map((item, i) => (
-                <NextLink
-                  key={i}
-                  href={`/promo-detail/${item.attributes.slug}`}
-                >
-                  <a rel="canonical">
-                    <LinkBox borderRadius="12px" bg="white" overflow="clip">
-                      {/* <AspectRatio position="relative" ratio={366 / 148}>
-                        <Image
-                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item?.attributes.thumbnail.data?.attributes.url}`}
-                          alt="unsplash"
-                          layout="fill"
-                        />
-                      </AspectRatio> */}
-                      <Box p="16px">
-                        <Text fontSize="xs">
-                          {format(
-                            new Date(item.attributes.updatedAt),
-                            "dd MMMM yyyy, HH:mm"
-                          )}
-                        </Text>
-                        <Text color="neutral.text.high" fontWeight="bold">
-                          {item.attributes.title}
-                        </Text>
+              group.data.map((item, i) => {
+                return (
+                  <a
+                    key={i}
+                    href={`/promo-detail/${item.attributes.slug}`}
+                  >
+                    <a rel="canonical">
+                      <Box borderRadius="12px" bg="white" overflow="clip">
+                        {/* <AspectRatio position="relative" ratio={366 / 148}>
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item?.attributes.thumbnail.data?.attributes.url}`}
+                            alt="unsplash"
+                            layout="fill"
+                          />
+                        </AspectRatio> */}
+                        <Box p="16px">
+                          <Text fontSize="xs">
+                            {format(
+                              new Date(item.attributes.updatedAt),
+                              "dd MMMM yyyy, HH:mm"
+                            )}
+                          </Text>
+                          <Text color="neutral.text.high" fontWeight="bold">
+                            {item.attributes.title}
+                          </Text>
+                        </Box>
                       </Box>
-                    </LinkBox>
+                    </a>
                   </a>
-                </NextLink>
-              ))
+                )
+              })
             )}
           </SimpleGrid>
         ) : (

@@ -38,6 +38,7 @@ import {
   getAttractionsDetails,
   getAttractionsProductTypeDetails,
   getAttractionsProductTypeDetailsPriceList,
+  getAttractionsProductTypeDetailsPriceListByDate,
 } from "../../src/services/attraction.service";
 import { useRouter } from "next/router";
 import { CustomDivider } from "../../src/components/divider";
@@ -81,6 +82,10 @@ const AttractionDetails = () => {
             const response = await getAttractionsProductTypeDetailsPriceList(
               uuid
             );
+            // const response = await getAttractionsProductTypeDetailsPriceListByDate(
+            //   uuid,
+            //   (new Date()).toDateString()
+            // );
             return Promise.resolve(response);
           } catch (error) {
             return Promise.resolve(null);
@@ -92,6 +97,7 @@ const AttractionDetails = () => {
       const filteredProductTypes = productTypes.filter((item) => item !== null);
       const filteredPriceList = priceList.filter((item) => item !== null);
       // console.log("🚀 ~ file: [id].js:82 ~ attraction ~ filteredPriceList", filteredPriceList);
+      // const minPrice = priceList.data.rates.adults[0]
       const minPrice = filteredPriceList?.map((list) => {
         const priceList = list.map((prices) => {
           // const keys = Object.keys(prices.prices);
@@ -108,19 +114,20 @@ const AttractionDetails = () => {
       });
       filteredProductTypes?.map((response, index) => {
         const minPricePerProduct = minPrice?.[index];
-        response.data.adultFinalPrice =
-          minPricePerProduct +
-            percentage(
-              minPricePerProduct,
-              response.data.adultRecommendedMarkup
-            ) >
-          response.data.adultParityPrice
-            ? minPricePerProduct +
-              percentage(
-                minPricePerProduct,
-                response.data.adultRecommendedMarkup
-              )
-            : response.data.adultParityPrice;
+        response.data.adultFinalPrice = minPricePerProduct
+        // response.data.adultFinalPrice =
+        //   minPricePerProduct +
+        //     percentage(
+        //       minPricePerProduct,
+        //       response.data.adultRecommendedMarkup
+        //     ) >
+        //   response.data.adultParityPrice
+        //     ? minPricePerProduct +
+        //       percentage(
+        //         minPricePerProduct,
+        //         response.data.adultRecommendedMarkup
+        //       )
+        //     : response.data.adultParityPrice;
         // : 0;
         // response.data.childFinalPrice = response.data.childRecommendedMarkup
         //   ? minPrice +

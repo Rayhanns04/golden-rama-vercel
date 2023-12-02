@@ -128,7 +128,7 @@ export const getOrderDetailHotel = async (data) => {
     const response = await axios.post(`${BASE_URL}/orders/hotels/detail`, data);
     return Promise.resolve(response.data.data);
   } catch (error) {
-    console.error(error);
+    // console.error(error);
 
     return Promise.reject(error);
   }
