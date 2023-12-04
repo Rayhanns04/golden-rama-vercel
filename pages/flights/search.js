@@ -1208,6 +1208,8 @@ const SearchFlights = ({
   );
 };
 
+export default SearchFlights;
+
 export async function getServerSideProps(context) {
   const { departureDate, returnDate, originCode, destinationCode, adult, child, infant, cabinClasses, airlines, isRoundTrip, is_smart_combo } = context.query;
 
@@ -1271,7 +1273,7 @@ export async function getServerSideProps(context) {
       currentJourneySave = updatedCurrentJourney
 
       flights = response.data?.Schedules[0]?.Flights?.slice(0, 15)
-      totalData = response.data?.Schedules[0]?.Flights?.length
+      totalData = response.data?.Schedules[0]?.Flights?.length !== null ? response.data?.Schedules[0]?.Flights?.length : 0
       additionalFee = response.data?.Schedules[0]?.AdditionalFee || null;
       loading = false;
     }
@@ -1306,7 +1308,34 @@ export async function getServerSideProps(context) {
   } catch (error) {
     loading  = false;
     status = false
+
+    // Return an object even in the catch block
+    return {
+      props: {
+        dataQuery: {
+          departureDate: departureDate,
+          returnDate: returnDate,
+          originCode: originCode,
+          destinationCode: destinationCode,
+          adult: adult,
+          child: child,
+          infant: infant,
+          cabinClasses: cabinClasses,
+          airlines: airlines,
+          isRoundTrip: isRoundTrip,
+          is_smart_combo: is_smart_combo,
+        },
+        dataflights: {
+          status: status,
+          loading: loading,
+          isInternational: isInternational,
+          additionalFee: additionalFee,
+          totalData:  totalData,
+          flights: flights,
+          currentJourney: currentJourney,
+          currentJourneySave: currentJourneySave,
+        },
+      },
+    };
   }
 }
-
-export default SearchFlights;
