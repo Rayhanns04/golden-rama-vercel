@@ -86,10 +86,19 @@ const InsuranceOrderDetails = (props) => {
     }
   };
   const additionalCoverageTotal = insuranceDetail.additionalCoverage
-    ? insuranceDetail.additionalCoverage.reduce((acc, obj) => {
-        return acc + obj.MainRate;
+      ? insuranceDetail.additionalCoverage.reduce((acc, obj) => {
+        if (obj.Name === "Proteksi Covid-19/Covid- 19 Protection") {
+          const day = differenceInDays(
+              new Date(insuranceDetail.travel_end_date),
+              new Date(insuranceDetail.travel_start_date)
+          ) + 1;
+
+          return (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child) * day)
+        } else {
+          return (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child))
+        }
       }, 0)
-    : 0;
+      : 0;
   const TravellerTypePrice =
     insuranceDetail.TravellerTypeName === "Family"
       ? insuranceDetail.MainRate
@@ -155,14 +164,27 @@ const InsuranceOrderDetails = (props) => {
         b: true,
       },
       ...(insuranceDetail.additionalCoverage
-        ? insuranceDetail.additionalCoverage?.map((item, index) => {
+          ? insuranceDetail.additionalCoverage?.map((item, index) => {
+            let total;
+
+            if (item.Name === "Proteksi Covid-19/Covid- 19 Protection") {
+              const day = differenceInDays(
+                  new Date(insuranceDetail.travel_end_date),
+                  new Date(insuranceDetail.travel_start_date)
+              ) + 1;
+
+              total = parseInt(item.MainRate) * (mappingTraveler.adult + mappingTraveler.child) * day;
+            } else {
+              total = parseInt(item.MainRate) * (mappingTraveler.adult + mappingTraveler.child);
+            }
+
             return {
               t: `${item.Name}`,
-              p: convertToRupiah(parseInt(item.MainRate)),
+              p: convertToRupiah(total),
               b: true,
             };
           })
-        : []),
+          : []),
     ],
     [
       form?.transaction?.discountPromo != undefined &&
