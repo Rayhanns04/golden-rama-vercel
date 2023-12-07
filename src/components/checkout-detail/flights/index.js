@@ -83,12 +83,15 @@ import {
     );
     const router = useRouter();
     const { isLoggedIn, user } = useSelector((s) => s.authReducer);
+
     const users = {
       fullName: user.full_name,
       email: user.email,
       phone: user.phone,
     };
+    
     const { nextStep, prevStep, setStep, reset, activeStep } = steps;
+
     const sections = [
       [
         {
@@ -165,35 +168,6 @@ import {
           ),
           hidden: !handlePromo,
         },
-        ...(router.pathname.startsWith("/insurances")
-          ? [
-              // {
-              //   title: "Tambahan Pesan",
-              //   content: (
-              //     <>
-              //       <FormControl>
-              //         <FormLabel fontSize={"sm"}>
-              //           Tujuan Lain (Jika Tersedia)
-              //         </FormLabel>
-              //         {/* <Input variant="filled" name="" type={"text"} /> */}
-              //       </FormControl>
-              //       {/* <FormControl>
-              //         <FormLabel fontSize={"sm"}>
-              //           Beri Nama Perjalan Ini
-              //         </FormLabel>
-              //         <Input variant="filled" {...field} type={"text"} />
-              //       </FormControl> */}
-              //     </>
-              //   ),
-              // },
-              {
-                title: "Pilih Perlindungan",
-                content: (
-                  <InsuranceProtectionsList detail_prices={detail_prices} />
-                ),
-              },
-            ]
-          : []),
         {
           title: "Rincian Biaya",
           notes: "Harga dalam Rupiah",
@@ -208,112 +182,6 @@ import {
                   // hidden={!isDesktop}
                   isPromoAvailable={isPromoAvailable}
                 />
-              ) : router.pathname.startsWith("/tours") ||
-                router.pathname.startsWith("/attractions") ||
-                router.pathname.startsWith("/cruises") ||
-                router.pathname.startsWith("/packages") ? (
-                <Stack mb={"-24px"} mx={"-24px"} px={"24px"} pt={"16px"}>
-                  {detail_prices.map((item, parentIndex) => (
-                    <>
-                      {parentIndex < 2 &&
-                        item.map((i, index) => (
-                          <>
-                            {!i.h && (
-                              <HStack
-                                // px={"24px"}
-                                key={index}
-                                w="full"
-                                justifyContent="space-between"
-                              >
-                                <Text
-                                  fontSize={{ base: "sm", md: "md" }}
-                                  color={
-                                    parentIndex === 0
-                                      ? "neutral.text.medium"
-                                      : "neutral.text.high"
-                                  }
-                                  fontWeight={i.b && "semibold"}
-                                >
-                                  {i.t}
-                                </Text>
-                                <Text
-                                  fontSize={{ base: "sm", md: "md" }}
-                                  color={
-                                    i.g
-                                      ? "green.400"
-                                      : parentIndex === 0
-                                      ? "neutral.text.medium"
-                                      : "neutral.text.high"
-                                  }
-                                  fontWeight={i.b && "semibold"}
-                                >
-                                  {i.p}
-                                </Text>
-                              </HStack>
-                            )}
-                          </>
-                        ))}
-                      <Divider
-                        hidden={parentIndex > 0}
-                        variant={"dashed"}
-                        // borderColor={"red"}
-                      />
-                    </>
-                  ))}
-                </Stack>
-              ) : router.pathname.startsWith("/insurances") ? (
-                <Box py={"12px"}>
-                  {/* <Divider variant={"dashed"} /> */}
-                  <Stack mb={"-24px"} mx={"-24px"} px={"24px"} pt={"16px"}>
-                    {detail_prices.map((item, parentIndex) => (
-                      <>
-                        {parentIndex < 2 &&
-                          item.map((i, index) => (
-                            <>
-                              {!i.h && (
-                                <HStack
-                                  // px={"24px"}
-                                  key={index}
-                                  w="full"
-                                  justifyContent="space-between"
-                                >
-                                  <Text
-                                    fontSize={{ base: "sm", md: "md" }}
-                                    color={
-                                      parentIndex === 0
-                                        ? "neutral.text.medium"
-                                        : "neutral.text.high"
-                                    }
-                                    fontWeight={i.b && "semibold"}
-                                  >
-                                    {i.t}
-                                  </Text>
-                                  <Text
-                                    fontSize={{ base: "sm", md: "md" }}
-                                    color={
-                                      i.g
-                                        ? "green.400"
-                                        : parentIndex === 0
-                                        ? "neutral.text.medium"
-                                        : "neutral.text.high"
-                                    }
-                                    fontWeight={i.b && "semibold"}
-                                  >
-                                    {i.p}
-                                  </Text>
-                                </HStack>
-                              )}
-                            </>
-                          ))}
-                        <Divider
-                          hidden={parentIndex > 0}
-                          variant={"dashed"}
-                          // borderColor={"red"}
-                        />
-                      </>
-                    ))}
-                  </Stack>
-                </Box>
               ) : (
                 <NoResults href="/" />
               )}
@@ -321,107 +189,34 @@ import {
           ),
           hidden: !isDesktop && router.pathname.startsWith("/flights"),
         },
-        ...(router.pathname.startsWith("/tours")
-          ? [
-              {
-                title: "Rincian Deposit",
-                content: (
-                  <Box py={"12px"}>
-                    <Divider variant={"dashed"} />
-                    {!detail_prices.isLoading &&
-                    router.pathname.startsWith("/tours") ? (
-                      <Stack mb={"-24px"} mx={"-24px"} px={"24px"} pt={"16px"}>
-                        {detail_prices.map((item, parentIndex) => (
-                          <>
-                            {parentIndex > 1 &&
-                              item.map((i, index) => (
-                                <>
-                                  {!i.h && (
-                                    <HStack
-                                      // px={"24px"}
-                                      key={index}
-                                      w="full"
-                                      justifyContent="space-between"
-                                    >
-                                      <Text
-                                        fontSize={{
-                                          base: `${
-                                            parentIndex === 3 && index == 1
-                                              ? "xs"
-                                              : "sm"
-                                          }`,
-                                          md: "md",
-                                        }}
-                                        color={
-                                          parentIndex === 3
-                                            ? "neutral.text.medium"
-                                            : "neutral.text.high"
-                                        }
-                                        fontWeight={i.b && "semibold"}
-                                      >
-                                        {i.t}
-                                      </Text>
-                                      <Text
-                                        fontSize={{ base: "sm", md: "md" }}
-                                        color={
-                                          i.g
-                                            ? "green.400"
-                                            : parentIndex === 3
-                                            ? "neutral.text.medium"
-                                            : "neutral.text.high"
-                                        }
-                                        fontWeight={i.b && "semibold"}
-                                      >
-                                        {i.p}
-                                      </Text>
-                                    </HStack>
-                                  )}
-                                </>
-                              ))}
-                            <Divider
-                              hidden={parentIndex != 2}
-                              variant={"dashed"}
-                              // borderColor={"red"}
-                            />
-                          </>
-                        ))}
-                      </Stack>
-                    ) : (
-                      <NoResults href="/" />
-                    )}
-                  </Box>
-                ),
-              },
-            ]
-          : ""),
   
-        // additionals && {
-        //   title: "Tambahan Permintaan",
-        //   content: (
-        //     <Stack spacing={2} py={"24px"}>
-        //       <Divider variant={"dashed"} />
-        //       {additionals.map((item, index) => (
-        //         <Checkbox key={index} colorScheme="brand.blue" w="full">
-        //           <HStack justifyContent="space-between">
-        //             <Text
-        //               fontSize={{ base: "sm", md: "md" }}
-        //               color="neutral.text.medium"
-        //             >
-        //               {item.t}
-        //             </Text>
-        //             <Text
-        //               fontSize={{ base: "sm", md: "md" }}
-        //               color="neutral.text.medium"
-        //             >
-        //               {item.p}
-        //             </Text>
-        //           </HStack>
-        //         </Checkbox>
-        //       ))}
-        //       <Divider variant={"dashed"} />
-        //     </Stack>
-        //   ),
-        // },
+          // additionals && {
+          //   title: "Tambahan Permintaan",
+          //   content: (
+          //     <Stack spacing={2} py={"24px"}>
+          //       <Divider variant={"dashed"} />
+          //       {additionals.map((item, index) => (
+          //         <Checkbox key={index} colorScheme="brand.blue" w="full">
+          //           <HStack justifyContent="space-between">
+          //             <Text
+          //               fontSize={{ base: "sm", md: "md" }}
+          //               color="neutral.text.medium"
+          //             >
+          //               {item.t}
+          //             </Text>
+          //             <Text
+          //               fontSize={{ base: "sm", md: "md" }}
+          //               color="neutral.text.medium"
+          //             >
+          //               {item.p}
+          //             </Text>
+          //           </HStack>
+          //         </Checkbox>
+          //       ))}
+          //       <Divider variant={"dashed"} />
+          //     </Stack>
+          //   ),
+          // },
       ],
       [
         {
@@ -1070,14 +865,6 @@ import {
       item.passport_number = "";
     }
   
-    if (isAttraction) {
-      defaultForm = {
-        ...props.dynamicForm?.reduce((prev, val) => {
-          return { ...prev, [val.name]: "" };
-        }, {}),
-      };
-    }
-  
     const defaultYupValidation = {
       title: Yup.string().required("Title harap diisi"),
       first_name: Yup.string().required("Nama depan harap diisi"),
@@ -1090,7 +877,7 @@ import {
         .required("Tanggal lahir harap diisi"),
       country: Yup.string().required("Negara harap diisi"),
   
-      id_number: Yup.string().required("ID harap diisi"),
+      id_number: Yup.number().required("ID harap diisi"),
       mobile_phone: Yup.number().required("Mobile phone harap diisi"),
       email: Yup.string().email().required("Email harap diisi"),
       // ...(item?.paxType === 'ADT'
@@ -1136,80 +923,7 @@ import {
         : ""
         ),
     };
-  
-    if (isAttraction) {
-      defaultYupValidation = {
-        ...props.dynamicForm?.reduce((prev, val) => {
-          return {
-            ...prev,
-            [val.name]: Yup.string().when([], {
-              is: val.required,
-              then: Yup.string().required(`${val.label} Harap Diisi`),
-              otherwise: Yup.string().notRequired(),
-            }),
-          };
-        }, {}),
-      };
-    }
-  
-    if (customForm) {
-      defaultForm = customForm;
-    }
-    
-    if (isInsurance) {
-      defaultForm = {
-        first_name: "",
-        last_name: "",
-        gender: "Male",
-        birthplace: "",
-        dob: addYears(new Date(), -24),
-        email: "",
-        address: "",
-        ...(index === 0
-          ? {
-              phone: "",
-              city: "",
-              TravelNeedID: "",
-              title: "",
-            }
-          : {}),
-        relationship: index === 0 ? "Primary" : "",
-        passport_type: "KTP",
-        publisher_country: "",
-        passport: "",
-        id_number: "",
-        mobile_phone: "",
-        emergency_fullname: "",
-        emergency_phone: "",
-        emergency_email: ""
-      };
-  
-      defaultYupValidation = {
-        first_name: Yup.string().required("Nama Depan harap diisi"),
-        last_name: Yup.string().notRequired(),
-        mobile_phone: Yup.number().notRequired(),
-        id_number: Yup.number().required("ID harap diisi"),
-        gender: Yup.string().required("Gender harap diisi"),
-        birthplace: Yup.string().required("Tempat Lahir harap diisi"),
-        dob: Yup.date().required("Tanggal Lahir harap diisi"),
-        address: Yup.string().required("Alamat harap diisi"),
-        passport: Yup.string().required("Passport harap diisi"),
-        publisher_country: Yup.string().required("Negara Penerbit harap diisi"),
-        relationship: Yup.string().required("Hubungan harap diisi"),
-        ...(index === 0
-          ? {
-              title: Yup.string().required("Title harap diisi"),
-              email: Yup.string().email().required("Email harap diisi"),
-              phone: Yup.number().required("Nomor Telepon harap diisi"),
-              city: Yup.string().required("Kota harap diisi"),
-              TravelNeedID: Yup.string().required("Keperluan harap diisi"),
-            }
-          : {
-              email: Yup.string().email().notRequired(),
-            }),
-      };
-    }
-    
+      
     const fields = [
       {
         name: "title",
@@ -1260,22 +974,6 @@ import {
         label: "Email",
         type: "email",
       },
-  
-      // ...(isAttraction
-      //   ? [
-      //       {
-      //         name: "dob",
-      //         label: "Email",
-      //         type: "email",
-      //       },
-      //     ]
-      //   : [
-      //       {
-      //         name: "dob",
-      //         label: "Tanggal Lahir",
-      //         type: "date",
-      //       },
-      //     ]),
       {
         name: "country",
         label: "Kewarganegaraan",
@@ -1305,15 +1003,6 @@ import {
       //       },
       //     ]
       //   : ""),
-      // ...(isAttraction
-      //   ? [
-      //       {
-      //         name: "mobile_phone",
-      //         label: "Nomor Telepon",
-      //         type: "text",
-      //       },
-      //     ]
-      //   : 
   
       // ...(!isDomestic && item?.paxType !== 'INF'
       ...(!isDomestic 
@@ -1359,15 +1048,6 @@ import {
       ),
     ];
   
-    if (customFields) {
-      fields = customFields;
-    }
-    if (isAttraction) {
-      fields = props.dynamicForm;
-    }
-    if (customValidation) {
-      defaultYupValidation = customValidation;
-    }
     const [form, setForm] = useState({
       i: item.i,
       key: index,
@@ -1377,32 +1057,13 @@ import {
   
     const handleSubmit = async (values, actions) => {
       try {
-        if (isAttraction) {
-          new Promise(async (resolve, reject) => {
-            try {
-              _.mapObject(values, async (value, key) => {
-                if (typeof value === "object") {
-                  const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-                  const responseImage = value && (await uploadFile(value));
-                  if (!responseImage) return reject(responseImage);
-                  values[key] = responseImage.url;
-                  // return resolve(value = responseImage.id);
-                  // resolve(response);
-                }
-              });
-            } catch (error) {
-              reject(error);
-            }
-          });
-        }
         setForm({ ...form, ...values });
         handleTraveler(values);
         actions.setSubmitting(false);
         await actions.setStatus("Done");
         return Promise.resolve(true);
       } catch (error) {
-        console.error(error);
-  
+        // console.error(error);
         return Promise.reject(error);
       }
     };
@@ -1516,30 +1177,7 @@ import {
                   <GlobalForm
                     person={item}
                     fields={
-                      customFields
-                        ? isInsurance
-                          ? customFields
-                              .filter((item) => {
-                                return (
-                                  item.name !== "passport_type" &&
-                                  item.name !== "passport" &&
-                                  item.name !== "publisher_country"
-                                );
-                              })
-                              .filter((item) => {
-                                if (index !== 0) {
-                                  return (
-                                    item.name !== "TravelNeedID" &&
-                                    item.name !== "title"
-                                  );
-                                } else if (index === 0) {
-                                  return item.name !== "relationship";
-                                } else return item;
-                              })
-                          : customFields
-                        : isAttraction
-                        ? fields
-                        : item?.paxType === 'ADT'
+                        item?.paxType === 'ADT'
                         ? fields.slice(0, 7)
                         : fields.slice(0, 7) // harusnya 0, 4
                     }
@@ -1609,15 +1247,6 @@ import {
                       <GlobalForm
                         person={item}
                         fields={
-                          // isInsurance
-                          //   ? fields.filter((item) => {
-                          //       return (
-                          //         item.name === "passport_type" ||
-                          //         item.name === "passport" ||
-                          //         item.name === "publisher_country"
-                          //       );
-                          //     })
-                          //   : fields.slice(7, fields.length)
                           fields.slice(7, 10)
                         }
                       />
@@ -1662,15 +1291,11 @@ import {
               </Stack>
             </CustomFilterButton>
           </Form>
-          {/* {({ isSubmitting, submitForm, status }) => (
-          )} */}
         </Formik>
       </>
     );
-  };
-  
-  
-  
+  };  
+
   export const ContactInfo = ({ handleChange }) => {
     const { isLoggedIn, user } = useSelector((s) => s.authReducer);
     const users = {

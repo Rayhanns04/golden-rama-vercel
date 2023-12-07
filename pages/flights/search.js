@@ -149,7 +149,11 @@ const SearchFlights = ({
         setStatusSuccess(true);
         setIsLoading(false)
         
-        const schedules = response.data?.Schedules;
+        // const schedules = response.data?.Schedules;
+        const resSchedules = response.data?.Schedules;
+        const schedules = Object.values(resSchedules);
+
+        // console.log('itemku', schedules)
 
         schedules.map((item)=>{
           if(item.IsInternational){
@@ -158,7 +162,7 @@ const SearchFlights = ({
         })
         const lowestPriceFlights = schedules[position]?.Flights.slice(0).sort((a, b) => a.Fare - b.Fare);
 
-        const updatedCurrentJourney = response.data?.Schedules?.map((journey, index) => {
+        const updatedCurrentJourney = schedules?.map((journey, index) => {
           if (index === position) {
             return {
               ...journey,
@@ -171,9 +175,9 @@ const SearchFlights = ({
         setCurrentJourney(updatedCurrentJourney);
         setCurrentJourneySave(updatedCurrentJourney);
 
-        setFlights(response.data?.Schedules[position]?.Flights?.slice(0, shownItems));
-        setTotalData(response.data?.Schedules[position]?.Flights?.length);
-        setAdditionalFee(response.data?.Schedules[position]?.AdditionalFee);
+        setFlights(schedules[position]?.Flights?.slice(0, shownItems));
+        setTotalData(schedules[position]?.Flights?.length);
+        setAdditionalFee(schedules[position]?.AdditionalFee);
         setIsLoading(false);
       } 
     } catch (error) {
@@ -223,7 +227,6 @@ const SearchFlights = ({
   },[sortBy])
 
   useEffect(()=>{
-
     const applyAllFilters = (flights) => {
       let filteredFlights = flights;
       
@@ -1249,7 +1252,10 @@ export async function getServerSideProps(context) {
       status = true;
       loading = false;
       
-      const schedules = response.data?.Schedules;
+      
+      const resSchedules = response.data?.Schedules;
+      const schedules = Object.values(resSchedules);
+      // console.log(schedules)
 
       schedules.map((item)=>{
         if(item.IsInternational){
@@ -1259,7 +1265,7 @@ export async function getServerSideProps(context) {
 
       const lowestPriceFlights = schedules[0]?.Flights.slice(0).sort((a, b) => a.Fare - b.Fare);
 
-      const updatedCurrentJourney = response.data?.Schedules?.map((journey, index) => {
+      const updatedCurrentJourney = schedules?.map((journey, index) => {
         if (index === 0) {
           return {
             ...journey,
@@ -1272,9 +1278,9 @@ export async function getServerSideProps(context) {
       currentJourney = updatedCurrentJourney
       currentJourneySave = updatedCurrentJourney
 
-      flights = response.data?.Schedules[0]?.Flights?.slice(0, 15)
-      totalData = response.data?.Schedules[0]?.Flights?.length !== null ? response.data?.Schedules[0]?.Flights?.length : 0
-      additionalFee = response.data?.Schedules[0]?.AdditionalFee || null;
+      flights = schedules[0]?.Flights?.slice(0, 15)
+      totalData = schedules[0]?.Flights?.length !== null ? schedules[0]?.Flights?.length : 0
+      additionalFee = schedules[0]?.AdditionalFee || null;
       loading = false;
     }
     
@@ -1309,7 +1315,6 @@ export async function getServerSideProps(context) {
     loading  = false;
     status = false
 
-    // Return an object even in the catch block
     return {
       props: {
         dataQuery: {

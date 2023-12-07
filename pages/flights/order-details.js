@@ -130,322 +130,338 @@ const OrderDetails = () => {
     infant: query?.infant
   }
   
-  useEffect(() => {
-    if(query?.isRoundTrip === 'true'){
-      let totalData = data?.flights?.length
-      const totalFareAll = []
-      setIsLoading(true)
-      let resultFareBreakdownTemp = []
-      let fareDetailRequestTemp = []
-      let fareDetailTemp = []
-      let statusTemp = []
-
-      data?.flights?.map(async (item, index)=>{
-        if(item?.FlightType === 'GdsBfm'){
-          let totalAmountByPaxType = {};
-          item?.FareBreakdowns?.forEach(function(item) {
-            var paxType = item.PaxType;
-            var charges = item.Charges;
-            
-            var totalAmount = charges.reduce(function(total, charge) {
-                return total + charge.Amount;
-            }, 0);
-        
-            if (totalAmountByPaxType[paxType] === undefined) {
-                totalAmountByPaxType[paxType] = 0;
-            }
-        
-            totalAmountByPaxType[paxType] += totalAmount;
-          });
-
-          var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-            return {
-                "PaxType": paxType,
-                "TotalAmount": totalAmountByPaxType[paxType]
-            };
-          });
-
-          resultFareBreakdownTemp[index] = result
-          totalFareAll.push(item?.Fare)
-          statusTemp[index] = true
-        } else if (item?.FlightType === 'NonGds'){
-          if(item?.IsConnecting === false){
-            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-            try {
-              const response = await getDetailPrice(fareItem, jwt);
-              fareDetailTemp[index] = response?.data
-              if(response?.success === false){
-                setIsLoading(false)
-                statusTemp[index] = false
-              } else {
-                statusTemp[index] = true
-              }
-
-              var totalAmountByPaxType = {};
-              response?.data?.Details.forEach(function(item) {
-                var paxType = item.Code;
-                var amount = item.Amount;
-            
-                if (totalAmountByPaxType[paxType] === undefined) {
-                    totalAmountByPaxType[paxType] = 0;
-                }
-                totalAmountByPaxType[paxType] += amount;
-              });
-              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-                return {
-                    "PaxType": paxType,
-                    "TotalAmount": totalAmountByPaxType[paxType]
-                };
-              });
-
-              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              const filteredResponse = result.filter(
-                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
-              );
-              const sumTotal = result
-                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
-                .reduce((total, item) => total + item.TotalAmount, 0);
-              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-              const updatedResponse = filteredResponse.map((item) => ({
-                ...item,
-                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
-              }));
-
-              const finalResponse = [
-                ...updatedResponse,
-                ...result.filter((item) => item.PaxType === "INFT")
-              ];
-              
-              totalFareAll.push(response?.data?.Total)
-              resultFareBreakdownTemp[index] = finalResponse
-              fareDetailRequestTemp[index] = fareItem
-            } catch (error) {
-              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-            }
-          } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
-            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-            try {
-              const response = await getDetailPrice(fareItem, jwt);
-              fareDetailTemp[index] = response?.data
-              if(response?.success === false){
-                setIsLoading(false)
-                statusTemp[index] = false
-              } else {
-                statusTemp[index] = true
-              }
-
-              var totalAmountByPaxType = {};
-              response?.data?.Details.forEach(function(item) {
-                var paxType = item.Code;
-                var amount = item.Amount;
-                if (totalAmountByPaxType[paxType] === undefined) {
-                    totalAmountByPaxType[paxType] = 0;
-                }
-                totalAmountByPaxType[paxType] += amount;
-              });
-              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-                return {
-                    "PaxType": paxType,
-                    "TotalAmount": totalAmountByPaxType[paxType]
-                };
-              });
-              const filteredResponse = result.filter(
-                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
-              );
-              const sumTotal = result
-                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
-                .reduce((total, item) => total + item.TotalAmount, 0);
-              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-              const updatedResponse = filteredResponse.map((item) => ({
-                ...item,
-                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
-              }));
-              const finalResponse = [
-                ...updatedResponse,
-                ...result.filter((item) => item.PaxType === "INFT")
-              ];
-              totalFareAll.push(response?.data?.Total)
-              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              resultFareBreakdownTemp[index] = finalResponse
-              fareDetailRequestTemp[index] = fareItem
-            } catch (error) {
-              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-            }
-          }
-        }
-
-        if(totalData === totalFareAll?.length){
-          setIsLoading(false)
-        }
-        setResultFareBreakdown(resultFareBreakdownTemp)
-        setFareDetailRequest(fareDetailRequestTemp)
-        setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
-      }) 
-      setStatusFareDetail(statusTemp)
-      setFareDetail(fareDetailTemp)     
-    } else {
-      let fareDetailRequestTemp = []
-      let fareDetailTemp = []
-      let statusTemp = []
-
-      data?.flights?.map(async (item, index)=>{
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      if(query?.isRoundTrip === 'true'){
+        let totalData = data?.flights?.length
+        const totalFareAll = []
         setIsLoading(true)
-        if(item?.FlightType === 'GdsBfm'){
-          let totalAmountByPaxType = {};
-          item?.FareBreakdowns?.forEach(function(item) {
-            var paxType = item.PaxType;
-            var charges = item.Charges;
-            
-            var totalAmount = charges.reduce(function(total, charge) {
-                return total + charge.Amount;
-            }, 0);
-        
-            if (totalAmountByPaxType[paxType] === undefined) {
-                totalAmountByPaxType[paxType] = 0;
-            }
-        
-            totalAmountByPaxType[paxType] += totalAmount;
-          });
-
-          var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-            return {
-                "PaxType": paxType,
-                "TotalAmount": totalAmountByPaxType[paxType]
-            };
-          });
-
-          setResultFareBreakdown([result])
-          setFareTotal(item?.Fare)
-          statusTemp[index] = true
-        } else if (item?.FlightType === 'NonGds'){
-          if(item?.IsConnecting === false){
-            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-            fareDetailRequestTemp[index] = fareItem
-            try {
-              const response = await getDetailPrice(fareItem, jwt);
-              fareDetailTemp[index] = response?.data
-              if(response?.success === false){
-                setIsLoading(false)
-                statusTemp[index] = false
-              } else {
-                statusTemp[index] = true
-              }
-
-              var totalAmountByPaxType = {};
-              response?.data?.Details.forEach(function(item) {
-                var paxType = item.Code;
-                var amount = item.Amount;
+        let resultFareBreakdownTemp = []
+        let fareDetailRequestTemp = []
+        let fareDetailTemp = []
+        let statusTemp = []
+    
+        await Promise.all(
+          data?.flights?.map(async (item, index)=>{
+            if(item?.FlightType === 'GdsBfm'){
+              let totalAmountByPaxType = {};
+              item?.FareBreakdowns?.forEach(function(item) {
+                var paxType = item.PaxType;
+                var charges = item.Charges;
+                
+                var totalAmount = charges.reduce(function(total, charge) {
+                    return total + charge.Amount;
+                }, 0);
             
                 if (totalAmountByPaxType[paxType] === undefined) {
                     totalAmountByPaxType[paxType] = 0;
                 }
-                totalAmountByPaxType[paxType] += amount;
+            
+                totalAmountByPaxType[paxType] += totalAmount;
               });
-
+      
               var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
                 return {
                     "PaxType": paxType,
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
-
-              // ubah response nyaaaaaa
-              const filteredResponse = result.filter(
-                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
-              );
-
-              const sumTotal = result
-                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
-                .reduce((total, item) => total + item.TotalAmount, 0);
-
-              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-
-              const updatedResponse = filteredResponse.map((item) => ({
-                ...item,
-                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
-              }));
-
-              const finalResponse = [
-                ...updatedResponse,
-                ...result.filter((item) => item.PaxType === "INFT")
-              ];
-
-              setResultFareBreakdown([finalResponse])
-              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareTotal(response?.data?.Total)
-            } catch (error) {
-              setFareDetailRequest([])
-              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-            }
-          } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
-            const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-            fareDetailRequestTemp[index] = fareItem
-            try {
-              const response = await getDetailPrice(fareItem, jwt);
-              fareDetailTemp[index] = response?.data
-              if(response?.success === false){
-                setIsLoading(false)
-                statusTemp[index] = false
-              } else {
-                statusTemp[index] = true
+      
+              resultFareBreakdownTemp[index] = result
+              totalFareAll.push(item?.Fare)
+              statusTemp[index] = true
+            } else if (item?.FlightType === 'NonGds'){
+              if(item?.IsConnecting === false){
+                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+                try {
+                  const response = await getDetailPrice(fareItem, jwt);
+                  fareDetailTemp[index] = response?.data
+                  if(response?.success === false){
+                    setIsLoading(false)
+                    statusTemp[index] = false
+                  } else {
+                    statusTemp[index] = true
+                  }
+      
+                  var totalAmountByPaxType = {};
+                  response?.data?.Details.forEach(function(item) {
+                    var paxType = item.Code;
+                    var amount = item.Amount;
+                
+                    if (totalAmountByPaxType[paxType] === undefined) {
+                        totalAmountByPaxType[paxType] = 0;
+                    }
+                    totalAmountByPaxType[paxType] += amount;
+                  });
+                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                    return {
+                        "PaxType": paxType,
+                        "TotalAmount": totalAmountByPaxType[paxType]
+                    };
+                  });
+      
+                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+                  const filteredResponse = result.filter(
+                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+                  );
+                  const sumTotal = result
+                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                    .reduce((total, item) => total + item.TotalAmount, 0);
+                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+                  const updatedResponse = filteredResponse.map((item) => ({
+                    ...item,
+                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+                  }));
+      
+                  const finalResponse = [
+                    ...updatedResponse,
+                    ...result.filter((item) => item.PaxType === "INFT")
+                  ];
+                  
+                  totalFareAll.push(response?.data?.Total)
+                  resultFareBreakdownTemp[index] = finalResponse
+                  fareDetailRequestTemp[index] = fareItem
+                } catch (error) {
+                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+                }
+              } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
+                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+                try {
+                  const response = await getDetailPrice(fareItem, jwt);
+                  fareDetailTemp[index] = response?.data
+                  if(response?.success === false){
+                    setIsLoading(false)
+                    statusTemp[index] = false
+                  } else {
+                    statusTemp[index] = true
+                  }
+      
+                  var totalAmountByPaxType = {};
+                  response?.data?.Details.forEach(function(item) {
+                    var paxType = item.Code;
+                    var amount = item.Amount;
+                    if (totalAmountByPaxType[paxType] === undefined) {
+                        totalAmountByPaxType[paxType] = 0;
+                    }
+                    totalAmountByPaxType[paxType] += amount;
+                  });
+                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                    return {
+                        "PaxType": paxType,
+                        "TotalAmount": totalAmountByPaxType[paxType]
+                    };
+                  });
+                  const filteredResponse = result.filter(
+                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+                  );
+                  const sumTotal = result
+                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                    .reduce((total, item) => total + item.TotalAmount, 0);
+                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+                  const updatedResponse = filteredResponse.map((item) => ({
+                    ...item,
+                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+                  }));
+                  const finalResponse = [
+                    ...updatedResponse,
+                    ...result.filter((item) => item.PaxType === "INFT")
+                  ];
+                  totalFareAll.push(response?.data?.Total)
+                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+                  resultFareBreakdownTemp[index] = finalResponse
+                  fareDetailRequestTemp[index] = fareItem
+                } catch (error) {
+                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+                }
               }
-
-              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              var totalAmountByPaxType = {};
-              response?.data?.Details.forEach(function(item) {
-                var paxType = item.Code;
-                var amount = item.Amount;
+            }
+      
+            if(totalData === totalFareAll?.length){
+              setIsLoading(false)
+            }
+            setResultFareBreakdown(resultFareBreakdownTemp)
+            setFareDetailRequest(fareDetailRequestTemp)
+            setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
+          }) 
+        )
+  
+        setStatusFareDetail(statusTemp)
+        setFareDetail(fareDetailTemp)     
+      } else {
+        let fareDetailRequestTemp = []
+        let fareDetailTemp = []
+        let statusTemp = []
+    
+        await Promise.all(
+          data?.flights?.map(async (item, index)=>{
+            setIsLoading(true)
+            if(item?.FlightType === 'GdsBfm'){
+              let totalAmountByPaxType = {};
+              item?.FareBreakdowns?.forEach(function(item) {
+                var paxType = item.PaxType;
+                var charges = item.Charges;
+                
+                var totalAmount = charges.reduce(function(total, charge) {
+                    return total + charge.Amount;
+                }, 0);
             
                 if (totalAmountByPaxType[paxType] === undefined) {
                     totalAmountByPaxType[paxType] = 0;
                 }
-                totalAmountByPaxType[paxType] += amount;
+            
+                totalAmountByPaxType[paxType] += totalAmount;
               });
-
+      
               var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
                 return {
                     "PaxType": paxType,
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
-
-              // ubah response nyaaaaaa
-              const filteredResponse = result.filter(
-                (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
-              );
-
-              const sumTotal = result
-                .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
-                .reduce((total, item) => total + item.TotalAmount, 0);
-
-              const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-
-              const updatedResponse = filteredResponse.map((item) => ({
-                ...item,
-                TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
-              }));
-
-              const finalResponse = [
-                ...updatedResponse,
-                ...result.filter((item) => item.PaxType === "INFT")
-              ];
-
-              setResultFareBreakdown([finalResponse])
-              setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-              setFareTotal(response?.data?.Total)
-            } catch (error) {
-              setFareDetailRequest([])
-              console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+      
+              setResultFareBreakdown([result])
+              setFareTotal(item?.Fare)
+              statusTemp[index] = true
+            } else if (item?.FlightType === 'NonGds'){
+              if(item?.IsConnecting === false){
+                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+                fareDetailRequestTemp[index] = fareItem
+                try {
+                  const response = await getDetailPrice(fareItem, jwt);
+                  fareDetailTemp[index] = response?.data
+                  if(response?.success === false){
+                    setIsLoading(false)
+                    statusTemp[index] = false
+                  } else {
+                    statusTemp[index] = true
+                  }
+      
+                  var totalAmountByPaxType = {};
+                  response?.data?.Details.forEach(function(item) {
+                    var paxType = item.Code;
+                    var amount = item.Amount;
+                
+                    if (totalAmountByPaxType[paxType] === undefined) {
+                        totalAmountByPaxType[paxType] = 0;
+                    }
+                    totalAmountByPaxType[paxType] += amount;
+                  });
+      
+                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                    return {
+                        "PaxType": paxType,
+                        "TotalAmount": totalAmountByPaxType[paxType]
+                    };
+                  });
+      
+                  // ubah response nyaaaaaa
+                  const filteredResponse = result.filter(
+                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+                  );
+      
+                  const sumTotal = result
+                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                    .reduce((total, item) => total + item.TotalAmount, 0);
+      
+                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+      
+                  const updatedResponse = filteredResponse.map((item) => ({
+                    ...item,
+                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+                  }));
+      
+                  const finalResponse = [
+                    ...updatedResponse,
+                    ...result.filter((item) => item.PaxType === "INFT")
+                  ];
+      
+                  setResultFareBreakdown([finalResponse])
+                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+                  setFareTotal(response?.data?.Total)
+                } catch (error) {
+                  setFareDetailRequest([])
+                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+                }
+              } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
+                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+                fareDetailRequestTemp[index] = fareItem
+                try {
+                  const response = await getDetailPrice(fareItem, jwt);
+                  fareDetailTemp[index] = response?.data
+                  if(response?.success === false){
+                    setIsLoading(false)
+                    statusTemp[index] = false
+                  } else {
+                    statusTemp[index] = true
+                  }
+      
+                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+                  var totalAmountByPaxType = {};
+                  response?.data?.Details.forEach(function(item) {
+                    var paxType = item.Code;
+                    var amount = item.Amount;
+                
+                    if (totalAmountByPaxType[paxType] === undefined) {
+                        totalAmountByPaxType[paxType] = 0;
+                    }
+                    totalAmountByPaxType[paxType] += amount;
+                  });
+      
+                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                    return {
+                        "PaxType": paxType,
+                        "TotalAmount": totalAmountByPaxType[paxType]
+                    };
+                  });
+      
+                  // ubah response nyaaaaaa
+                  const filteredResponse = result.filter(
+                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+                  );
+      
+                  const sumTotal = result
+                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                    .reduce((total, item) => total + item.TotalAmount, 0);
+      
+                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+      
+                  const updatedResponse = filteredResponse.map((item) => ({
+                    ...item,
+                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+                  }));
+      
+                  const finalResponse = [
+                    ...updatedResponse,
+                    ...result.filter((item) => item.PaxType === "INFT")
+                  ];
+      
+                  setResultFareBreakdown([finalResponse])
+                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+                  setFareTotal(response?.data?.Total)
+                } catch (error) {
+                  setFareDetailRequest([])
+                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+                }
+              }
             }
-          }
-        }
-        setIsLoading(false)
-      })
-      setFareDetailRequest(fareDetailRequestTemp)
-      setFareDetail(fareDetailTemp)
-      setStatusFareDetail(statusTemp)
-  }
-  }, [query?.isRoundTrip, data?.flights]);
+            setIsLoading(false)
+          })
+        )
+        setFareDetailRequest(fareDetailRequestTemp)
+        setFareDetail(fareDetailTemp)
+        setStatusFareDetail(statusTemp)
+      }
+    } catch (error) {
+      console.error('Terjadi kesalahan:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  },[setIsLoading])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData]);
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({
     available: false,

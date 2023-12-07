@@ -272,7 +272,8 @@ export function simplifyPaxFares(paxFares) {
 // }
 
 export function getAirlineAvailable(flight) {
-  const uniqueAirline = flight.reduce((acc, item, index) => {
+  // console.log('itemmku1', flight)
+  const uniqueAirline = flight?.reduce((acc, item, index) => {
     let airlineName = item?.AirlineName;
 
     if (item?.TotalTransit > 0) {

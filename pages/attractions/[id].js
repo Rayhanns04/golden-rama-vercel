@@ -52,7 +52,7 @@ import { convertRupiah, percentage } from "../../src/helpers";
 import { useDispatch } from "react-redux";
 import { Detail } from "../../src/components/pages/attractions";
 
-const AttractionDetails = () => {
+const AttractionDetails = ({ data }) => {
   const router = useRouter();
   const { query } = router;
   const { id } = query;
@@ -60,10 +60,12 @@ const AttractionDetails = () => {
 
   const attraction = useQuery(["getAttractionsDetails", id], async () => {
     try {
-      const response = await getAttractionsDetails(id);
+      // const response = await getAttractionsDetails(id);
+      const response = data
       const result = {
-        ...response.detail,
+        ...response?.detail,
       };
+
       const productTypes = await Promise.all(
         response.productTypes.map(async (item, index) => {
           try {
@@ -510,7 +512,7 @@ const AttractionDetails = () => {
           colSpan={[1, 2, 2]}
           // px={"0"}
           id="attraction-description"
-          mx="-24px"
+          mx="-12px"
           // mx={{ base: "-24px", md: 0 }}
           as="section"
         >
@@ -673,34 +675,58 @@ const AttractionDetails = () => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const attractions = await getAllAttractions();
-  const paths = attractions.map((attraction) => ({
-    params: { id: attraction.uuid },
-  }));
-  return {
-    paths,
-    fallback: true,
-  };
-};
+// export const getStaticPaths = async () => {
+//   const attractions = await getAllAttractions();
+//   const paths = attractions.map((attraction) => ({
+//     params: { id: attraction.uuid },
+//   }));
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// };
 
-export const getStaticProps = async ({ params }) => {
+// export const getStaticProps = async ({ params }) => {
+//   try {
+//     const { detail } = await getAttractionsDetails(params.id);
+//     return {
+//       props: {
+//         data: null,
+//         meta: {
+//           title: detail.title || "Golden Rama E-Travel",
+//           description: detail.description || "Golden Rama E-Travel",
+//         },
+//       },
+//       revalidate: 10,
+//     };
+//   } catch (error) {
+//     console.error(error);
+//     return { notFound: true };
+//   }
+// };
+
+export const getServerSideProps = async (context) => {
+  const {id} = context.query
+  
   try {
-    const { detail } = await getAttractionsDetails(params.id);
+    const { detail, productTypes } = await getAttractionsDetails(id);
     return {
       props: {
-        data: null,
+        data: {
+          detail : detail, 
+          productTypes : productTypes
+        },
         meta: {
           title: detail.title || "Golden Rama E-Travel",
           description: detail.description || "Golden Rama E-Travel",
         },
       },
-      revalidate: 10,
     };
   } catch (error) {
     console.error(error);
     return { notFound: true };
   }
 };
+
 
 export default AttractionDetails;

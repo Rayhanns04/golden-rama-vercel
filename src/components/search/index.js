@@ -260,7 +260,7 @@ export const SearchFilters = ({
     const drawerRef = useRef();
     const { isOpen, onOpen, onClose } = useDisclosure();
     const formik = useFormikContext();
-    console.log("value", formik.values);
+    // console.log("value", formik.values);
     return (
       <Box>
         <Skeleton isLoaded={!isLoading}>
