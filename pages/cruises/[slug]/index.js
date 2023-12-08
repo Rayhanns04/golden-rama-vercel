@@ -136,7 +136,7 @@ const CruisesDetail = (props) => {
               <Heading color={"brand.blue.400"} fontSize={"20px"}>
                 Itinerary Perjalanan
               </Heading>
-              <Accordion allowMultiple mx={"-24px"} gap={"20px"}>
+              <Accordion allowMultiple mx={"0px"} gap={"20px"}>
                 {!cruise.isLoading &&
                   cruise.data &&
                   cruise.data?.departures
