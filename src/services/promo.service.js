@@ -371,11 +371,11 @@ export const getAllPromoList = async (category = null, isDisplay = true) => {
         ...(category == null
           ? ""
           : {
-              category: category,
-            }),
-      },
-      { encodeValuesOnly: true, addQueryPrefix: true }
-    );
+            category: category,
+          }),
+        },
+        { encodeValuesOnly: true, addQueryPrefix: true }
+        );
     const response = await axios.get(`${BASE_URL}/promos/getAllPromo${query}`, {
       headers: { Authorization: `Bearer ${store.getState().authReducer.jwt}` },
     });

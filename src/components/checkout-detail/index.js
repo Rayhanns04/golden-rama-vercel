@@ -549,6 +549,11 @@ const CheckoutDetail = ({
                               ? true
                               : false
                           }
+                          isCruises={
+                            router.pathname.startsWith("/cruises")
+                              ? true
+                              : false
+                          }
                           title={`${
                             router.pathname.startsWith("/tours")
                               ? "Data Traveler"
@@ -1041,6 +1046,7 @@ export const FormPerson = ({
   title = "Data Traveler",
   isAttraction = false,
   isInsurance = false,
+  isCruises = false,
   customFields = null,
   customForm = null,
   customValidation = null,
@@ -1071,6 +1077,7 @@ export const FormPerson = ({
       }, {}),
     };
   }
+
   const defaultYupValidation = {
     title: Yup.string().required("Title harap diisi"),
     first_name: Yup.string().required("Nama depan harap diisi"),
@@ -1106,68 +1113,6 @@ export const FormPerson = ({
         }),
   };
 
-  if (isAttraction) {
-    defaultYupValidation = {
-      ...props.dynamicForm?.reduce((prev, val) => {
-        return {
-          ...prev,
-          [val.name]: Yup.string().when([], {
-            is: val.required,
-            then: Yup.string().required(`${val.label} Harap Diisi`),
-            otherwise: Yup.string().notRequired(),
-          }),
-        };
-      }, {}),
-    };
-  }
-  if (customForm) {
-    defaultForm = customForm;
-  }
-  if (isInsurance) {
-    defaultForm = {
-      first_name: "",
-      last_name: "",
-      gender: "Male",
-      birthplace: "",
-      dob: addYears(new Date(), -24),
-      email: "",
-      address: "",
-      ...(index === 0
-        ? {
-            phone: "",
-            city: "",
-            TravelNeedID: "",
-            title: "",
-          }
-        : {}),
-      relationship: index === 0 ? "Primary" : "",
-      passport_type: "KTP",
-      publisher_country: "",
-      passport: "",
-    };
-    defaultYupValidation = {
-      first_name: Yup.string().required("Nama Depan harap diisi"),
-      last_name: Yup.string().notRequired(),
-      gender: Yup.string().required("Gender harap diisi"),
-      birthplace: Yup.string().required("Tempat Lahir harap diisi"),
-      dob: Yup.date().required("Tanggal Lahir harap diisi"),
-      address: Yup.string().required("Alamat harap diisi"),
-      passport: Yup.string().required("Passport harap diisi"),
-      publisher_country: Yup.string().required("Negara Penerbit harap diisi"),
-      relationship: Yup.string().required("Hubungan harap diisi"),
-      ...(index === 0
-        ? {
-            title: Yup.string().required("Title harap diisi"),
-            email: Yup.string().email().required("Email harap diisi"),
-            phone: Yup.number().required("Nomor Telepon harap diisi"),
-            city: Yup.string().required("Kota harap diisi"),
-            TravelNeedID: Yup.string().required("Keperluan harap diisi"),
-          }
-        : {
-            email: Yup.string().email().notRequired(),
-          }),
-    };
-  }
   const fields = [
     {
       name: "title",
@@ -1246,6 +1191,76 @@ export const FormPerson = ({
           },
         ]),
   ];
+
+  // if(isCruises){
+
+  // }
+
+  if (isAttraction) {
+    defaultYupValidation = {
+      ...props.dynamicForm?.reduce((prev, val) => {
+        return {
+          ...prev,
+          [val.name]: Yup.string().when([], {
+            is: val.required,
+            then: Yup.string().required(`${val.label} Harap Diisi`),
+            otherwise: Yup.string().notRequired(),
+          }),
+        };
+      }, {}),
+    };
+  }
+
+  if (isInsurance) {
+    defaultForm = {
+      first_name: "",
+      last_name: "",
+      gender: "Male",
+      birthplace: "",
+      dob: addYears(new Date(), -24),
+      email: "",
+      address: "",
+      ...(index === 0
+        ? {
+            phone: "",
+            city: "",
+            TravelNeedID: "",
+            title: "",
+          }
+        : {}),
+      relationship: index === 0 ? "Primary" : "",
+      passport_type: "KTP",
+      publisher_country: "",
+      passport: "",
+    };
+    defaultYupValidation = {
+      first_name: Yup.string().required("Nama Depan harap diisi"),
+      last_name: Yup.string().notRequired(),
+      gender: Yup.string().required("Gender harap diisi"),
+      birthplace: Yup.string().required("Tempat Lahir harap diisi"),
+      dob: Yup.date().required("Tanggal Lahir harap diisi"),
+      address: Yup.string().required("Alamat harap diisi"),
+      passport: Yup.string().required("Passport harap diisi"),
+      publisher_country: Yup.string().required("Negara Penerbit harap diisi"),
+      relationship: Yup.string().required("Hubungan harap diisi"),
+      ...(index === 0
+        ? {
+            title: Yup.string().required("Title harap diisi"),
+            email: Yup.string().email().required("Email harap diisi"),
+            phone: Yup.number().required("Nomor Telepon harap diisi"),
+            city: Yup.string().required("Kota harap diisi"),
+            TravelNeedID: Yup.string().required("Keperluan harap diisi"),
+          }
+        : {
+            email: Yup.string().email().notRequired(),
+          }),
+    };
+  }
+
+  if (customForm) {
+    defaultForm = customForm;
+  }
+
   if (customFields) {
     fields = customFields;
   }
@@ -1255,6 +1270,7 @@ export const FormPerson = ({
   if (customValidation) {
     defaultYupValidation = customValidation;
   }
+
   const [form, setForm] = useState({
     i: item.i,
     key: index,
@@ -1330,6 +1346,7 @@ export const FormPerson = ({
       </CustomOrangeFullWidthButton>
     );
   };
+
   return (
     <>
       <Button
@@ -1474,6 +1491,7 @@ export const FormPerson = ({
     </>
   );
 };
+
 export const ContactInfo = ({ handleChange }) => {
   const { isLoggedIn, user } = useSelector((s) => s.authReducer);
   const users = {
