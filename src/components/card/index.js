@@ -1337,7 +1337,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
   // console.log('itemku', dataResult)
 
   if(dataResult){
-    const newData = dataResult?.data.map((item) => {
+    const newData = dataResult?.data?.map((item) => {
       const correspondingCoverage = dataResult?.priceOverview?.UsingCoverages.find(
         (coverage) => coverage.Name === item?.Name
       );
@@ -1428,9 +1428,9 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
             <SelectionButton title={"Cakupan Tambahan"}>
               <Stack m={"-24px"} p={"24px"} spacing="24px" bg="brand.blue.100">
                 <>
-                  {dataAdditionalCoverage.data
+                  {dataAdditionalCoverage?.data
                       // ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
-                      .map((item, index) => (
+                      ?.map((item, index) => (
                     <Stack
                       spacing={"12px"}
                       key={index}
