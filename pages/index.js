@@ -1244,7 +1244,7 @@ export const getStaticProps = async () => {
         ...props,
         meta: {},
       },
-      revalidate: 10,
+      revalidate: 60,
     };
   } catch (error) {
     console.error(error);
