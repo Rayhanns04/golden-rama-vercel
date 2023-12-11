@@ -426,6 +426,9 @@ const Payment = (props) => {
                   </Accordion>
                   <Box
                     py="6px"
+                    display='flex'
+                    flexDirection='column'
+                    gap={4}
                     borderTop={{ base: "1px solid #9E9E9E", md: 0 }}
                   >
                     <CustomOrangeFullWidthButton

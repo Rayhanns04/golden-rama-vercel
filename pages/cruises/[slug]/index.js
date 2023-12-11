@@ -743,18 +743,19 @@ const CruisesDetail = (props) => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const cruises = await getAllCruises();
-  const paths = cruises.map((cruise) => ({
-    params: { slug: cruise.attributes.slug },
-  }));
-  return {
-    paths,
-    fallback: true,
-  };
-};
+// export const getStaticPaths = async () => {
+//   const cruises = await getAllCruises();
+//   const paths = cruises.map((cruise) => ({
+//     params: { slug: cruise.attributes.slug },
+//   }));
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// };
 
-export const getStaticProps = async (ctx) => {
+// getStaticProps
+export const getServerSideProps = async (ctx) => {
   // try {
   const { slug } = ctx.params;
   const detail = await getCruiseDetail(slug);

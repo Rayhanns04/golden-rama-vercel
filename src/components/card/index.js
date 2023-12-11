@@ -172,10 +172,10 @@ export const ErrorPage = ({
       </Heading>
     </Box>
     <NotFoundIcon style={{ transform: "scale(.8)" }} />
-    {/* <Stack
+    <Stack
       alignItems={"center"}
       justifyContent={"center"}
-      position={"absolute"}
+      // position={"absolute"}
       px={"24px"}
       zIndex={2}
       w={"full"}
@@ -227,7 +227,7 @@ export const ErrorPage = ({
           Kembali ke Beranda
         </CustomOrangeFullWidthButton>
       </NextLink>
-    </Stack> */}
+    </Stack>
   </Stack>
 );
 
@@ -277,6 +277,7 @@ export const NoResults = ({ href = "/", hideButton = false }) => (
     </Stack>
   </Box>
 );
+
 export const InsuranceItem = ({ item }) => {
   const router = useRouter();
   const { query } = router;
@@ -285,6 +286,7 @@ export const InsuranceItem = ({ item }) => {
   const benefit = INSURANCE_BENEFITS.find(
     (benefit) => benefit.name.toLowerCase() === item.PlanName.toLowerCase()
   );
+
   function handleSubmit() {
     dispatch(
       checkoutData({
@@ -1322,19 +1324,49 @@ export const CruiseListItem = ({ query }) => {
     </SimpleGrid>
   );
 };
+
 export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
   const router = useRouter();
   const { insuranceDetail } = useSelector((state) => state.insuranceReducer);
   const additionalCoverage = useQuery(["getAdditionalCoverage", props], () =>
     getAdditionalCoverage(insuranceDetail)
   );
+  
+  const dataResult = additionalCoverage?.data
+  let dataAdditionalCoverage = {};
+  // console.log('itemku', dataResult)
+
+  if(dataResult){
+    const newData = dataResult?.data.map((item) => {
+      const correspondingCoverage = dataResult?.priceOverview?.UsingCoverages.find(
+        (coverage) => coverage.Name === item?.Name
+      );
+    
+      return {
+        ...item,
+        MainRate: correspondingCoverage ? correspondingCoverage?.Premium : 0,
+      };
+    });
+    
+    // const result = {
+    //   data: newData,
+    //   priceOverview: {
+    //     ...dataResult.priceOverview,
+    //   },
+    // };
+
+    dataAdditionalCoverage = {
+      data: newData
+    }
+  }
+
   const dispatch = useDispatch();
   function handleSubmit(values, action) {
     dispatch(
       checkoutData({
         insuranceDetail: {
           ...insuranceDetail,
-          additionalCoverage: additionalCoverage.data.filter((value) => {
+          additionalCoverage: dataAdditionalCoverage.data.filter((value) => {
             return values.CoverageIDs.includes(value.ID.toString());
           }),
         },
@@ -1342,6 +1374,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     );
     router.replace("/insurances/order-details", undefined, { shallow: true });
   }
+  
   const SelectionButton = ({ title, children, ...props }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const formik = useFormikContext();
@@ -1373,10 +1406,11 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     <Formik
       initialValues={{
         CoverageIDs:
-          insuranceDetail.additionalCoverage?.map((item) => {
+          insuranceDetail.dataAdditionalCoverage?.map((item) => {
             return item.ID.toString();
           }) ?? [],
       }}
+
       onSubmit={handleSubmit}
     >
       <Form>
@@ -1394,7 +1428,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
             <SelectionButton title={"Cakupan Tambahan"}>
               <Stack m={"-24px"} p={"24px"} spacing="24px" bg="brand.blue.100">
                 <>
-                  {additionalCoverage.data
+                  {dataAdditionalCoverage.data
                       ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
                       .map((item, index) => (
                     <Stack

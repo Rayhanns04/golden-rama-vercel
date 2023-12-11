@@ -355,7 +355,7 @@ const SearchFlights = ({
     setFlights(currentJourney[position]?.Flights?.slice(0, shownItems));
     setTimeout(() => {
       setIsLoading(false)
-    }, 1000);
+    }, 500);
   };
 
   const handleViewAll = () => {
@@ -738,7 +738,7 @@ const SearchFlights = ({
                 <Stack spacing={"24px"} py={"24px"}>
                   <Heading fontSize={"md"}>{tab.name}</Heading>
                   <Stack spacing={5} py={5}>
-                    {data[tab.label].map((item, index) => (
+                    {data[tab.label]?.map((item, index) => (
                       <CustomCheckbox
                         key={index}
                         values={filter[tab.label]}
@@ -772,7 +772,7 @@ const SearchFlights = ({
                       <CustomCheckboxFill
                         key={index}
                         field={{
-                          checked: filter[tab.label].includes(item.id),
+                          checked: filter[tab.label]?.includes(item.id),
                           onChange: () => handleChange(tab.label, item),
                         }}
                         value={item.range}

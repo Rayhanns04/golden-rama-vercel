@@ -281,6 +281,8 @@ const Hotels = (props) => {
   );
 };
 
+export default Hotels;
+
 export const getStaticProps = async () => {
   const populars = {
     hotels: [],
@@ -470,4 +472,3 @@ export const getStaticProps = async () => {
     },
   };
 };
-export default Hotels;

@@ -246,14 +246,23 @@ export const getAdditionalCoverage = async (data) => {
         ProductID: data.ID,
         TravelStartDate: data.travel_start_date,
         TravelEndDate: data.travel_end_date,
+        Adult: data?.adults,
+        Child: data?.children,
+        RegionID:data?.RegionID,
+        DestinationID:data?.DestinationID,
+        NumOfPersons:Number(data?.adults) + Number(data?.children),
+        CoverageIDs:"",
+        DateOfBirths:"2001-12-10",
       },
       {
         encodeValuesOnly: true,
         addQueryPrefix: true,
       }
     );
+    // console.log('itemku', parseQuery)
+    
     const response = await axios.get(
-      `${BASE_URL}/orders/zurich/coverages${parseQuery}}`
+      `${BASE_URL}/orders/zurich/coverages${parseQuery}`
     );
     return Promise.resolve(response.data);
   } catch (error) {
