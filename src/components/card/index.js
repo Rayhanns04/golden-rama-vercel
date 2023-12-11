@@ -1429,7 +1429,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
               <Stack m={"-24px"} p={"24px"} spacing="24px" bg="brand.blue.100">
                 <>
                   {dataAdditionalCoverage.data
-                      ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
+                      // ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
                       .map((item, index) => (
                     <Stack
                       spacing={"12px"}
