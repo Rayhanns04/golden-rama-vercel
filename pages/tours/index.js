@@ -341,36 +341,48 @@ const Tours = (props) => {
   );
 };
 
-export const getStaticProps = async (context) => {
-  const tour_type = await getTourTagsV2();
-
-  // console.log('itemtour2', tour_type)
-
-  const tour_duration = [
-    { label: "< 10 Hari", value: "1" },
-    { label: "> 10 Hari", value: "2" },
-  ];
-
-  const sort = [
-    { label: "Harga Terendah", value: "LOWEST_PRICE" },
-    { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
-    { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
-    { label: "Durasi Terlama", value: "LONGEST_DURATION" },
-  ];
-
-  const meta = {
-    title: "Tour",
-    description: "Temukan liburan terbaik anda disini.",
-  };
-
-  return {
-    props: {
-      tour_type,
-      tour_duration,
-      sort,
-      meta,
-    },
-    revalidate: 10,
-  };
-};
 export default Tours;
+
+
+
+export const getServerSideProps = async (context) => {
+  try {
+    const tour_type = await getTourTagsV2();
+
+    const tour_duration = [
+      { label: "< 10 Hari", value: "1" },
+      { label: "> 10 Hari", value: "2" },
+    ];
+
+    const sort = [
+      { label: "Harga Terendah", value: "LOWEST_PRICE" },
+      { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+      { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+      { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+    ];
+
+    const meta = {
+      title: "Tour",
+      description: "Temukan liburan terbaik anda disini.",
+    };
+
+    return {
+      props: {
+        tour_type,
+        tour_duration,
+        sort,
+        meta,
+      },
+    };
+  } catch (error) {
+    return {
+      props: {
+        tour_type: '',
+        tour_duration: '',
+        sort: '',
+        meta: '',
+        notFound: true,
+      },
+    };
+  }
+};
