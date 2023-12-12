@@ -1476,7 +1476,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
                                 IDR{" "}
                                 {item.MainRate.toLocaleString("id-ID", {
                                   maximumFractionDigits: 0,
-                                })} {item.Name === "Proteksi Covid-19/Covid- 19 Protection" ? " /pax /day" : ""}
+                                })} {item.Name === "Proteksi Covid-19/Covid- 19 Protection" ? "" : ""}
                               </Text>
                             </Box>
                           </Checkbox>

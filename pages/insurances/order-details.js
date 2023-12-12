@@ -85,6 +85,7 @@ const InsuranceOrderDetails = (props) => {
       setCustomer({ ...customer, [name]: value });
     }
   };
+
   const additionalCoverageTotal = insuranceDetail.additionalCoverage
       ? insuranceDetail.additionalCoverage.reduce((acc, obj) => {
         if (obj.Name === "Proteksi Covid-19/Covid- 19 Protection") {
@@ -93,18 +94,21 @@ const InsuranceOrderDetails = (props) => {
               new Date(insuranceDetail.travel_start_date)
           ) + 1;
 
-          return (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child) * day)
+          return (obj.MainRate) // (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child) * day)
         } else {
-          return (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child))
+          return (obj.MainRate) // (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child))
         }
       }, 0)
       : 0;
+
   const TravellerTypePrice =
     insuranceDetail.TravellerTypeName === "Family"
       ? insuranceDetail.MainRate
       : insuranceDetail.MainRate *
         (mappingTraveler.adult + mappingTraveler.child);
+
   const total_prices = TravellerTypePrice + additionalCoverageTotal;
+  
   useEffect(() => {
     setForm({
       ...form,
@@ -119,6 +123,7 @@ const InsuranceOrderDetails = (props) => {
       },
     });
   }, [total_prices]);
+
   const [form, setForm] = useState({
     transaction: {
       total: total_prices,
@@ -148,6 +153,7 @@ const InsuranceOrderDetails = (props) => {
       },
     ],
   });
+
   const detail_prices = [
     [
       {
@@ -173,9 +179,9 @@ const InsuranceOrderDetails = (props) => {
                   new Date(insuranceDetail.travel_start_date)
               ) + 1;
 
-              total = parseInt(item.MainRate) * (mappingTraveler.adult + mappingTraveler.child) * day;
+              total = parseInt(item.MainRate) // * (mappingTraveler.adult + mappingTraveler.child) * day;
             } else {
-              total = parseInt(item.MainRate) * (mappingTraveler.adult + mappingTraveler.child);
+              total = parseInt(item.MainRate) // * (mappingTraveler.adult + mappingTraveler.child);
             }
 
             return {
@@ -200,6 +206,7 @@ const InsuranceOrderDetails = (props) => {
       },
     ],
   ];
+
   const handleTraveler = (item) => {
     if (customers.some((i) => i.key === item.key)) {
       const index = customers.findIndex((e) => e.key === item.key);
@@ -222,6 +229,7 @@ const InsuranceOrderDetails = (props) => {
           : ["Friend", "Family"],
     },
   ];
+
   const globalFields = [
     ...otherPersonFields,
     {
@@ -262,8 +270,7 @@ const InsuranceOrderDetails = (props) => {
                 htmlFor={field.name}
                 fontSize="sm"
                 color="neutral.text.medium"
-                textTransform="capitalize"
-              >
+                textTransform="capitalize">
                 Pilih Tempat Lahir
               </FormLabel>
               <SelectForm
@@ -332,10 +339,12 @@ const InsuranceOrderDetails = (props) => {
       type: "textarea",
     },
   ];
+
   const travelNeeds = useQuery(["getTravelNeeds"], async () => {
     const response = await getTravelNeeds();
     return Promise.resolve(response);
   });
+
   const insuredFields = [
     ...globalFields,
     {
