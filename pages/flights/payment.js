@@ -280,7 +280,7 @@ const Payment = (props) => {
                   {[
                     {
                       t: "Virtual Account",
-                      i: `${process.env.NEXT_PUBLIC_BACKEND_URL}/${selectedPayment.attributes.logo.data.attributes.url}`,
+                      i: `${process.env.NEXT_PUBLIC_BACKEND_URL}${selectedPayment.attributes.logo.data.attributes.url}`,
                     },
                     {
                       t: "Nomor Virtual Account",
@@ -484,7 +484,7 @@ const Payment = (props) => {
                     {selectedPayment ? (
                       <Center w="50px" h="26px" bg="white">
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${selectedPayment.attributes.logo.data.attributes.url}`}
+                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${selectedPayment.attributes.logo.data.attributes.url}`}
                           alt="bank"
                           width={50}
                           height={26}
@@ -706,7 +706,7 @@ const DrawerMethods = ({
                       borderRadius="4px"
                     >
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.attributes.logo.data.attributes.url}`}
+                        src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${item.attributes.logo.data.attributes.url}`}
                         alt="logo"
                         width={50}
                         height={26}
@@ -753,7 +753,7 @@ const DrawerMethods = ({
                         borderRadius="4px"
                       >
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/${item.attributes.logo.data.attributes.url}`}
+                          src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${item.attributes.logo.data.attributes.url}`}
                           alt="logo"
                           width={50}
                           height={26}

@@ -169,7 +169,7 @@ export function getClassCode(code) {
     { label: "First Class", value: "F" },
   ];
   const result = cabinClass.find((item) => item.value === code);
-  return result.label;
+  return result?.label;
 }
 
 export function differenceDate(dateDeparture, dateArrival) {
