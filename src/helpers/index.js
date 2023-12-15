@@ -296,7 +296,6 @@ export function getAirlineAvailable(flight) {
   return uniqueAirline;
 }
 
-
 export function filterTransit(flight, transit) {
   const flightNow = []
 
@@ -454,9 +453,7 @@ export function convertArrayAirlines(airlines) {
   }
   return result;
 }
-  
-  
-  
+    
 export function convertDateMonth(date) {
   const newDate = new Date(date);
   const result = `${newDate.getDate()} ${monthNames[newDate.getMonth()]}`;
@@ -1107,6 +1104,7 @@ export function mappingPriceFlight(price, isSUMCombine = false) {
 
 export function sortFlight(sort, data) {
   const index = dataSortFlight.findIndex((e) => e === sort);
+  // console.log('itemku', 'itemsort', sort, index, data, dataSortFlight)
   let result;
   switch (index) {
     case 0:
@@ -1155,20 +1153,19 @@ export function sortFlight(sort, data) {
       break;
     case 4:
       result = orderBy(data, (item) => {
-        return differenceTimestamp(
-          item.DepartDateTime,
-          item.ArriveDateTime
-        );
-      });
-      break;
-    case 5:
-      result = orderBy(
-        data,
-        (item) => {
           return differenceTimestamp(
             item.DepartDateTime,
             item.ArriveDateTime
           );
+        },
+      );
+      break;
+    case 5:
+      result = orderBy(data, (item) => {
+          return differenceTimestamp(
+            item.DepartDateTime,
+            item.ArriveDateTime
+            );
         },
         "desc"
       );
@@ -1176,7 +1173,8 @@ export function sortFlight(sort, data) {
     default:
       break;
   }
-
+        
+  // console.log('itemku', 'hasil', result)
   return result;
 }
 
@@ -1184,6 +1182,7 @@ export function differenceTimestamp(start, end) {
   const date1 = new Date(start);
   const date2 = new Date(end);
   const diff = date2 - date1;
+  // console.log('itemku', 'date time', date1, date2)
   return diff;
 }
 

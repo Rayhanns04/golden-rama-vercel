@@ -295,6 +295,7 @@ export const InsuranceItem = ({ item }) => {
     );
     router.push("/insurances/order-details");
   }
+
   return (
     <LinkBox>
       <Stack
@@ -1493,6 +1494,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     </Formik>
   );
 };
+
 export const InsuranceListItem = ({ query }) => {
   const router = useRouter();
   const myQuery = router.query;

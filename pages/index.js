@@ -1145,18 +1145,24 @@ export default function Home({ data, meta }) {
     </Layout>
   );
 }
+
 export const getStaticProps = async () => {
   try {
     const airlinesFolder = "./public/png/homepage/airlines/color";
     const airlineData = fs.readdirSync(airlinesFolder);
     const promo = await getPromoListUsingPage(1, true, false);
+    const articles = await getArticles({ pageParam: 1 })
+    const tourHighlights = await getTourHighlights();
+    const products = await getProductCategoryList()
+    const banner = await getBanner()
+
     const props = {
       data: {
-        banner: await getBanner(),
+        banner: banner,
         promo: promo.data,
-        products: await getProductCategoryList(),
-        articles: await getArticles({ pageParam: 1 }),
-        tourHighlights: await getTourHighlights(),
+        products: products,
+        articles: articles,
+        tourHighlights: tourHighlights,
         interested: [
           "Tour Eropa Barat",
           "Tour Super Hemat",
@@ -1239,6 +1245,7 @@ export const getStaticProps = async () => {
         airlines: airlineData,
       },
     };
+
     return {
       props: {
         ...props,

@@ -37,16 +37,22 @@ export function calculateTimeDifference(baseTime, timeArray) {
   return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
 }
 
-export function calculateTimeTotalTransitDifference(time2, time1) {
+export function calculateTimeTotalTransitDifference(time2, date2, time1, date1) {
   const [hours1, minutes1] = time1.split(":").map(Number);
   const [hours2, minutes2] = time2.split(":").map(Number);
 
-  const date1 = new Date(0, 0, 0, hours1, minutes1);
-  const date2 = new Date(0, 0, 0, hours2, minutes2);
+  const date1Obj = new Date(date1);
+  date1Obj.setHours(hours1);
+  date1Obj.setMinutes(minutes1);
 
-  const timeDifferenceInMillis = date2 - date1;
+  const date2Obj = new Date(date2);
+  date2Obj.setHours(hours2);
+  date2Obj.setMinutes(minutes2);
 
-  const hoursDiff = Math.floor(timeDifferenceInMillis / 3600000);
+  const timeDifferenceInMillis = date2Obj - date1Obj;
+
+  const daysDiff = Math.floor(timeDifferenceInMillis / (24 * 3600000));
+  const hoursDiff = Math.floor((timeDifferenceInMillis % (24 * 3600000)) / 3600000);
   const minutesDiff = Math.floor((timeDifferenceInMillis % 3600000) / 60000);
 
   const formattedDiff = `${String(hoursDiff).padStart(2, "0")}:${String(minutesDiff).padStart(2, "0")}`;
