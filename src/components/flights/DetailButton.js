@@ -8,8 +8,6 @@ import { calculateTimeDifference, calculateTimeTotalTransitDifference } from "..
 
 
 const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDesktop, isLoading, originData, handlePosition }) => {
-    
-  // console.log('item',item)
 
   const drawerRef = useRef();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -322,7 +320,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       <Text
                         fontSize={{ base: "sm", md: "md" }}
                         color={"neutral.text.low"}>
-                        {`Transit selama ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index]?.ArriveTime)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index]?.ArriveTime)?.split(':')[1]} Menit di`}
+                        {`Transit selama ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[1]} Menit di`}
                       </Text>
                       <Text
                         fontWeight={"semibold"}

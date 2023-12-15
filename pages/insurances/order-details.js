@@ -86,18 +86,24 @@ const InsuranceOrderDetails = (props) => {
     }
   };
 
+  // const additionalCoverageTotal = insuranceDetail.additionalCoverage
+  //     ? insuranceDetail.additionalCoverage.reduce((acc, obj) => {
+  //       if (obj.Name === "Proteksi Covid-19/Covid- 19 Protection") {
+  //         const day = differenceInDays(
+  //             new Date(insuranceDetail.travel_end_date),
+  //             new Date(insuranceDetail.travel_start_date)
+  //         ) + 1;
+
+  //         return (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child) * day) // (obj.MainRate)
+  //       } else {
+  //         return (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child)) // (obj.MainRate) 
+  //       }
+  //     }, 0)
+  //     : 0;
+
   const additionalCoverageTotal = insuranceDetail.additionalCoverage
       ? insuranceDetail.additionalCoverage.reduce((acc, obj) => {
-        if (obj.Name === "Proteksi Covid-19/Covid- 19 Protection") {
-          const day = differenceInDays(
-              new Date(insuranceDetail.travel_end_date),
-              new Date(insuranceDetail.travel_start_date)
-          ) + 1;
-
-          return (obj.MainRate) // (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child) * day)
-        } else {
-          return (obj.MainRate) // (acc + obj.MainRate * (mappingTraveler.adult + mappingTraveler.child))
-        }
+          return (acc + obj.MainRate) 
       }, 0)
       : 0;
 
@@ -106,6 +112,8 @@ const InsuranceOrderDetails = (props) => {
       ? insuranceDetail.MainRate
       : insuranceDetail.MainRate *
         (mappingTraveler.adult + mappingTraveler.child);
+
+  // console.log('itemku', 'insurance', insuranceDetail.additionalCoverage)
 
   const total_prices = TravellerTypePrice + additionalCoverageTotal;
   

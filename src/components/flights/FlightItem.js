@@ -12,6 +12,8 @@ import {
 
 const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position }) => {
   
+  // console.log('itemku', item)
+
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
   const [imageLogos, setImageLogos] = useState([])

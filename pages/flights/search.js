@@ -299,6 +299,7 @@ const SearchFlights = ({
   }, [inView]);
   
   const handleFilter = (filter, dataAirlines) => { 
+    // console.log('itemku', 'filter', filter)
     const initialFilter = {
       min_price: 0,
       max_price: 16000000,
@@ -378,7 +379,6 @@ const SearchFlights = ({
       if (query?.isRoundTrip === 'true') {
         window.scrollTo({ top: 0, behavior: "smooth" });
 
-
         const updatedCurrentJourney = currentJourney.map((journeyCurrent, index) => {
           if (index === 1) {
               return {
@@ -433,6 +433,7 @@ const SearchFlights = ({
 
     const drawerRef = useRef();
     const { isOpen, onOpen, onClose } = useDisclosure();
+
     return (
       <>
         <Button
@@ -460,8 +461,7 @@ const SearchFlights = ({
           title={"Urutkan"}
           onSubmit={handleSortBy}
           onReset={handleResetSortBy}
-          footer={"Terapkan"}
-        >
+          footer={"Terapkan"}>
           <RadioGroup onChange={setValue} value={value == "" ? sortBy : value}>
             <Stack spacing={5} py={5}>
               {data?.map((item, index) => (
@@ -502,6 +502,7 @@ const SearchFlights = ({
         range: "18.00 - 24.00 WIB",
       },
     ];
+
     const data = {
       transits: [
         {
@@ -532,6 +533,7 @@ const SearchFlights = ({
       //   },
       // ],
     };
+    
     const tabs = [
       {
         name: "Transit",
@@ -1252,18 +1254,17 @@ export async function getServerSideProps(context) {
       status = true;
       loading = false;
       
-      
-      const resSchedules = response.data?.Schedules;
-      const schedules = Object.values(resSchedules);
+      const resSchedules = response?.data?.Schedules;
+      const schedules = Object?.values(resSchedules);
       // console.log(schedules)
 
       schedules.map((item)=>{
-        if(item.IsInternational){
+        if(item?.IsInternational){
           isInternational = true 
         }
       })
 
-      const lowestPriceFlights = schedules[0]?.Flights.slice(0).sort((a, b) => a.Fare - b.Fare);
+      const lowestPriceFlights = schedules[0]?.Flights?.slice(0).sort((a, b) => a.Fare - b.Fare);
 
       const updatedCurrentJourney = schedules?.map((journey, index) => {
         if (index === 0) {

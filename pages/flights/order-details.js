@@ -972,7 +972,7 @@ const OrderDetails = () => {
                         alignText={"center"}
                       >
                         <Text fontSize={"sm"} color={"neutral.text.low"}>
-                        {`Transit selama ${calculateTimeTotalTransitDifference(flights[index + 1]?.DepartTime, flights[index]?.ArriveTime)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(flights[index + 1]?.DepartTime, flights[index]?.ArriveTime)?.split(':')[1]} Menit di`}
+                          {`Transit selama ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[1]} Menit di`}
                         </Text>
                         <Text
                           fontWeight={"semibold"}
