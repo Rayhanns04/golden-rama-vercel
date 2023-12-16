@@ -1,8 +1,6 @@
-import compact from "lodash/compact";
 import uniqBy from "lodash/uniqBy";
 import filter from "lodash/filter";
 import sumBy from "lodash/sumBy";
-import orderBy from "lodash/orderBy";
 import find from "lodash/find";
 import map from "lodash/map";
 import axios from "axios";
@@ -40,15 +38,6 @@ const indexMonth = [
   { name: "October", value: "10" },
   { name: "November", value: "11" },
   { name: "December", value: "12" },
-];
-
-const dataSortFlight = [
-  "Harga Terendah",
-  "Harga Tertinggi",
-  "Keberangkatan Pagi",
-  "Keberangkatan Malam",
-  "Durasi Singkat",
-  "Durasi Panjang",
 ];
 
 const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -294,79 +283,6 @@ export function getAirlineAvailable(flight) {
   }, []);
 
   return uniqueAirline;
-}
-
-export function filterTransit(flight, transit) {
-  const flightNow = []
-
-  flight.map((item)=>{
-    transit.map((trans)=>{
-      if(item?.TotalTransit === Number(trans)){
-        flightNow.push(item)
-      }
-    })
-  })
-  return flightNow;
-}
-
-export function filterOthers(flight) {
-  const result = filter(flight, {
-    segments: [{ fares: [{ isRefundable: true }] }],
-  });
-  return result;
-}
-
-export function filterAirlines(flight, airlines) {
-  const flightNow = [] 
-
-  flight.map((item) => {
-    if(item?.TotalTransit > 0){
-      airlines.map((air)=>{
-        if(item?.ConnectingFlights[0]?.AirlineName === air){
-          flightNow.push(item)
-        }
-      })
-    } else {
-      airlines.map((air)=>{
-        if(item?.AirlineName === air){
-          flightNow.push(item)
-        }
-      })
-    }
-     
-  });
-
-  // const result = compact(airline);
-  return flightNow;
-}
-
-export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline){
-  const flightNow = []
-  
-  flight.map((item)=>{
-    if(item?.FlightType === type && item?.GroupingId === groupId && item?.Airline === flightAirline){
-      flightNow.push(item)
-    }
-  })
-  return flightNow
-}
-
-export function filterFacility(flight) {
-  const result = filter(flight, {
-    segments: [{ additionalBaggageSupport: true }],
-  });
-  return result;
-}
-
-export function filterPrice(flight, minPrice, maxPrice) {
-  const flights = flight.map((item) => {
-    const totalPrice = item?.Fare;
-    if (totalPrice >= minPrice && totalPrice <= maxPrice) {
-      return item;
-    }
-  });
-  const result = compact(flights);
-  return result;
 }
 
 export function simplifyBodyDetailFlight(journeys, query) {
@@ -1102,87 +1018,10 @@ export function mappingPriceFlight(price, isSUMCombine = false) {
   }
 }
 
-export function sortFlight(sort, data) {
-  const index = dataSortFlight.findIndex((e) => e === sort);
-  // console.log('itemku', 'itemsort', sort, index, data, dataSortFlight)
-  let result;
-  switch (index) {
-    case 0:
-      result = orderBy(data, (item) => {
-        let totalFare = item?.Fare;
-        // if (item.IsConnecting === false) {
-        //   totalFare = item.segments[0].farePerPax.priceFinalCustom;
-        // } else {
-        //   map(
-        //     item.segments,
-        //     (total) => (totalFare += total?.farePerPax?.priceFinalCustom)
-        //   );
-        // }
-        return totalFare;
-      });
-      break;
-    case 1:
-      result = orderBy( data, (item) => {
-          let totalFare = item.Fare;
-          // if (item.connectingType == "THROUGH") {
-          //   totalFare = item.segments[0].farePerPax.priceFinalCustom;
-          // } else {
-          //   map(
-          //     item.segments,
-          //     (total) => (totalFare += total.farePerPax.priceFinalCustom)
-          //   );
-          // }
-          return totalFare;
-        },
-        "desc"
-      );
-      break;
-    case 2:
-      result = orderBy(data, (item) => {
-        let date = new Date(item.DepartDateTime);
-        return date.getTime();
-      });
-      break;
-    case 3:
-      result = orderBy(data, (item) => {
-          let date = new Date(item.DepartDateTime);
-          return date.getTime();
-        },
-        "desc"
-      );
-      break;
-    case 4:
-      result = orderBy(data, (item) => {
-          return differenceTimestamp(
-            item.DepartDateTime,
-            item.ArriveDateTime
-          );
-        },
-      );
-      break;
-    case 5:
-      result = orderBy(data, (item) => {
-          return differenceTimestamp(
-            item.DepartDateTime,
-            item.ArriveDateTime
-            );
-        },
-        "desc"
-      );
-      break;
-    default:
-      break;
-  }
-        
-  // console.log('itemku', 'hasil', result)
-  return result;
-}
-
 export function differenceTimestamp(start, end) {
   const date1 = new Date(start);
   const date2 = new Date(end);
   const diff = date2 - date1;
-  // console.log('itemku', 'date time', date1, date2)
   return diff;
 }
 
@@ -1211,62 +1050,6 @@ export function sumPriceFareFinal(segments, type = "DIRECT") {
       (segments[0].farePerPax?.priceDiscount ?? 0);
   }
   return totalPrice;
-}
-
-export function filterFlightDepartureAndArrival(flights, type, times) {
-  let arrayResult = [];
-  times.forEach((time) => {
-    let filterTime = find(filterTimeFlight, { id: parseInt(time) });
-    let data;
-    if (type == "departure") {
-      data = flights.map((item) => {
-        let startTime = new Date(
-          `${item?.DepartDateTime.slice(0, 10)} ${
-            filterTime.time[0]
-          }`
-        );
-        let endTime = new Date(
-          `${item?.DepartDateTime.slice(0, 10)} ${
-            filterTime.time[1]
-          }`
-        );
-        let currentDate = new Date(item?.DepartDateTime);
-        if (
-          currentDate.getTime() >= startTime.getTime() &&
-          currentDate.getTime() <= endTime.getTime()
-        ) {
-          return item;
-        }
-      });
-    } else if (type == "arrival") {
-      data = flights.map((item) => {
-        let startTime = new Date(
-          `${item?.ArriveDateTime.slice(
-            0,
-            10
-          )} ${filterTime.time[0]}`
-        );
-        let endTime = new Date(
-          `${item?.ArriveDateTime.slice(
-            0,
-            10
-          )} ${filterTime.time[1]}`
-        );
-        let currentDate = new Date(
-          item?.ArriveDateTime
-        );
-        if (
-          currentDate.getTime() >= startTime.getTime() &&
-          currentDate.getTime() <= endTime.getTime()
-        ) {
-          return item;
-        }
-      });
-    }
-    const result = compact(data);
-    arrayResult = [...arrayResult, ...result];
-  });
-  return arrayResult;
 }
 
 export function percentage(num, per) {

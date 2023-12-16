@@ -46,27 +46,9 @@ import ChevronDown from "../../public/svg/icons/chevron-filled-down.svg";
 import InfoIcon from "../../public/svg/icons/info.svg";
 import { getAirports, getDetailPrice, getFlights } from "../../src/services/flight.service";
 import {
-  convertDateFlightPage,
   convertRupiah,
-  convertTimeFlightPage,
-  convertTimeToCustomFormat,
-  differenceDate,
-  differenceDateLong,
-  filterAirlines,
-  filterFacility,
-  filterFlightDepartureAndArrival,
-  filterFlightType,
-  filterIsDomestic,
-  filterOthers,
-  filterPrice,
-  filterTransit,
   getAirlineAvailable,
   getClassCode,
-  simplifyBodyDetailFlight,
-  simplifyQuerySearch,
-  sortFlight,
-  sumPriceFare,
-  sumPriceFareFinal,
 } from "../../src/helpers";
 import { useQuery } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
@@ -77,6 +59,7 @@ import date from "../../src/helpers/date";
 import { useLoginToast } from "../../src/hooks";
 import FlightItem from "../../src/components/flights/FlightItem";
 import { sassTrue } from "sass";
+import { convertTimeToCustomFormat, filterAirlines, filterFacility, filterFlightDepartureAndArrival, filterFlightType, filterOthers, filterPrice, filterTransit, sortFlight } from "../../src/helpers/flights";
 
 const SearchFlights = ({
   additionalData,
@@ -996,7 +979,7 @@ const SearchFlights = ({
                       new Date(item?.DepartDate),
                       "dd LLL yy"
                     )}, ${item?.DepartTime.replace(/:/, '.')} - ${item?.ArriveTime.replace(/:/, '.')}
-                     (${convertTimeToCustomFormat(item?.Duration)})`}
+                     (${convertTimeToCustomFormat(item?.TotalDateTime)})`}
                   </Text>
                   <Text color="neutral.text.medium">
                     {`${item?.Origin} - ${

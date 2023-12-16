@@ -60,6 +60,17 @@ export function calculateTimeTotalTransitDifference(time2, date2, time1, date1) 
   return formattedDiff;
 }
 
+export function breakdownTransitTime(input) {
+  const [jam, menit] = input?.split(":").map(Number);
+  
+  if (isNaN(jam) || isNaN(menit)) {
+    return "Format waktu tidak valid";
+  }
+
+  const formattedTime = `${String(jam).padStart(2, "0")} Jam ${String(menit).padStart(2, "0")} Menit`;
+  return formattedTime;
+}
+
 export function getMonthFromMonthName(name) {
   const monthsLong = {
     January: 1,
