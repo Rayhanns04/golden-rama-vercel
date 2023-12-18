@@ -280,7 +280,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       <Text
                         fontSize={{ base: "sm", md: "md" }}
                         color={"neutral.text.low"}>
-                          {`Transit selama ${breakdownTransitTime(String(item?.ConnectingFlights[index]?.ClassObjects[0]?.TransitTime))}`}
+                          {`Transit selama ${breakdownTransitTime(String(item?.ConnectingFlights[index]?.ClassObjects[0]?.TransitTime))} di`}
                       </Text>
                       <Text
                         fontWeight={"semibold"}

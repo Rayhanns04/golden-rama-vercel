@@ -1116,7 +1116,7 @@ const SearchFlights = ({
               //   Lihat Lebih Banyak
               // </CustomOrangeFullWidthButton>
               <>
-                {isSmartCombo === true && (
+                {isSmartCombo === true && totalData > 0 && cart?.length === 1 && (
                   <>
                     <LinkBox
                       // onClick={onOpen}
@@ -1179,7 +1179,7 @@ const SearchFlights = ({
           </Center>
         )}
 
-        {(!isLoading && ((currentJourney[0]?.Flights?.length === 0) || (currentJourney?.length === 0)) ) && (
+        {(!isLoading && ((currentJourney[position]?.Flights?.length === 0) || (currentJourney?.length === 0)) ) && (
           <NoResults href="/flights" />
         )}
       </Box>

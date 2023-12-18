@@ -133,58 +133,92 @@ export function filterFacility(flight) {
 }
 
 export function filterFlightDepartureAndArrival(flights, type, times) {
+    // console.log('itemku', type, times, flights)
+    const filterTimeFlight = [
+      { id: 1, time: ["00:00", "06:00"] },
+      { id: 2, time: ["06:01", "12:00"] },
+      { id: 3, time: ["12:01", "18:00"] },
+      { id: 4, time: ["18:01", "24:00"] },
+    ];
+
+    const isArrivalTimeInRange = (flight, filterTime) => {
+      // console.log('itemku2', flight, filterTime)
+      if (!flight || !flight.ArriveTime) {
+        return false;
+      }
+    
+      // Ambil jam dan menit dari waktu kedatangan penerbangan
+      const flightArriveTime = flight.ArriveTime.split(":");
+      const flightHour = parseInt(flightArriveTime[0], 10);
+      const flightMinute = parseInt(flightArriveTime[1], 10);
+    
+      // Bandingkan dengan waktu filter
+      const filterStartTime = filterTime[0].split(":");
+      const filterStartHour = parseInt(filterStartTime[0], 10);
+      const filterStartMinute = parseInt(filterStartTime[1], 10);
+    
+      const filterEndTime = filterTime[1].split(":");
+      const filterEndHour = parseInt(filterEndTime[0], 10);
+      const filterEndMinute = parseInt(filterEndTime[1], 10);
+    
+      // Bandingkan waktu kedatangan dengan rentang waktu filter
+      return (
+        (flightHour > filterStartHour || (flightHour === filterStartHour && flightMinute >= filterStartMinute)) &&
+        (flightHour < filterEndHour || (flightHour === filterEndHour && flightMinute <= filterEndMinute))
+      );
+    };
+
+    const isDepartureTimeInRange = (flight, filterTime) => {
+      if (!flight || !flight.DepartTime) {
+        return false;
+      }
+    
+      // Ambil jam dan menit dari waktu keberangkatan penerbangan
+      const flightDepartTime = flight.DepartTime.split(":");
+      const flightHour = parseInt(flightDepartTime[0], 10);
+      const flightMinute = parseInt(flightDepartTime[1], 10);
+    
+      // Bandingkan dengan waktu filter
+      const filterStartTime = filterTime[0].split(":");
+      const filterStartHour = parseInt(filterStartTime[0], 10);
+      const filterStartMinute = parseInt(filterStartTime[1], 10);
+    
+      const filterEndTime = filterTime[1].split(":");
+      const filterEndHour = parseInt(filterEndTime[0], 10);
+      const filterEndMinute = parseInt(filterEndTime[1], 10);
+    
+      // Bandingkan waktu keberangkatan dengan rentang waktu filter
+      return (
+        (flightHour > filterStartHour || (flightHour === filterStartHour && flightMinute >= filterStartMinute)) &&
+        (flightHour < filterEndHour || (flightHour === filterEndHour && flightMinute <= filterEndMinute))
+      );
+    };
+
     let arrayResult = [];
     times.forEach((time) => {
-      let filterTime = find(filterTimeFlight, { id: parseInt(time) });
+      let filterTime = filterTimeFlight.find(item => item.id === parseInt(time)); // find(filterTimeFlight, { id: parseInt(time) });
+      if (!filterTime) {
+        console.error('filterTime not found for id:', time);
+        return;
+      }
       let data;
       if (type == "departure") {
-        data = flights.map((item) => {
-          let startTime = new Date(
-            `${item?.DepartDateTime.slice(0, 10)} ${
-              filterTime.time[0]
-            }`
-          );
-          let endTime = new Date(
-            `${item?.DepartDateTime.slice(0, 10)} ${
-              filterTime.time[1]
-            }`
-          );
-          let currentDate = new Date(item?.DepartDateTime);
-          if (
-            currentDate.getTime() >= startTime.getTime() &&
-            currentDate.getTime() <= endTime.getTime()
-          ) {
-            return item;
-          }
-        });
+        const dataTemp = flights.filter((item) => isDepartureTimeInRange(item, filterTime.time));
+        data = orderBy(dataTemp, (item) => {
+            return item?.DepartTime;
+          },
+        );
       } else if (type == "arrival") {
-        data = flights.map((item) => {
-          let startTime = new Date(
-            `${item?.ArriveDateTime.slice(
-              0,
-              10
-            )} ${filterTime.time[0]}`
-          );
-          let endTime = new Date(
-            `${item?.ArriveDateTime.slice(
-              0,
-              10
-            )} ${filterTime.time[1]}`
-          );
-          let currentDate = new Date(
-            item?.ArriveDateTime
-          );
-          if (
-            currentDate.getTime() >= startTime.getTime() &&
-            currentDate.getTime() <= endTime.getTime()
-          ) {
-            return item;
-          }
-        });
+        const dataTemp = flights.filter((item) => isArrivalTimeInRange(item, filterTime.time));
+        data = orderBy(dataTemp, (item) => {
+          return item?.ArriveTime;
+        },
+      );
       }
       const result = compact(data);
       arrayResult = [...arrayResult, ...result];
     });
+    // console.log('itemku', 'result', arrayResult)
     return arrayResult;
 }
 
@@ -198,7 +232,6 @@ export function filterPrice(flight, minPrice, maxPrice) {
     const result = compact(flights);
     return result;
 }
-
 
 export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline, isSmartCombo){
     const flightNow = []

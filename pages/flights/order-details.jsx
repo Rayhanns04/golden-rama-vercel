@@ -970,7 +970,7 @@ const OrderDetails = () => {
                         justifyContent={"center"}
                         alignText={"center"}>
                           <Text fontSize={"sm"} color={"neutral.text.low"}>
-                            {`Transit selama ${breakdownTransitTime(String(item?.ClassObjects[0]?.TransitTime))}`}
+                            {`Transit selama ${breakdownTransitTime(String(item?.ClassObjects[0]?.TransitTime))} di`}
                           </Text>
                           <Text
                             fontWeight={"semibold"}
