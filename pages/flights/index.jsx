@@ -206,8 +206,7 @@ const Flights = (props) => {
 
 export default Flights;
 
-export const getStaticProps = async () => {
-  
+export const getStaticProps = async () => { 
   const classes = [
     { label: "Economy", value: "Economy" },
     { label: "Premium Economy", value: "PremiumEconomy" },

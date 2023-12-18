@@ -200,13 +200,22 @@ export function filterPrice(flight, minPrice, maxPrice) {
 }
 
 
-export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline){
+export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline, isSmartCombo){
     const flightNow = []
     
-    flight.map((item)=>{
-      if(item?.FlightType === type && item?.GroupingId === groupId && item?.Airline === flightAirline){
-        flightNow.push(item)
-      }
-    })
-    return flightNow
+    if(isSmartCombo){
+      flight.map((item)=>{
+        if(item?.FlightType === type && item?.GroupingId === groupId && item?.Airline === flightAirline){
+          flightNow.push(item)
+        }
+      })
+      return flightNow
+    } else {
+      flight.map((item)=>{
+        if(item?.FlightType === type && item?.Airline === flightAirline){
+          flightNow.push(item)
+        }
+      })
+      return flightNow
+    }
   }

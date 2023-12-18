@@ -11,8 +11,10 @@ import {
 } from "../../services/flight.service";
 import { convertTimeToCustomFormat } from "../../helpers/flights";
 
-const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position }) => {
+const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational }) => {
   
+  // console.log('itemku', 'smart', item)
+
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
   const [imageLogos, setImageLogos] = useState([])
@@ -137,7 +139,8 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                     {getClassCode(query?.cabinClasses)}
                   </Text>
                   {/* add text with border rounded , with text smart combo */}
-                  {item.isCombine && (
+                  {/* && isInternational */}
+                  {isSmartCombo && (
                     <Text
                       fontSize={{ base: "xx-small", md: "xx-small" }}
                       fontWeight={"semibold"}

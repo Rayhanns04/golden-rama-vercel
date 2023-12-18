@@ -36,7 +36,7 @@ import Layout from "../../src/components/layout";
 import {
   CustomFilterButton,
   CustomOrangeFullWidthButton,
-} from "./../../src/components/button";
+} from "../../src/components/button";
 import { CustomRangeSlider } from "../../src/components/range";
 import {
   CustomCheckbox,
@@ -67,9 +67,8 @@ const SearchFlights = ({
   noresults,
   dataflights
 }) => {
-  // let noresults = false
   const router = useRouter();
-  // const dataQuery = router.query;
+
   let query = {
     departureDate: dataQuery?.departureDate,
     returnDate: dataQuery?.returnDate,
@@ -81,7 +80,6 @@ const SearchFlights = ({
     cabinClasses: [dataQuery?.cabinClasses],
     airlines: dataQuery?.airlines,
     isRoundTrip: dataQuery?.isRoundTrip,
-    is_smart_combo: dataQuery?.is_smart_combo,
   };
 
   const payload = query;
@@ -105,7 +103,7 @@ const SearchFlights = ({
   const [position, setPosition] = useState(0);
   const [cart, setCart] = useState([]);
   const [checkoutPage, setCheckoutPage] = useState(false);
-  const [isSmartCombo, setIsSmartCombo] = useState(true)
+  const [isSmartCombo, setIsSmartCombo] = useState(dataQuery?.isSmartCombo)
   const [isInternational, setIsInternational] = useState(dataflights?.isInternational);
   const isDesktop = useBreakpointValue(
     { base: false, md: true },
@@ -118,10 +116,10 @@ const SearchFlights = ({
   const [flightGroupingId, setFlightGroupingId] = useState(); 
   const [flightAirline, setFlightAriline] = useState(); 
   
-  const fetchFlight = async () => {
+  const fetchFlight = async (data, smartcombo) => {
     try {
       setIsLoading(true);
-      const response = await getFlights(payload, isSmartCombo);
+      const response = await getFlights(data, smartcombo);
 
       if(response.success === false){
         setIsLoading(false)
@@ -131,12 +129,12 @@ const SearchFlights = ({
       if (response.success === true) {
         setStatusSuccess(true);
         setIsLoading(false)
+
+        // console.log('itemku',response)
         
-        // const schedules = response.data?.Schedules;
         const resSchedules = response.data?.Schedules;
         const schedules = Object.values(resSchedules);
-
-        // console.log('itemku', schedules)
+        setIsSmartCombo(response?.data?.IsSmartCombo)
 
         schedules.map((item)=>{
           if(item.IsInternational){
@@ -171,7 +169,7 @@ const SearchFlights = ({
 
   useEffect(() => {
     if(statusSuccess === false){
-      fetchFlight();
+      fetchFlight(payload, isSmartCombo);
     }
   }, [statusSuccess]);
   
@@ -189,7 +187,8 @@ const SearchFlights = ({
           data: cart,
           query: query,
           isDomestic: !isInternational,
-          addFee: additionFee
+          addFee: additionFee,
+          isSmartCombo: isSmartCombo
         })
       );
       router.push({ pathname: "/flights/order-details" });
@@ -266,7 +265,7 @@ const SearchFlights = ({
         if (index === position) {
           return {
             ...journey,
-            Flights: filterFlightType(journey.Flights, flightType, flightGroupingId, dataQuery?.isRoundTrip, flightAirline)
+            Flights: filterFlightType(journey.Flights, flightType, flightGroupingId, dataQuery?.isRoundTrip, flightAirline, isSmartCombo)
           };
         }
         return journey;
@@ -293,7 +292,7 @@ const SearchFlights = ({
       others: [],
       // facilities: [],
       is_filtered: false,
-      is_smart_combo: query?.is_smart_combo == "true" ? true : false,
+      isSmartCombo: query?.isSmartCombo == "true" ? true : false,
     };
 
     if(JSON.stringify(filter) === JSON.stringify(initialFilter)){
@@ -323,7 +322,7 @@ const SearchFlights = ({
         others: filter?.others,
         // facilities: [],
         is_filtered: filter?.is_filtered === false ? true : true,
-        is_smart_combo: filter?.is_smart_combo,
+        isSmartCombo: filter?.isSmartCombo,
       }
       setFilter(filterBody);
     }
@@ -366,7 +365,7 @@ const SearchFlights = ({
           if (index === 1) {
               return {
                 ...journeyCurrent,
-                Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType, journey?.GroupingId, dataQuery?.isRoundTrip, journey?.Airline)
+                Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType, journey?.GroupingId, dataQuery?.isRoundTrip, journey?.Airline, isSmartCombo)
               };
             }
             return journeyCurrent;
@@ -568,7 +567,7 @@ const SearchFlights = ({
       others: [],
       // facilities: [],
       is_filtered: false,
-      is_smart_combo: query?.is_smart_combo == "true" ? true : false,
+      isSmartCombo: query?.isSmartCombo == "true" ? true : false,
     };
 
     const [filter, setFilter] = useState(initialFilter);
@@ -629,19 +628,19 @@ const SearchFlights = ({
                     spacing={0}
                     alignItems={"start"}
                     size={"md"}
-                    isChecked={filter.is_smart_combo}
+                    isChecked={filter.isSmartCombo}
                     colorScheme="brand.blue"
                     flexDir={"row-reverse"}
                     w="full"
                     onChange={(e) => {
                       setFilter({
                         ...filter,
-                        is_smart_combo: e.target.checked,
+                        isSmartCombo: e.target.checked,
                       });
                       //add to query
                       const query = {
                         ...router.query,
-                        is_smart_combo: e.target.checked,
+                        isSmartCombo: e.target.checked,
                       };
                       router.push({
                         pathname: router.pathname,
@@ -1082,6 +1081,8 @@ const SearchFlights = ({
                       isLoading={isLoading} 
                       isDesktop={isDesktop} 
                       query={query} 
+                      isSmartCombo={isSmartCombo}
+                      isInternational={isInternational}
                       key={index} 
                       originData={originData} 
                       destinationData={destinationData} 
@@ -1115,7 +1116,7 @@ const SearchFlights = ({
               //   Lihat Lebih Banyak
               // </CustomOrangeFullWidthButton>
               <>
-                {cart?.[0]?.isCombine === true && (
+                {isSmartCombo === true && (
                   <>
                     <LinkBox
                       // onClick={onOpen}
@@ -1149,22 +1150,12 @@ const SearchFlights = ({
                         {/* add button pilih ulang */}
                         <Button
                           borderRadius={"xl"}
-                          onClick={(e) => {
-                            setFilter({
-                              ...filter,
-                              is_smart_combo: false,
-                            });
-                            router.push({
-                              pathname: router.pathname,
-                              query: {
-                                ...router.query,
-                                is_smart_combo: false,
-                              },
-                              shallow: true,
-                            });
+                          onClick={ async (e) => {
                             setPosition(0);
                             setCart([]);
-                            setIsLoading(true);
+                            setIsSmartCombo(false)
+                            await fetchFlight(payload, false);
+                            // setIsLoading(true);
                           }}
                           fontWeight="semibold"
                           color="brand.blue.400"
@@ -1212,13 +1203,15 @@ export async function getServerSideProps(context) {
     cabinClasses: [cabinClasses],
     airlines: airlines,
     isRoundTrip: isRoundTrip,
-    is_smart_combo: is_smart_combo,
   };
+
   const payload = query;
+
   let status = false
   let loading = false;
   let isInternational = false
   let additionalFee = 0
+  let isSmartCombo = true; 
   let totalData = 0
   let flights = []
   let currentJourney = []
@@ -1226,7 +1219,7 @@ export async function getServerSideProps(context) {
 
   try {
     loading = true
-    const response = await getFlights(payload, is_smart_combo);
+    const response = await getFlights(payload, isSmartCombo);
 
     if(response.success === false){
       loading = false
@@ -1239,7 +1232,10 @@ export async function getServerSideProps(context) {
       
       const resSchedules = response?.data?.Schedules;
       const schedules = Object?.values(resSchedules);
-      // console.log(schedules)
+      isSmartCombo = response?.data?.IsSmartCombo
+
+      // console.log('itemku', resSchedules[0]?.Flights[0])
+      // console.log('itemku', response)
 
       schedules.map((item)=>{
         if(item?.IsInternational){
@@ -1281,7 +1277,7 @@ export async function getServerSideProps(context) {
           cabinClasses: cabinClasses,
           airlines: airlines,
           isRoundTrip: isRoundTrip,
-          is_smart_combo: is_smart_combo,
+          isSmartCombo: isSmartCombo,
         },
         dataflights : {
           status: status,
@@ -1312,7 +1308,7 @@ export async function getServerSideProps(context) {
           cabinClasses: cabinClasses,
           airlines: airlines,
           isRoundTrip: isRoundTrip,
-          is_smart_combo: is_smart_combo,
+          isSmartCombo: isSmartCombo,
         },
         dataflights: {
           status: status,
