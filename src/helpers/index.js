@@ -42,13 +42,6 @@ const indexMonth = [
 
 const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
-const filterTimeFlight = [
-  { id: 1, time: ["00:00", "06:00"] },
-  { id: 2, time: ["06:01", "12:00"] },
-  { id: 3, time: ["12:01", "18:00"] },
-  { id: 4, time: ["18:01", "24:00"] },
-];
-
 const tourPromo = [
   "harbolnas-amazing-78-north-svalbard-island-blue-hour-experience-lofoten-aurora-hunting",
   "harbolnas-favorite-west-coast-usa-monterey-new-year-s-eve-at-disneyland",
