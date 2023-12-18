@@ -11,9 +11,9 @@ import {
 } from "../../services/flight.service";
 import { convertTimeToCustomFormat } from "../../helpers/flights";
 
-const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational }) => {
+const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational, isRoundTrip }) => {
   
-  // console.log('itemku', 'smart', item)
+  // console.log('itemku', 'smart', typeof(isRoundTrip), typeof(isSmartCombo))
 
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
@@ -140,7 +140,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                   </Text>
                   {/* add text with border rounded , with text smart combo */}
                   {/* && isInternational */}
-                  {isSmartCombo && (
+                  {(isSmartCombo === true && isRoundTrip === "true") && (
                     <Text
                       fontSize={{ base: "xx-small", md: "xx-small" }}
                       fontWeight={"semibold"}
