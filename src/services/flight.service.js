@@ -55,43 +55,19 @@ export const getRecommendedAirports = async () => {
   }
 };
 
-export const getFlights = async (data, issmartcombo) => {
+export const getFlights = async (data, isSmartCombo) => {
   try {
     const response = await axios.post(`${BASE_URL}/orders/flight/available`, {
-      data: data,
+      data: {
+        ...data,
+        isSmartCombo: isSmartCombo,
+      },
     });
+
     const dataFlights = response.data;
-    // if (
-    //   dataFlights?.filter?.[0]?.combinedJourneys?.length > 0 &&
-    //   dataFlights &&
-    //   issmartcombo == true
-    // ) {
-    //   dataFlights.data[0].journeys = await dataFlights.data[0].journeys.concat(
-    //     dataFlights.filter[0].combinedJourneys?.map((item) => {
-    //       if (
-    //         item?.journeys?.[0]?.segments?.length > 0 &&
-    //         item?.journeys?.[0] !== undefined &&
-    //         item?.journeys?.[0] !== null &&
-    //         item !== undefined &&
-    //         item !== null
-    //       ) {
-    //         const data = {
-    //           ...item?.journeys?.[0],
-    //           isCombine: true,
-    //         };
-    //         return data;
-    //       }
-    //     })
-    //   );
-    //   //jika ada additionalData.data[0].journeys yang undefined maka hapus
-    //   dataFlights.data[0].journeys = await dataFlights.data[0].journeys.filter(
-    //     (item) => item !== undefined
-    //   );
-    // }
+  
     return Promise.resolve(dataFlights);
   } catch (error) {
-    // console.error(error);
-
     return Promise.reject(error);
   }
 };
@@ -196,9 +172,10 @@ export const bookingFlight = async (data, token) => {
         num: indexJourney,
         seq: 0,
       }
-      segment.push(segmentUpdate)
+      segment.push([segmentUpdate])
       airlineNumber = item?.Airline
     } else {
+      let segmentTemp = []
       item?.ConnectingFlights.map((item2, indexJourneyConnecting)=>{
         const segmentCurrent2 = item2?.ClassObjects[0]
         const segmentUpdate2 = {
@@ -216,9 +193,10 @@ export const bookingFlight = async (data, token) => {
           num: indexJourney,
           seq: indexJourneyConnecting,
         }
-        segment.push(segmentUpdate2)
-        airlineNumber = item?.Airlin
+        segmentTemp.push(segmentUpdate2)
+        airlineNumber = item?.Airline
       })
+      segment.push(segmentTemp)
     }
   })
 

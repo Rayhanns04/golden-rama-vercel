@@ -54,7 +54,7 @@ import { checkoutData } from "../../src/state/order/order.slice";
 import { checkPromo } from "../../src/services/promo.service";
 import { FlightDetails, FlightPriceDetails } from "../../src/components/card";
 import { useSteps } from "chakra-ui-steps";
-import { calculateTimeTotalTransitDifference } from "../../src/helpers/date";
+import { breakdownTransitTime, calculateTimeTotalTransitDifference } from "../../src/helpers/date";
 // console.log('orderData', data, journeys?.flights, query, isDomestic, user)
 
 const OrderDetails = () => {
@@ -775,192 +775,191 @@ const OrderDetails = () => {
               {journey?.DestinationCityName}
             </Text>
             <Stack spacing={"24px"} py={"24px"}>
-              {flights?.map((item, index) => (
-                <Box as={"section"} key={index}>
-                  <Stack
-                    w="full"
-                    p={"16px"}
-                    gap={"16px"}
-                    borderTopRadius={"12px"}
-                    bg={"white"}
-                  >
-                    <Stack spacing={"24px"}>
-                      <HStack
-                        justifyContent={"space-between"}
-                        alignItems={"center"}
-                      >
-                        <HStack>
-                          <HStack alignItems={"center"}>
-                            <Text fontSize={"xs"} fontWeight={"semibold"}>
-                              {`${item?.AirlineName} | `}
-                            </Text>
-                            <Text fontSize={"xs"}>{`${
-                              item?.Number
-                            } | ${getClassCode(query?.cabinClasses)}`}</Text>
-                          </HStack>
-                        </HStack>
-                        <Badge>{`${item?.Number}`}</Badge>
-                      </HStack>
-                      <HStack alignItems={"stretch"} gap={4}>
-                        <VStack
+              {flights?.map((item, index) => {
+                return   (
+                  <Box as={"section"} key={index}>
+                    <Stack
+                      w="full"
+                      p={"16px"}
+                      gap={"16px"}
+                      borderTopRadius={"12px"}
+                      bg={"white"}>
+                      <Stack spacing={"24px"}>
+                        <HStack
                           justifyContent={"space-between"}
-                          alignItems={"end"}
-                          textAlign={"right"}
+                          alignItems={"center"}
                         >
-                          {[ 
-                            {
-                              a: item?.DepartTime,
-                              b: item?.DepartDate
-                            }, 
-                            {
-                              a: item?.ArriveTime,
-                              b: item?.ArriveDate
-                            }    
-                          ].map(
-                              (datetime, index) => (
+                          <HStack>
+                            <HStack alignItems={"center"}>
+                              <Text fontSize={"xs"} fontWeight={"semibold"}>
+                                {`${item?.AirlineName} | `}
+                              </Text>
+                              <Text fontSize={"xs"}>{`${
+                                item?.Number
+                              } | ${getClassCode(query?.cabinClasses)}`}</Text>
+                            </HStack>
+                          </HStack>
+                          <Badge>{`${item?.Number}`}</Badge>
+                        </HStack>
+                        <HStack alignItems={"stretch"} gap={4}>
+                          <VStack
+                            justifyContent={"space-between"}
+                            alignItems={"end"}
+                            textAlign={"right"}
+                          >
+                            {[ 
+                              {
+                                a: item?.DepartTime,
+                                b: item?.DepartDate
+                              }, 
+                              {
+                                a: item?.ArriveTime,
+                                b: item?.ArriveDate
+                              }    
+                            ].map(
+                                (datetime, index) => (
+                                  <Box key={index}>
+                                    <Text
+                                      fontSize={{ base: "sm", md: "md" }}
+                                      fontWeight={"semibold"}
+                                    >
+                                      {datetime?.a?.replace(/:/, '.')}
+                                    </Text>
+                                    <Text fontSize={{ base: "sm", md: "md" }}>
+                                      {convertDateFlightPage(datetime?.b)}
+                                    </Text>
+                                  </Box>
+                                )
+                              )}
+                          </VStack>
+                          <Box py={"12px"}>
+                            <VStack
+                              h={"full"}
+                              borderRight="1px dashed #41778A"
+                              position={"relative"}
+                            >
+                              {["top", "bottom"].map((item, index) => (
+                                <Box
+                                  key={index}
+                                  position="absolute"
+                                  {...{ [item]: "-4px" }}
+                                  bg={"brand.blue.400"}
+                                  w={"16px"}
+                                  h={"16px"}
+                                  border={"5px solid #F0F4F5"}
+                                  borderRadius="full"
+                                />
+                              ))}
+                            </VStack>
+                          </Box>
+                          <VStack
+                            justifyContent={"space-between"}
+                            alignItems={"start"}
+                            gap={2}
+                          >
+                            {[
+                              {
+                                c: `${item?.OriginCityName}, ${item?.Origin}`,
+                                a: `${item?.OriginAirportName}`
+                              },
+                              {
+                                b: `${item.Duration.split(':')[0]} JAM ${item.Duration.split(':')[1]} MENIT`,
+                              },
+                              {
+                                c: `${item?.DestinationCityName}, ${item?.Destination}`,
+                                a: `${item?.DestinationAirportName}`,
+                              },
+                            ].map((item, index) =>
+                              item.b ? (
+                                <Badge key={index}>{item.b}</Badge>
+                              ) : (
                                 <Box key={index}>
                                   <Text
-                                    fontSize={{ base: "sm", md: "md" }}
+                                    color={"brand.blue.400"}
                                     fontWeight={"semibold"}
                                   >
-                                    {datetime?.a?.replace(/:/, '.')}
+                                    {item.c}
                                   </Text>
-                                  <Text fontSize={{ base: "sm", md: "md" }}>
-                                    {convertDateFlightPage(datetime?.b)}
+                                  <Text
+                                    color={"neutral.text.medium"}
+                                    fontSize={{ base: "sm", md: "md" }}
+                                  >
+                                    {item.a}
                                   </Text>
                                 </Box>
                               )
                             )}
-                        </VStack>
-                        <Box py={"12px"}>
-                          <VStack
-                            h={"full"}
-                            borderRight="1px dashed #41778A"
-                            position={"relative"}
-                          >
-                            {["top", "bottom"].map((item, index) => (
-                              <Box
-                                key={index}
-                                position="absolute"
-                                {...{ [item]: "-4px" }}
-                                bg={"brand.blue.400"}
-                                w={"16px"}
-                                h={"16px"}
-                                border={"5px solid #F0F4F5"}
-                                borderRadius="full"
-                              />
-                            ))}
                           </VStack>
-                        </Box>
-                        <VStack
-                          justifyContent={"space-between"}
-                          alignItems={"start"}
-                          gap={2}
-                        >
-                          {[
-                            {
-                              c: `${item?.OriginCityName}, ${item?.Origin}`,
-                              a: `${item?.OriginAirportName}`
-                            },
-                            {
-                              b: `${item.Duration.split(':')[0]} JAM ${item.Duration.split(':')[1]} MENIT`,
-                            },
-                            {
-                              c: `${item?.DestinationCityName}, ${item?.Destination}`,
-                              a: `${item?.DestinationAirportName}`,
-                            },
-                          ].map((item, index) =>
-                            item.b ? (
-                              <Badge key={index}>{item.b}</Badge>
-                            ) : (
-                              <Box key={index}>
-                                <Text
-                                  color={"brand.blue.400"}
-                                  fontWeight={"semibold"}
-                                >
-                                  {item.c}
-                                </Text>
-                                <Text
-                                  color={"neutral.text.medium"}
-                                  fontSize={{ base: "sm", md: "md" }}
-                                >
-                                  {item.a}
-                                </Text>
-                              </Box>
-                            )
-                          )}
-                        </VStack>
-                      </HStack>
-                    </Stack>
-                  </Stack>
-                  <Box
-                    as={"section"}
-                    position={"relative"}
-                    w="full"
-                    p={"16px"}
-                    borderTop={"1px"}
-                    borderTopColor={"gray.200"}
-                    borderTopStyle={"dashed"}
-                    borderBottomRadius={"12px"}
-                    bg={"white"}
-                  >
-                    {[{ left: "-8px" }, { right: "-8px" }].map(
-                      (item, index) => (
-                        <Box
-                          {...item}
-                          key={index}
-                          position="absolute"
-                          top={"-8px"}
-                          bg={"brand.blue.100"}
-                          w={"16px"}
-                          h={"16px"}
-                          borderRadius="full"
-                        />
-                      )
-                    )}
-                    <HStack
-                      justifyContent={"space-between"}
-                      alignItems={"center"}>
-                        <HStack>
-                          <Image
-                            src="/svg/nav/tours.svg"
-                            alt="tours"
-                            width={20}
-                            height={20}
-                          />
-                          <Text fontSize={"sm"} fontWeight={"semibold"}>
-                              {item?.TotalTransit == 0 ? (
-                              <Text
-                                fontSize={{ base: "sm", md: "md" }}
-                                fontWeight={"semibold"}>
-                                Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[0]?.Value : ' - '}
-                              </Text>
-                            ) : 
-                            (
-                              <>
-                                {
-                                item?.ConnectingFlights.map((item, index)=>(
-                                    <Text
-                                      key={index}
-                                      fontSize={{ base: "sm", md: "md" }}
-                                      fontWeight={"semibold"}>
-                                      Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[index]?.Value : ' - '}
-                                    </Text>
-                                  ))
-                                }
-                              </>
-                            ) 
-                            }
-                          </Text>
                         </HStack>
-                        <Image
-                          hidden
-                          src="/svg/icons/chevron-down.svg"
-                          alt="chevron-down"
-                          width={16}
-                          height={16}
-                        />
-                      </HStack>
+                      </Stack>
+                    </Stack>
+                    <Box
+                      as={"section"}
+                      position={"relative"}
+                      w="full"
+                      p={"16px"}
+                      borderTop={"1px"}
+                      borderTopColor={"gray.200"}
+                      borderTopStyle={"dashed"}
+                      borderBottomRadius={"12px"}
+                      bg={"white"}>
+                      {[{ left: "-8px" }, { right: "-8px" }].map(
+                        (item, index) => (
+                          <Box
+                            {...item}
+                            key={index}
+                            position="absolute"
+                            top={"-8px"}
+                            bg={"brand.blue.100"}
+                            w={"16px"}
+                            h={"16px"}
+                            borderRadius="full"
+                          />
+                        )
+                      )}
+                      <HStack
+                        justifyContent={"space-between"}
+                        alignItems={"center"}>
+                          <HStack>
+                            <Image
+                              src="/svg/nav/tours.svg"
+                              alt="tours"
+                              width={20}
+                              height={20}
+                            />
+                            <Text fontSize={"sm"} fontWeight={"semibold"}>
+                                {item?.TotalTransit == 0 ? (
+                                <Text
+                                  fontSize={{ base: "sm", md: "md" }}
+                                  fontWeight={"semibold"}>
+                                  Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[0]?.Value : ' - '}
+                                </Text>
+                              ) : 
+                              (
+                                <>
+                                  {
+                                  item?.ConnectingFlights.map((item, index)=>(
+                                      <Text
+                                        key={index}
+                                        fontSize={{ base: "sm", md: "md" }}
+                                        fontWeight={"semibold"}>
+                                        Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[index]?.Value : ' - '}
+                                      </Text>
+                                    ))
+                                  }
+                                </>
+                              ) 
+                              }
+                            </Text>
+                          </HStack>
+                          <Image
+                            hidden
+                            src="/svg/icons/chevron-down.svg"
+                            alt="chevron-down"
+                            width={16}
+                            height={16}
+                          />
+                        </HStack>
                     </Box>
                     {item?.TotalTransit > 0 || index < flights?.length - 1 && (
                       <VStack
@@ -969,22 +968,22 @@ const OrderDetails = () => {
                         bg={"brand.blue.100"}
                         borderRadius={"12px"}
                         justifyContent={"center"}
-                        alignText={"center"}
-                      >
-                        <Text fontSize={"sm"} color={"neutral.text.low"}>
-                          {`Transit selama ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[1]} Menit di`}
-                        </Text>
-                        <Text
-                          fontWeight={"semibold"}
-                          fontSize={"sm"}
-                          color={"neutral.text.medium"}
-                        >
-                          {`${item?.DestinationCityName} (${item?.Destination}) ${item?.DestinationAirportName }`}                      
-                        </Text>
-                      </VStack>
+                        alignText={"center"}>
+                          <Text fontSize={"sm"} color={"neutral.text.low"}>
+                            {`Transit selama ${breakdownTransitTime(String(item?.ClassObjects[0]?.TransitTime))}`}
+                          </Text>
+                          <Text
+                            fontWeight={"semibold"}
+                            fontSize={"sm"}
+                            color={"neutral.text.medium"}
+                          >
+                            {`${item?.DestinationCityName} (${item?.Destination}) ${item?.DestinationAirportName }`}                      
+                          </Text>
+                        </VStack>
                     )}
-                </Box>
-              ))}
+                  </Box>
+                )
+              })}
             </Stack>
           </GridItem>
         </Grid>

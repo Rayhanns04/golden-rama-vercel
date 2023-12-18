@@ -13,6 +13,7 @@ export const orderSlice = createSlice({
       state.isDomestic = actions.payload.isDomestic;
       state.query = actions.payload.query;
       state.addFee = actions.payload.addFee;
+      state.isSmartCombo = actions.payload.isSmartCombo
     },
     checkoutData: (state, actions) => {
       state.orderDetail = actions.payload.orderDetail;

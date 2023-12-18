@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useLoginToast } from "../../hooks";
 import { convertDateFlightPage, convertRupiah, convertTimeFlightPage, getClassCode, simplifyBodyDetailFlight } from "../../helpers";
-import { calculateTimeDifference, calculateTimeTotalTransitDifference } from "../../helpers/date";
+import { breakdownTransitTime, calculateTimeDifference, calculateTimeTotalTransitDifference } from "../../helpers/date";
 
 
 const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDesktop, isLoading, originData, handlePosition }) => {
@@ -19,29 +19,18 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
   useEffect(()=>{
     if(item?.TotalTransit === 0){
       setJourney([item])
-    } else if(item?.TotalTransit === 1) {
+    } else if(item?.TotalTransit > 0) {
       setJourney([...item?.ConnectingFlights])
     } else {
       setJourney([])
     }
   },[item, totalTransit])
 
-  // console.log('item1', item?.TotalTransit, journey )
-
-  // const payload = simplifyBodyDetailFlightt(item, query);
-  // const { data, isLoading } = useQuery(
-  //   ["getPriceFlight", payload],
-  //   async () => {
-  //     const response = await getDetailPrice(payload);
-  //     return Promise.resolve(response);
-  //   }
-  // );
-
   const data = item;
   empty = data ? setIsEmpty(false) : setIsEmpty(true);
   const cta = isDesktop ? "Detail Penerbangan" : "Detail";
   const connectingType = item?.IsConnecting;
-  if (isLoading)
+  if (isLoading){
     return (
       <Center>
         <Spinner />
@@ -58,7 +47,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
       //   </Text>
       // </Skeleton>
     );
-  else
+  } else {
     return data ? (
       <>
         <Text
@@ -90,15 +79,9 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                     as={"span"}
                     fontSize={{ base: "xs", md: "sm" }}
                     color={"neutral.text.low"}
-                    textDecoration={"line-through"}
-                  >
-                    {`IDR ${
-                      convertRupiah(item?.Fare) ?? ""
-                    }`}
-                    {/* {`IDR ${convertRupiah(
-                      sumPriceFareFinal(item.segments, item.connectingType)
-                    )}`} */}
-                  </Text> //harga coret
+                    textDecoration={"line-through"}>
+                    {`IDR ${convertRupiah(item?.Fare) ?? ""}`}
+                  </Text>
                 ) : (
                   <></>
                 )}
@@ -106,25 +89,14 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                   <Text
                     whiteSpace={"nowrap"}
                     fontWeight={"semibold"}
-                    color={"brand.orange.400"}
-                  >
-                    {/* {`IDR ${convertRupiah(
-                      data?.data?.farePerPax?.total -
-                        data?.data?.farePerPax?.priceDiscount ?? "100.000"
-                    )}`}{" "} */}
-                    
+                    color={"brand.orange.400"}>
                     {`IDR ${
                       convertRupiah(item?.Fare) ?? ""
                     }`}
-
-                    {/* {`IDR ${convertRupiah(
-                      sumPriceFareFinal(item.segments, item.connectingType)
-                    )}`} */}
                     <chakra.span
                       fontWeight={"normal"}
                       textColor={"neutral.text.low"}
-                      fontSize={"xs"}
-                    >
+                      fontSize={"xs"}>
                       {" "}per pax
                     </chakra.span>
                   </Text>
@@ -138,21 +110,9 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
               </Text>
             </HStack>
           }>
-          {/* <Stack spacing={"24px"} py={"24px"}>
-            
-          </Stack> */}
+
           <Stack spacing={"24px"} py={"24px"}>
-            {journey.map((flight, index) => {
-              // let durationFlight = flight?.Duration
-              // let durationPerFlight = []
-              // let durationTransit = calculateTimeDifference(durationFlight, durationPerFlight)
-
-              // if(flight?.TotalTransit > 0){
-              //   flight.ConnectingFlights.map((item, index)=>{
-              //     durationPerFlight.push(item?.Duration)
-              //   })
-
-              // }
+            {journey?.map((flight, index) => {
               return (
                 <Stack key={index} spacing={"24px"}>
                   <HStack
@@ -320,7 +280,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
                       <Text
                         fontSize={{ base: "sm", md: "md" }}
                         color={"neutral.text.low"}>
-                        {`Transit selama ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[0]} Jam ${calculateTimeTotalTransitDifference(journey[index + 1]?.DepartTime, journey[index + 1]?.DepartDate, journey[index]?.ArriveTime, journey[index]?.ArriveDate)?.split(':')[1]} Menit di`}
+                          {`Transit selama ${breakdownTransitTime(String(item?.ConnectingFlights[index]?.ClassObjects[0]?.TransitTime))}`}
                       </Text>
                       <Text
                         fontWeight={"semibold"}
@@ -340,6 +300,7 @@ const DetailButton = ({ type, item, query, segments, empty, setIsEmpty, isDeskto
     ) : (
       <Text>Habis</Text>
     );
+    }
   };
 
 export default DetailButton;

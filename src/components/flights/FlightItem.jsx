@@ -9,10 +9,11 @@ import {
   getAirports,
   getRecommendedAirports,
 } from "../../services/flight.service";
+import { convertTimeToCustomFormat } from "../../helpers/flights";
 
-const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position }) => {
+const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational }) => {
   
-  // console.log('itemku', item)
+  // console.log('itemku', 'smart', item)
 
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
@@ -20,64 +21,6 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
   const [airlineName, setAirlineName] = useState('')
   
   const loginToast = useLoginToast();
-  
-  // console.log('isDekstop', isDesktop, imageLogos, imageLogos?.length, airlineName?.length)
-  // const { logos, names, classFlight } = item.segments.reduce(
-  //   (acc, curr) => {
-  //     if (!acc.logos.includes(curr.flightDesignator.carrierCode)) {
-  //       acc.logos = [...acc.logos, curr.flightDesignator.carrierCode];
-  //     }
-  //     if (!acc.names.includes(curr.flightDesignator.carrierName)) {
-  //       acc.names = [...acc.names, curr.flightDesignator.carrierName];
-  //     }
-  //     if (item.connectingType == "THROUGH") {
-  //       if (
-  //         acc.classFlight !==
-  //         getClassCode(item.segments[0].fares[0].fareGroupCode)
-  //       ) {
-    //         acc.classFlight = "Multi-class";
-  //       }
-  //     }
-  //     if (item.connectingType === "DIRECT" || item.connectingType === "SUM") {
-  //       if (acc.classFlight !== getClassCode(curr.fares[0].fareGroupCode)) {
-    //         acc.classFlight = "Multi-class";
-  //       }
-  //     }
-  //     return acc;
-  //   },
-  //   {
-  //     logos: [],
-  //     names: [],
-  //     classFlight: getClassCode(item.segments[0].fares[0].fareGroupCode),
-  //   }
-  // );
-  
-  // let diffHoursTransit = 0;
-  // let diffMinutesTransit = 0;
-  // if (item.segments.length > 0) {
-  //   //count hours and time
-  //   diffHoursTransit =
-  //     item.segments[0].legs[0].durationHours +
-  //     item.segments[item.segments.length - 1].legs[0].durationHours;
-  //   diffMinutesTransit =
-  //     item.segments[0].legs[0].durationMinutes +
-  //     item.segments[item.segments.length - 1].legs[0].durationMinutes;
-  //   if (diffMinutesTransit > 59) {
-    //     diffHoursTransit = diffHoursTransit + 1;
-    //     diffMinutesTransit = diffMinutesTransit - 60;
-  //   }
-  //   const transitTime = differenceDateLong(
-    //     item.segments[0].arrivalDateTime,
-  //     item.segments[item.segments.length - 1].departureDateTime
-  //   ).split(" ");
-  //   // console.log(transitTime, "transitTime")
-  //   diffHoursTransit = parseInt(transitTime[0]) + diffHoursTransit;
-  //   diffMinutesTransit = parseInt(transitTime[2]) + diffMinutesTransit;
-  //   if (diffMinutesTransit > 59) {
-    //     diffHoursTransit = diffHoursTransit + 1;
-    //     diffMinutesTransit = diffMinutesTransit - 60;
-  //   }
-  // }
 
   const setIsEmptyState = (value) => {
     setIsEmpty(value);
@@ -196,7 +139,8 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                     {getClassCode(query?.cabinClasses)}
                   </Text>
                   {/* add text with border rounded , with text smart combo */}
-                  {item.isCombine && (
+                  {/* && isInternational */}
+                  {isSmartCombo && (
                     <Text
                       fontSize={{ base: "xx-small", md: "xx-small" }}
                       fontWeight={"semibold"}
@@ -313,12 +257,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                   fontSize={{ base: "xs", md: "xs" }}
                   color={"neutral.text.low"}>
                   {item?.TotalTransit === 0 ? "Langsung • " : `${item?.TotalTransit} Transit • `}
-                  { convertTimeToCustomFormat(item?.Duration)}
-                  {/* {item.connectingType != "DIRECT"
-                    ? `${
-                        item.segments.length - 1
-                      } Transit • ${diffHoursTransit}j ${diffMinutesTransit}m`
-                    : `Langsung • ${item.segments[0].legs[0].durationHours}j ${item.segments[0].legs[0].durationMinutes}m`} */}
+                  {convertTimeToCustomFormat(item?.TotalDateTime)}
                 </Text>
                 <Box
                   position="absolute"
@@ -400,10 +339,8 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                 <Text
                   fontSize={{ base: "xs", md: "sm" }}
                   flexGrow={1}
-                  fontWeight="semibold"
-                >
+                  fontWeight="semibold">
                   {item?.DepartTime?.replace(/:/, '.')}
-                  {/* {convertTimeFlightPage(item.segments[0].departureDateTime)} */}
                 </Text>
               </HStack>
             </Skeleton>
@@ -414,8 +351,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               startColor={"gray.50"}
               endColor={"gray.200"}
               borderRadius={"4px"}
-              isLoaded={!isLoading}
-            >
+              isLoaded={!isLoading}>
               <HStack>
                 <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="thin">
                   {convertDateFlightPage(item?.ArriveDate)}
@@ -423,12 +359,8 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                 <Text fontSize={{ base: "xs", md: "sm" }}>•</Text>
                 <Text
                   fontSize={{ base: "xs", md: "sm" }}
-                  fontWeight="semibold"
-                >
+                  fontWeight="semibold">
                   {item?.ArriveTime.replace(/:/, '.')}
-                  {/* {convertTimeFlightPage(
-                    item.segments[item.segments.length - 1].arrivalDateTime
-                  )} */}
                 </Text>
               </HStack>
             </Skeleton>
@@ -440,30 +372,20 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
           // display={{ base: "none", md: "block" }}
           flexShrink={0}
           alignSelf={"center"}
-          alignItems={"center"}
-        >
+          alignItems={"center"}>
           <Stack spacing={0}>
             {item.isDiscount ? (
               <Skeleton
                 startColor={"gray.50"}
                 endColor={"gray.200"}
                 borderRadius={"4px"}
-                isLoaded={!isLoading}
-              >
+                isLoaded={!isLoading}>
                 <Text
                   as={"span"}
                   fontSize={{ base: "xs", md: "sm" }}
                   color={"neutral.text.low"}
-                  textDecoration={"line-through"}
-                >
-                  {`IDR ${
-                    convertRupiah(item?.Fare) ?? ""
-                  }`}
-                  {/* {`IDR ${
-                    convertRupiah(
-                      sumPriceFare(item.segments, item.connectingType)
-                    ) ?? ""
-                  }`} */}
+                  textDecoration={"line-through"}>
+                  {`IDR ${convertRupiah(item?.Fare) ?? ""}`}
                 </Text>
               </Skeleton>
             ) : (
@@ -473,19 +395,12 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               startColor={"gray.50"}
               endColor={"gray.200"}
               borderRadius={"4px"}
-              isLoaded={!isLoading}
-            >
+              isLoaded={!isLoading}>
               <Text
                 fontSize={"lg"}
                 fontWeight={"bold"}
-                color={"brand.orange.400"}
-              >
-                {`IDR ${
-                    convertRupiah(item?.Fare) ?? ""
-                  }`}
-                {/* {`IDR ${convertRupiah(
-                  sumPriceFareFinal(item.segments, item.connectingType)
-                )}`} */}
+                color={"brand.orange.400"}>
+                {`IDR ${convertRupiah(item?.Fare) ?? ""}`}
               </Text>
             </Skeleton>
           </Stack>
@@ -494,8 +409,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
             startColor={"gray.50"}
             endColor={"gray.200"}
             borderRadius={"4px"}
-            w={"full"}
-          >
+            w={"full"}>
             <CustomOrangeFullWidthButton
               disabled={isEmpty || isLoading}
               onClick={(e) =>
@@ -551,7 +465,6 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               color={"brand.orange.400"}
             >
               {getClassCode(query?.cabinClasses)}
-              {/* {getClassCode(item.segments[0].fares[0].fareGroupCode)} */}
             </Text>
           </Skeleton>
           <Stack spacing={0}>
@@ -603,14 +516,3 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
 };
 
 export default FlightItem;
-
-function convertTimeToCustomFormat(inputTime) {
-  const timeRegex = /^(\d{2}):(\d{2})$/;
-  if (timeRegex.test(inputTime)) {
-    const [hours, minutes] = inputTime.split(':');  
-    const formattedTime = `${parseInt(hours)}j ${parseInt(minutes)}m`;
-    return formattedTime;
-  } else {
-    return "Format waktu tidak valid";
-  }
-}
