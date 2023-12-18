@@ -543,6 +543,8 @@ export const FormInsuranceSearch = ({ handleSubmit, actionButton = null }) => {
     getDestinationsRegions()
   );
 
+  // console.log('itemku', ''insurance wilayah' ,destination_region)
+
   const { data: packageType } = useQuery(["packageType"], () =>
     getPackageType()
   );

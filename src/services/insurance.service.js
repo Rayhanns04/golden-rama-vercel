@@ -20,6 +20,7 @@ export const getOrigins = async (search) => {
 export const getDestinationsRegions = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/zurich-destination-regions`);
+    // console.log('itemku', 'insurance wilayah', response)
     return Promise.resolve(response.data.data);
   } catch (error) {
     return Promise.reject(error);

@@ -82,18 +82,23 @@ export function convertTotalDateTimeToMilliseconds(totalDateTime) {
     return totalMilliseconds;
 }
 
-export function filterAirlines(flight, airlines) {
+export function filterAirlines(flight, airlines, dataAirlines) {
     const flightNow = [] 
   
+    const airlineTemp = airlines?.map((id) => {
+        const airline = dataAirlines.find((data) => data.id === id.toString());
+        return airline ? airline.name : '';
+    })
+
     flight.map((item) => {
       if(item?.TotalTransit > 0){
-        airlines.map((air)=>{
+        airlineTemp.map((air)=>{
           if(item?.ConnectingFlights[0]?.AirlineName === air){
             flightNow.push(item)
           }
         })
       } else {
-        airlines.map((air)=>{
+        airlineTemp.map((air)=>{
           if(item?.AirlineName === air){
             flightNow.push(item)
           }

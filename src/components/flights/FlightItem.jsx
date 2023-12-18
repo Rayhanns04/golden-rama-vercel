@@ -13,8 +13,6 @@ import { convertTimeToCustomFormat } from "../../helpers/flights";
 
 const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational, isRoundTrip }) => {
   
-  // console.log('itemku', 'smart', typeof(isRoundTrip), typeof(isSmartCombo))
-
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
   const [imageLogos, setImageLogos] = useState([])
