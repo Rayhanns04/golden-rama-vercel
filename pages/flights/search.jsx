@@ -84,6 +84,19 @@ const SearchFlights = ({
 
   const payload = query;
 
+  const initialFilterSave = {
+    min_price: 0,
+    max_price: 16000000,
+    transits: [],
+    departure_times: [],
+    arrival_times: [],
+    airlines: [],
+    others: [],
+    // facilities: [],
+    is_filtered: false,
+    isSmartCombo: query?.isSmartCombo == "true" ? true : false,
+  };
+
   // data save all 
   const [currentJourneySave, setCurrentJourneySave] = useState(dataflights?.currentJourneySave) 
   const [currentJourneyInFlightType, setCurrentJourneyInFligtType] = useState([]) 
@@ -96,7 +109,10 @@ const SearchFlights = ({
   const dispatch = useDispatch();
   const { ref: trigger, inView } = useInView();
   const [sortBy, setSortBy] = useState("Harga Terendah");
-  const [filter, setFilter] = useState({});
+  const [filter, setFilter] = useState(initialFilterSave);
+  const [filterStateSave, setFilterStateSave] = useState(filter)
+  const [dataAirlines, setDataAirlines] = useState()
+
   const [shownItems, setShownItems] = useState(15);
   const [totalData, setTotalData] = useState(dataflights?.totalData);
   const [isLoading, setIsLoading] = useState(dataflights?.loading);
@@ -216,7 +232,7 @@ const SearchFlights = ({
         filteredFlights = filterTransit(filteredFlights, filter.transits);
       }
       if (filter?.airlines?.length > 0) {
-        filteredFlights = filterAirlines(filteredFlights, filter.airlines);
+        filteredFlights = filterAirlines(filteredFlights, filter.airlines, dataAirlines);
       }
       if (filter?.others?.length > 0) {
         filteredFlights = filterOthers(filteredFlights);
@@ -281,7 +297,6 @@ const SearchFlights = ({
   }, [inView]);
   
   const handleFilter = (filter, dataAirlines) => { 
-    // console.log('itemku', 'filter', filter)
     const initialFilter = {
       min_price: 0,
       max_price: 16000000,
@@ -295,8 +310,9 @@ const SearchFlights = ({
       isSmartCombo: query?.isSmartCombo == "true" ? true : false,
     };
 
-    if(JSON.stringify(filter) === JSON.stringify(initialFilter)){
+    if(JSON.stringify(filter) === JSON.stringify(filterStateSave)){
       setIsLoading(true);
+      setFilterStateSave(initialFilter)
       if(position === 0){
         setCurrentJourney(currentJourneySave)
       } else {
@@ -315,16 +331,18 @@ const SearchFlights = ({
         transits: filter?.transits,
         departure_times: filter?.departure_times,
         arrival_times: filter?.arrival_times,
-        airlines: filter.airlines?.map((id) => {
-          const airline = dataAirlines.find((data) => data.id === id.toString());
-          return airline ? airline.name : '';
-        }),
+        airlines: filter.airlines,
+        // airlines: filter.airlines?.map((id) => {
+        //   const airline = dataAirlines.find((data) => data.id === id.toString());
+        //   return airline ? airline.name : '';
+        // }),
         others: filter?.others,
         // facilities: [],
         is_filtered: filter?.is_filtered === false ? true : true,
         isSmartCombo: filter?.isSmartCombo,
       }
       setFilter(filterBody);
+      setFilterStateSave(filterBody)
     }
     setTimeout(() => {
       setIsLoading(false);
@@ -379,8 +397,8 @@ const SearchFlights = ({
   };
 
   const SortButton = ({ sortByState }) => {
-    const [sortBy, setSortBy] = sortByState;
-    const [value, setValue] = useState("Harga Terendah");
+    const [sortByButton, setSortByButton] = sortByState;
+    const [value, setValue] = useState(sortByButton);
     const data = [
       "Harga Terendah",
       "Harga Tertinggi",
@@ -393,7 +411,7 @@ const SearchFlights = ({
     const handleSortBy = () => {
       try {
         setIsLoading(true)
-        setSortBy(value);
+        setSortByButton(value);
         // handleFilter(filter);
         setTimeout(() => {
           setIsLoading(false)
@@ -405,7 +423,7 @@ const SearchFlights = ({
 
     const handleResetSortBy = () => {
       try {
-        setSortBy("Harga Terendah");
+        setSortByButton("Harga Terendah");
         setValue("");
         // handleFilter(filter);
       } catch (error) {
@@ -444,7 +462,7 @@ const SearchFlights = ({
           onSubmit={handleSortBy}
           onReset={handleResetSortBy}
           footer={"Terapkan"}>
-          <RadioGroup onChange={setValue} value={value == "" ? sortBy : value}>
+          <RadioGroup onChange={setValue} value={value == "" ? sortByButton : value}>
             <Stack spacing={5} py={5}>
               {data?.map((item, index) => (
                 <Radio
@@ -570,7 +588,7 @@ const SearchFlights = ({
       isSmartCombo: query?.isSmartCombo == "true" ? true : false,
     };
 
-    const [filter, setFilter] = useState(initialFilter);
+    const [filter, setFilter] = useState(filterStateSave);
 
     const drawerRef = useRef();
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -612,7 +630,10 @@ const SearchFlights = ({
           isOpen={isOpen}
           onOpen={onOpen}
           onClose={onClose}
-          onSubmit={() => handleFilter(filter, data?.airlines)}
+          onSubmit={() => {
+            handleFilter(filter)
+            setDataAirlines(data?.airlines)
+          }}
           onReset={() => setFilter(initialFilter)}
           title={"Filter"}
           footer={"Terapkan"}
