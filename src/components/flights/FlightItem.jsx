@@ -24,7 +24,6 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
     setIsEmpty(value);
   };
 
-
   useEffect(() => {
     if (item?.TotalTransit === 0) {
       setAirlineName(item?.AirlineName);

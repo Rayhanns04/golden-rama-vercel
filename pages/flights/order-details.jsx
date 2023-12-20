@@ -119,6 +119,7 @@ const OrderDetails = () => {
   totalPrice;
   
   const [fareTotal, setFareTotal] = useState()
+
   const [fareDetail, setFareDetail] = useState([])
   const [serviceFee, setServiceFee] = useState(20000)
   const [fareDetailRequest, setFareDetailRequest] = useState([])
@@ -167,9 +168,13 @@ const OrderDetails = () => {
                     "TotalAmount": totalAmountByPaxType[paxType]
                 };
               });
+
+              let totalFareTempGDS = item?.FareBreakdowns?.reduce((sum, entry) => {
+                return sum + entry.Charges.reduce((chargeSum, charge) => chargeSum + charge.Amount, 0);
+              }, 0);
       
               resultFareBreakdownTemp[index] = result
-              totalFareAll.push(item?.Fare)
+              totalFareAll.push(totalFareTempGDS)
               statusTemp[index] = true
             } else if (item?.FlightType === 'NonGds'){
               if(item?.IsConnecting === false){
@@ -298,6 +303,12 @@ const OrderDetails = () => {
             setIsLoading(true)
             if(item?.FlightType === 'GdsBfm'){
               let totalAmountByPaxType = {};
+
+              let totalFareTempGDS = item?.FareBreakdowns?.reduce((sum, entry) => {
+                return sum + entry.Charges.reduce((chargeSum, charge) => chargeSum + charge.Amount, 0);
+              }, 0);
+            
+
               item?.FareBreakdowns?.forEach(function(item) {
                 var paxType = item.PaxType;
                 var charges = item.Charges;
@@ -321,7 +332,7 @@ const OrderDetails = () => {
               });
       
               setResultFareBreakdown([result])
-              setFareTotal(item?.Fare)
+              setFareTotal(totalFareTempGDS)
               statusTemp[index] = true
             } else if (item?.FlightType === 'NonGds'){
               if(item?.IsConnecting === false){
