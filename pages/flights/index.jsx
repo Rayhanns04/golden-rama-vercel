@@ -135,21 +135,20 @@ const Flights = (props) => {
           mx={"auto"}
           py={"24px"}
           bg={"brand.blue.100"}
-          as={"section"}
-        >
-          <Stack px={"0px"}>
+          as={"section"}>
+          <Stack px={{ sm: '24px', lg: '0px' }}>
             <Heading
               color={"neutral.text.high"}
               fontSize={{ base: "md", md: "lg" }}
             >
               Pencarian Terakhir
             </Heading>
+            <FlightHistory
+              handleClick={handleSubmit}
+              item={history}
+              setItem={setHistory}
+            />
           </Stack>
-          <FlightHistory
-            handleClick={handleSubmit}
-            item={history}
-            setItem={setHistory}
-          />
         </Stack>
       </Box>
       {/* <Box as={"section"} py={"24px"}>
