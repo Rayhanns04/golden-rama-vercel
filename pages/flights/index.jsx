@@ -57,7 +57,7 @@ const Flights = (props) => {
       adult: values.flights[0].adult,
       child: values.flights[0].child,
       infant: values.flights[0].infant,
-      cabinClasses: [values.flights[0].class],
+      cabinClasses: [values.flights[0].class === "E" ? "Economy" : values.flights[0].class],
       airlines: "",
       isRoundTrip: values.flights[0].is_round_trip,
       is_smart_combo: values.flights[0].is_round_trip,

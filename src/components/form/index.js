@@ -2653,28 +2653,30 @@ export const FormFlightSearch = ({
           value={
             items.find(
               (item) => item.value === form.values.flights[indexFlight].class
-            )?.label ?? ""
+            )?.label ?? "Economy"
           }
         >
           <RadioGroup
             onChange={(next) => form.setFieldValue(name.class, next, true)}
-            value={form.values.flights[indexFlight].class}
+            value={form.values.flights[indexFlight].class === "E" ? "Economy" : form.values.flights[indexFlight].class}
           >
             <Stack spacing={5} py={5}>
-              {items?.map((item, index) => (
-                <Radio
-                  flexDirection={"row-reverse"}
-                  colorScheme={"brand.blue"}
-                  justifyContent={"space-between"}
-                  key={index}
-                  isChecked={
-                    form.values.flights[indexFlight].class == item.value
-                  }
-                  value={item.value}
-                >
-                  {item.label}
-                </Radio>
-              ))}
+              {items?.map((item, index) => {
+                return (
+                  <Radio
+                    flexDirection={"row-reverse"}
+                    colorScheme={"brand.blue"}
+                    justifyContent={"space-between"}
+                    key={index}
+                    isChecked={
+                      form.values.flights[indexFlight].class == item.value
+                    }
+                    value={item.value}
+                  >
+                    {item.label}
+                  </Radio>
+                )
+              })}
             </Stack>
           </RadioGroup>
         </CustomDropdown>
