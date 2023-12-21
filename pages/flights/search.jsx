@@ -1254,7 +1254,7 @@ export async function getServerSideProps(context) {
       
       const resSchedules = response?.data?.Schedules;
       const schedules = Object?.values(resSchedules);
-      isSmartCombo = response?.data?.IsSmartCombo
+      isSmartCombo = response?.data?.IsSmartCombo || true
 
       // console.log('itemku', resSchedules[0]?.Flights[0])
       // console.log('itemku', response)
@@ -1281,7 +1281,7 @@ export async function getServerSideProps(context) {
       currentJourneySave = updatedCurrentJourney
 
       flights = schedules[0]?.Flights?.slice(0, 15)
-      totalData = schedules[0]?.Flights?.length !== null ? schedules[0]?.Flights?.length : 0
+      totalData = (schedules[0]?.Flights?.length !== null ? schedules[0]?.Flights?.length : 0) || 0
       additionalFee = schedules[0]?.AdditionalFee || null;
       loading = false;
     }
