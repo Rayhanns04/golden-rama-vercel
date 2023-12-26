@@ -101,6 +101,8 @@ const SearchFlights = ({
   const [currentJourneySave, setCurrentJourneySave] = useState(dataflights?.currentJourneySave) 
   const [currentJourneyInFlightType, setCurrentJourneyInFligtType] = useState([]) 
 
+  // console.log('itemkusave', currentJourneySave)
+
   const [currentJourney, setCurrentJourney] = useState(dataflights?.currentJourney) 
   const [flights, setFlights] = useState(dataflights?.flights);
   const [statusSuccess, setStatusSuccess] = useState(dataflights?.status);
@@ -136,7 +138,6 @@ const SearchFlights = ({
     try {
       setIsLoading(true);
       const response = await getFlights(data, smartcombo);
-
       if(response.success === false){
         setIsLoading(false)
         setStatusSuccess(false);
@@ -149,6 +150,7 @@ const SearchFlights = ({
         // console.log('itemku',response)
         
         const resSchedules = response.data?.Schedules;
+        // console.log('itemku', 'resSchedules', resSchedules)
         const schedules = Object.values(resSchedules);
         setIsSmartCombo(response?.data?.IsSmartCombo)
 
@@ -381,6 +383,7 @@ const SearchFlights = ({
 
         const updatedCurrentJourney = currentJourney.map((journeyCurrent, index) => {
           if (index === 1) {
+              // console.log('itemku7', currentJourney)
               return {
                 ...journeyCurrent,
                 Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType, journey?.GroupingId, dataQuery?.isRoundTrip, journey?.Airline, isSmartCombo)
@@ -1138,7 +1141,7 @@ const SearchFlights = ({
               //   Lihat Lebih Banyak
               // </CustomOrangeFullWidthButton>
               <>
-                {isSmartCombo === true && totalData > 0 && cart?.length === 1 && (
+                {isSmartCombo === "true" && totalData > 0 && cart?.length === 1 && (
                   <>
                     <LinkBox
                       // onClick={onOpen}
@@ -1280,7 +1283,7 @@ export async function getServerSideProps(context) {
       currentJourney = updatedCurrentJourney
       currentJourneySave = updatedCurrentJourney
 
-      flights = schedules[0]?.Flights?.slice(0, 15)
+      flights = schedules[0]?.Flights?.slice(0, 15) || []
       totalData = (schedules[0]?.Flights?.length !== null ? schedules[0]?.Flights?.length : 0) || 0
       additionalFee = schedules[0]?.AdditionalFee || null;
       loading = false;

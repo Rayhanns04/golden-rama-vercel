@@ -240,9 +240,12 @@ export function filterPrice(flight, minPrice, maxPrice) {
 
 export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline, isSmartCombo){
     const flightNow = []
+
+    // console.log('itemku12', flight)
     
-    if(isSmartCombo){
+    if(isSmartCombo === 'true'){
       flight.map((item)=>{
+        // console.log('itemku1', 'inijalan')
         if(item?.FlightType === type && item?.GroupingId === groupId && item?.Airline === flightAirline){
           flightNow.push(item)
         }
@@ -250,10 +253,13 @@ export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirli
       return flightNow
     } else {
       flight.map((item)=>{
-        if(item?.FlightType === type && item?.Airline === flightAirline){
+        if(item?.FlightType === type ){ // && item?.Airline === flightAirline
+          // console.log('itemku2', isSmartCombo, item?.FlightType, type)
           flightNow.push(item)
         }
       })
+      // console.log('itemku3', flightNow)
       return flightNow
     }
+
   }
