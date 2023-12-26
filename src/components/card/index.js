@@ -1335,7 +1335,6 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
   
   const dataResult = additionalCoverage?.data
   let dataAdditionalCoverage = {};
-  // console.log('itemku', dataResult)
 
   if(dataResult){
     const newData = dataResult?.data?.map((item) => {

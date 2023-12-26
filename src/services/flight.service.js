@@ -56,17 +56,7 @@ export const getRecommendedAirports = async () => {
 };
 
 export const getFlights = async (data, isSmartCombo) => {
-  try {
-    
-    // const payloadTemp = {
-    //   data: {
-    //     ...data,
-    //     isSmartCombo: `${isSmartCombo}`,
-    //   },
-    // }
-
-    // console.log('itemku', payloadTemp)
-    
+  try {    
     const response = await axios.post(`${BASE_URL}/orders/flight/available`, {
       data: {
         ...data,

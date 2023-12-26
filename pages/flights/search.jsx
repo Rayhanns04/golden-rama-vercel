@@ -101,8 +101,6 @@ const SearchFlights = ({
   const [currentJourneySave, setCurrentJourneySave] = useState(dataflights?.currentJourneySave) 
   const [currentJourneyInFlightType, setCurrentJourneyInFligtType] = useState([]) 
 
-  // console.log('itemkusave', currentJourneySave)
-
   const [currentJourney, setCurrentJourney] = useState(dataflights?.currentJourney) 
   const [flights, setFlights] = useState(dataflights?.flights);
   const [statusSuccess, setStatusSuccess] = useState(dataflights?.status);
@@ -146,11 +144,8 @@ const SearchFlights = ({
       if (response.success === true) {
         setStatusSuccess(true);
         setIsLoading(false)
-
-        // console.log('itemku',response)
         
         const resSchedules = response.data?.Schedules;
-        // console.log('itemku', 'resSchedules', resSchedules)
         const schedules = Object.values(resSchedules);
         setIsSmartCombo(response?.data?.IsSmartCombo)
 
@@ -273,8 +268,6 @@ const SearchFlights = ({
     // }
   },[filter])
 
-  // console.log('itemku11', cart)
-
   useEffect(()=>{
     if(flightType === 'all'){
       setCurrentJourney(currentJourneySave)
@@ -383,7 +376,6 @@ const SearchFlights = ({
 
         const updatedCurrentJourney = currentJourney.map((journeyCurrent, index) => {
           if (index === 1) {
-              // console.log('itemku7', currentJourney)
               return {
                 ...journeyCurrent,
                 Flights: filterFlightType(journeyCurrent?.Flights, journey?.FlightType, journey?.GroupingId, dataQuery?.isRoundTrip, journey?.Airline, isSmartCombo)
@@ -1178,8 +1170,8 @@ const SearchFlights = ({
                           onClick={ async (e) => {
                             setPosition(0);
                             setCart([]);
-                            setIsSmartCombo(false)
-                            await fetchFlight(payload, false);
+                            setIsSmartCombo('false')
+                            await fetchFlight(payload, 'false');
                             // setIsLoading(true);
                           }}
                           fontWeight="semibold"
@@ -1258,9 +1250,6 @@ export async function getServerSideProps(context) {
       const resSchedules = response?.data?.Schedules;
       const schedules = Object?.values(resSchedules);
       isSmartCombo = response?.data?.IsSmartCombo || true
-
-      // console.log('itemku', resSchedules[0]?.Flights[0])
-      // console.log('itemku', response)
 
       schedules.map((item)=>{
         if(item?.IsInternational){
