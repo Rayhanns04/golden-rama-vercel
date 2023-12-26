@@ -56,11 +56,11 @@ export const getRecommendedAirports = async () => {
 };
 
 export const getFlights = async (data, isSmartCombo) => {
-  try {
+  try {    
     const response = await axios.post(`${BASE_URL}/orders/flight/available`, {
       data: {
         ...data,
-        isSmartCombo: isSmartCombo,
+        isSmartCombo: `${isSmartCombo}`,
       },
     });
 

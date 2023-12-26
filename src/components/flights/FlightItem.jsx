@@ -12,7 +12,6 @@ import {
 import { convertTimeToCustomFormat } from "../../helpers/flights";
 
 const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational, isRoundTrip }) => {
-  
   const [totalTransit, setTotalTransit] = useState()
   const [isEmpty, setIsEmpty] = useState(false);
   const [imageLogos, setImageLogos] = useState([])
@@ -137,7 +136,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                   </Text>
                   {/* add text with border rounded , with text smart combo */}
                   {/* && isInternational */}
-                  {(isSmartCombo === true && isRoundTrip === "true") && (
+                  {(isSmartCombo === "true" && isRoundTrip === "true") && (
                     <Text
                       fontSize={{ base: "xx-small", md: "xx-small" }}
                       fontWeight={"semibold"}

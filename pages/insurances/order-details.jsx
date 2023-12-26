@@ -113,8 +113,6 @@ const InsuranceOrderDetails = (props) => {
       : insuranceDetail.MainRate *
         (mappingTraveler.adult + mappingTraveler.child);
 
-  // console.log('itemku', 'insurance', insuranceDetail.additionalCoverage)
-
   const total_prices = TravellerTypePrice + additionalCoverageTotal;
   
   useEffect(() => {

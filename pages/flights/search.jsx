@@ -136,7 +136,6 @@ const SearchFlights = ({
     try {
       setIsLoading(true);
       const response = await getFlights(data, smartcombo);
-
       if(response.success === false){
         setIsLoading(false)
         setStatusSuccess(false);
@@ -145,8 +144,6 @@ const SearchFlights = ({
       if (response.success === true) {
         setStatusSuccess(true);
         setIsLoading(false)
-
-        // console.log('itemku',response)
         
         const resSchedules = response.data?.Schedules;
         const schedules = Object.values(resSchedules);
@@ -270,8 +267,6 @@ const SearchFlights = ({
     //   }
     // }
   },[filter])
-
-  // console.log('itemku11', cart)
 
   useEffect(()=>{
     if(flightType === 'all'){
@@ -1138,7 +1133,7 @@ const SearchFlights = ({
               //   Lihat Lebih Banyak
               // </CustomOrangeFullWidthButton>
               <>
-                {isSmartCombo === true && totalData > 0 && cart?.length === 1 && (
+                {isSmartCombo === "true" && totalData > 0 && cart?.length === 1 && (
                   <>
                     <LinkBox
                       // onClick={onOpen}
@@ -1175,8 +1170,8 @@ const SearchFlights = ({
                           onClick={ async (e) => {
                             setPosition(0);
                             setCart([]);
-                            setIsSmartCombo(false)
-                            await fetchFlight(payload, false);
+                            setIsSmartCombo('false')
+                            await fetchFlight(payload, 'false');
                             // setIsLoading(true);
                           }}
                           fontWeight="semibold"
@@ -1256,9 +1251,6 @@ export async function getServerSideProps(context) {
       const schedules = Object?.values(resSchedules);
       isSmartCombo = response?.data?.IsSmartCombo || true
 
-      // console.log('itemku', resSchedules[0]?.Flights[0])
-      // console.log('itemku', response)
-
       schedules.map((item)=>{
         if(item?.IsInternational){
           isInternational = true 
@@ -1280,7 +1272,7 @@ export async function getServerSideProps(context) {
       currentJourney = updatedCurrentJourney
       currentJourneySave = updatedCurrentJourney
 
-      flights = schedules[0]?.Flights?.slice(0, 15)
+      flights = schedules[0]?.Flights?.slice(0, 15) || []
       totalData = (schedules[0]?.Flights?.length !== null ? schedules[0]?.Flights?.length : 0) || 0
       additionalFee = schedules[0]?.AdditionalFee || null;
       loading = false;

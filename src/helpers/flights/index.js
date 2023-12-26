@@ -138,7 +138,6 @@ export function filterFacility(flight) {
 }
 
 export function filterFlightDepartureAndArrival(flights, type, times) {
-    // console.log('itemku', type, times, flights)
     const filterTimeFlight = [
       { id: 1, time: ["00:00", "06:00"] },
       { id: 2, time: ["06:01", "12:00"] },
@@ -147,7 +146,6 @@ export function filterFlightDepartureAndArrival(flights, type, times) {
     ];
 
     const isArrivalTimeInRange = (flight, filterTime) => {
-      // console.log('itemku2', flight, filterTime)
       if (!flight || !flight.ArriveTime) {
         return false;
       }
@@ -223,7 +221,6 @@ export function filterFlightDepartureAndArrival(flights, type, times) {
       const result = compact(data);
       arrayResult = [...arrayResult, ...result];
     });
-    // console.log('itemku', 'result', arrayResult)
     return arrayResult;
 }
 
@@ -241,7 +238,7 @@ export function filterPrice(flight, minPrice, maxPrice) {
 export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirline, isSmartCombo){
     const flightNow = []
     
-    if(isSmartCombo){
+    if(isSmartCombo === 'true'){
       flight.map((item)=>{
         if(item?.FlightType === type && item?.GroupingId === groupId && item?.Airline === flightAirline){
           flightNow.push(item)
@@ -250,10 +247,11 @@ export function filterFlightType(flight, type, groupId, isRoundTrip, flightAirli
       return flightNow
     } else {
       flight.map((item)=>{
-        if(item?.FlightType === type && item?.Airline === flightAirline){
+        if(item?.FlightType === type ){ // && item?.Airline === flightAirline
           flightNow.push(item)
         }
       })
       return flightNow
     }
+
   }
