@@ -276,6 +276,7 @@ export const NoResults = ({ href = "/", hideButton = false }) => (
     </Stack>
   </Box>
 );
+
 export const InsuranceItem = ({ item }) => {
   const router = useRouter();
   const { query } = router;
@@ -284,6 +285,7 @@ export const InsuranceItem = ({ item }) => {
   const benefit = INSURANCE_BENEFITS.find(
     (benefit) => benefit.name.toLowerCase() === item.PlanName.toLowerCase()
   );
+
   function handleSubmit() {
     dispatch(
       checkoutData({
@@ -292,6 +294,7 @@ export const InsuranceItem = ({ item }) => {
     );
     router.push("/insurances/order-details");
   }
+
   return (
     <LinkBox>
       <Stack
@@ -1321,19 +1324,48 @@ export const CruiseListItem = ({ query }) => {
     </SimpleGrid>
   );
 };
+
 export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
   const router = useRouter();
   const { insuranceDetail } = useSelector((state) => state.insuranceReducer);
   const additionalCoverage = useQuery(["getAdditionalCoverage", props], () =>
-    getAdditionalCoverage(insuranceDetail)
+  getAdditionalCoverage(insuranceDetail)
   );
+  
+  const dataResult = additionalCoverage?.data
+  let dataAdditionalCoverage = {};
+
+  if(dataResult){
+    const newData = dataResult?.data?.map((item) => {
+      const correspondingCoverage = dataResult?.priceOverview?.UsingCoverages.find(
+        (coverage) => coverage.Name === item?.Name
+      );
+    
+      return {
+        ...item,
+        MainRate: correspondingCoverage ? correspondingCoverage?.Premium : 0,
+      };
+    });
+    
+    // const result = {
+    //   data: newData,
+    //   priceOverview: {
+    //     ...dataResult.priceOverview,
+    //   },
+    // };
+
+    dataAdditionalCoverage = {
+      data: newData
+    }
+  }
+
   const dispatch = useDispatch();
   function handleSubmit(values, action) {
     dispatch(
       checkoutData({
         insuranceDetail: {
           ...insuranceDetail,
-          additionalCoverage: additionalCoverage.data.filter((value) => {
+          additionalCoverage: dataAdditionalCoverage.data.filter((value) => {
             return values.CoverageIDs.includes(value.ID.toString());
           }),
         },
@@ -1341,6 +1373,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     );
     router.replace("/insurances/order-details", undefined, { shallow: true });
   }
+  
   const SelectionButton = ({ title, children, ...props }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const formik = useFormikContext();
@@ -1372,10 +1405,11 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     <Formik
       initialValues={{
         CoverageIDs:
-          insuranceDetail.additionalCoverage?.map((item) => {
+          insuranceDetail.dataAdditionalCoverage?.map((item) => {
             return item.ID.toString();
           }) ?? [],
       }}
+
       onSubmit={handleSubmit}
     >
       <Form>
@@ -1393,9 +1427,9 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
             <SelectionButton title={"Cakupan Tambahan"}>
               <Stack m={"-24px"} p={"24px"} spacing="24px" bg="brand.blue.100">
                 <>
-                  {additionalCoverage.data
-                      ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
-                      .map((item, index) => (
+                  {dataAdditionalCoverage?.data
+                      // ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
+                      ?.map((item, index) => (
                     <Stack
                       spacing={"12px"}
                       key={index}
@@ -1441,7 +1475,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
                                 IDR{" "}
                                 {item.MainRate.toLocaleString("id-ID", {
                                   maximumFractionDigits: 0,
-                                })} {item.Name === "Proteksi Covid-19/Covid- 19 Protection" ? " /pax /day" : ""}
+                                })} {item.Name === "Proteksi Covid-19/Covid- 19 Protection" ? "" : ""}
                               </Text>
                             </Box>
                           </Checkbox>
@@ -1458,6 +1492,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     </Formik>
   );
 };
+
 export const InsuranceListItem = ({ query }) => {
   const router = useRouter();
   const myQuery = router.query;
