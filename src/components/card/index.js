@@ -1712,6 +1712,7 @@ export const AttractionListItem = ({ query }) => {
     </SimpleGrid>
   );
 };
+
 export const TourListMonthAhead = ({ area, period }) => {
   const TourList = ({ item }) => {
     const query = useQuery(["getAllToursByMonth", item.slug], async () => {
