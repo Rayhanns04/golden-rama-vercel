@@ -125,6 +125,7 @@ export const bookingFlight = async (data, token) => {
     const today = new Date();
     const birthDate = new Date(item?.dob);
     const age = today.getFullYear() - birthDate.getFullYear();
+    const statusPassport = ((flightTypeCurrent === "NonGds") && (`${data?.isInternational}` === "false"))
 
     const passengerItem = {
       index: item?.key + 1,
@@ -141,9 +142,9 @@ export const bookingFlight = async (data, token) => {
       idNumber: item?.id_number, // wajib
       nationality: item?.country,
       adultAssoc: (item?.paxType === 'INF') ? (item?.i + 1) : null,
-      passportNumber: item?.passport_number,
-      passportExpire: item?.expired_date,
-      passportOrigin: item?.publisher_country,
+      passportNumber: statusPassport ? "" : item?.passport_number,
+      passportExpire: statusPassport ? "" : item?.expired_date,
+      passportOrigin: statusPassport ? "" : item?.publisher_country,
       // emergencyFullName: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_fullname}` : `${item?.emergency_fullname}`, // wajib
       // emergencyPhone: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_phone}` : `${item?.emergency_phone}`, // wajib
       // emergencyEmail: (item?.paxType === 'INF' || item?.paxType === 'CHD' || (item?.paxType === 'ADT' && item?.i !== 0)) ? `${data.traveler[0].emergency_email}` : `${item?.emergency_email}`, // wajib

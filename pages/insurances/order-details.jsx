@@ -179,7 +179,7 @@ const InsuranceOrderDetails = (props) => {
           ? insuranceDetail.additionalCoverage?.map((item, index) => {
             let total;
 
-            if (item.Name === "Proteksi Covid-19/Covid- 19 Protection") {
+            if (item?.Name === "Proteksi Covid-19/Covid- 19 Protection") {
               const day = differenceInDays(
                   new Date(insuranceDetail.travel_end_date),
                   new Date(insuranceDetail.travel_start_date)
