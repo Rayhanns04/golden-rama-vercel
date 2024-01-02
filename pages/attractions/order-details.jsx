@@ -46,6 +46,7 @@ const OrderDetails = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { attractionDetail } = useSelector((state) => state.attractionReducer);
+  // console.log('itemku88', attractionDetail)
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const { serviceFee } = attractionDetail.ticketDetail;
   const { totalPrice } = attractionDetail;

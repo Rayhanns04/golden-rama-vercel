@@ -262,6 +262,7 @@ export const getStaticProps = async () => {
       fields,
       meta: {
         title: "Tiket Pesawat",
+        description: "Promo tiket Pesawat Murah"
       },
     },
   };

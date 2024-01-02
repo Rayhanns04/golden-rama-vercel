@@ -5455,6 +5455,7 @@ export const AttractionSearchForm = ({
       </Field>
     );
   };
+  
   return (
     <Stack spacing={"18px"}>
       <SearchField />
