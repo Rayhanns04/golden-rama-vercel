@@ -466,6 +466,7 @@ export const getStaticProps = async () => {
       popular,
       meta: {
         title: "Hotel",
+        description: "Promo Booking Hotel Terdekat"
       },
     },
   };
