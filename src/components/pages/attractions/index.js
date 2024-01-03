@@ -427,7 +427,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
                                             return item.timeLabel;
                                           }
                                           return null; 
-                                        })?.every(item => item === null) ? "Pilih time slot":
+                                        })?.every(item => item === null) ? "Pilih Sesi Waktu":
                                         transformedArray?.map((item) => {
                                           if (form.values?.timeSlot === item.uuid) {
                                             return item.timeLabel;
