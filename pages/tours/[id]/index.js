@@ -1,5 +1,7 @@
+import "moment/locale/id";
+import "moment/locale/id";
+
 import {
-  chakra,
   Accordion,
   AccordionButton,
   AccordionIcon,
@@ -8,10 +10,13 @@ import {
   Box,
   Center,
   Divider,
-  Heading,
+  GridItem,
   HStack,
+  Heading,
   IconButton,
   Link,
+  LinkBox,
+  LinkOverlay,
   SimpleGrid,
   Skeleton,
   Spinner,
@@ -24,57 +29,56 @@ import {
   Th,
   Thead,
   Tr,
-  LinkBox,
-  LinkOverlay,
-  useDisclosure,
-  GridItem,
   Wrap,
+  chakra,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { Navigation, Pagination } from "swiper";
-import { Swiper, SwiperSlide } from "swiper/react";
-import Layout from "../../../src/components/layout";
-import {
-  CustomTags,
-  CustomTagsOutlineIcon,
-} from "../../../src/components/tags";
-import WeatherIcon from "../../../public/svg/icons/weather.svg";
-import AirlineIcon from "../../../public/svg/icons/airline.svg";
-import MapIcon from "../../../public/svg/icons/map.svg";
-import LuggageIcon from "../../../public/svg/icons/luggage.svg";
-import AirlineOutlineIcon from "../../../public/svg/icons/airline-outline.svg";
-import InfoIcon from "../../../public/svg/icons/info.svg";
-import ChevronRightIcon from "../../../public/svg/icons/chevron-right.svg";
-import FoodIcon from "../../../public/svg/icons/food.svg";
 import {
   CustomFilterButton,
   CustomOrangeFullWidthButton,
   ShareButton,
   WishlistButton,
 } from "../../../src/components/button";
-import { TourDetailOrder } from "../../../src/components/form";
-import { useRouter } from "next/router";
-import { useQuery } from "@tanstack/react-query";
 import {
-  getSlugTours,
-  getTourBySlugV2,
-  getTourBySlugWithIteneraryV2,
-} from "../../../src/services/tour.service";
+  CustomTags,
+  CustomTagsOutlineIcon,
+} from "../../../src/components/tags";
+import { Fragment, useState } from "react";
+import { Navigation, Pagination } from "swiper";
+import { Swiper, SwiperSlide } from "swiper/react";
 import {
   addDaysWithMonthName,
   convertDateWithMonthName,
   convertRupiah,
   getMealString,
 } from "../../../src/helpers";
-import { Fragment, useState } from "react";
+import {
+  getSlugTours,
+  getTourBySlugV2,
+  getTourBySlugWithIteneraryV2,
+} from "../../../src/services/tour.service";
+
+import AirlineIcon from "../../../public/svg/icons/airline.svg";
+import AirlineOutlineIcon from "../../../public/svg/icons/airline-outline.svg";
+import ChevronRightIcon from "../../../public/svg/icons/chevron-right.svg";
+import FoodIcon from "../../../public/svg/icons/food.svg";
 import Image from "next/image";
+import InfoIcon from "../../../public/svg/icons/info.svg";
+import Layout from "../../../src/components/layout";
+import LuggageIcon from "../../../public/svg/icons/luggage.svg";
+import MapIcon from "../../../public/svg/icons/map.svg";
 import NextLink from "next/link";
-import { useRef } from "react";
-import { useDispatch } from "react-redux";
-import { checkoutData } from "../../../src/state/tour/tour.slice";
 import { TnC } from "../../../src/components/card";
-import { useLoginToast } from "../../../src/hooks";
+import { TourDetailOrder } from "../../../src/components/form";
+import WeatherIcon from "../../../public/svg/icons/weather.svg";
+import { checkoutData } from "../../../src/state/tour/tour.slice";
 import moment from "moment";
 import { redirect } from "next/dist/server/api-utils";
+import { useDispatch } from "react-redux";
+import { useLoginToast } from "../../../src/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
+import { useRouter } from "next/router";
 
 const TourDetail = (props) => {
   const { details, meta } = props;
@@ -437,25 +441,29 @@ const TourDetail = (props) => {
                                     item.flights[0].origin.code
                                   } - ${item.flights[0].destination.code} ${
                                     item.flights[0].departsAt
-                                      ? convertDateWithMonthName(
-                                          item.flights[0].departsAt
-                                        )
+                                      ? moment(
+                                          item.flights[0].departsAt,
+                                          "DD/MM/YYYY HH:mm:ss"
+                                        ).format("ll")
                                       : ""
                                   } - ${
                                     item.flights[0].arrivesAt
-                                      ? convertDateWithMonthName(
-                                          item.flights[0].arrivesAt
-                                        )
+                                      ? moment(
+                                          item.flights[0].arrivesAt,
+                                          "DD/MM/YYYY HH:mm:ss"
+                                        ).format("ll")
                                       : ""
                                   }`}{" "}
                                   {" | "}
-                                  {moment(item.flights[0].departsAt).format(
-                                    "HH:mm"
-                                  )}{" "}
+                                  {moment(
+                                    item.flights[0].departsAt,
+                                    "DD/MM/YYYY HH:mm:ss"
+                                  ).format("HH:mm")}{" "}
                                   -{" "}
-                                  {moment(item.flights[0].arrivesAt).format(
-                                    "HH:mm"
-                                  )}
+                                  {moment(
+                                    item.flights[0].arrivesAt,
+                                    "DD/MM/YYYY HH:mm:ss"
+                                  ).format("HH:mm")}
                                 </Text>
                               </Stack>
                             </Stack>
@@ -964,10 +972,14 @@ export const getServerSideProps = async (ctx) => {
   };
   const details = await getTourBySlugV2(slug);
 
-  if (!details || (details?.departures?.length < 1 || details?.groups?.length < 1)) {
+  if (
+    !details ||
+    details?.departures?.length < 1 ||
+    details?.groups?.length < 1
+  ) {
     return {
       redirect: {
-        destination: '/404',
+        destination: "/404",
         permanent: false,
       },
     };
