@@ -1,5 +1,4 @@
-import "moment/locale/id";
-import "moment/locale/id";
+// import "moment/locale/id";
 
 import {
   Accordion,
@@ -72,13 +71,14 @@ import { TnC } from "../../../src/components/card";
 import { TourDetailOrder } from "../../../src/components/form";
 import WeatherIcon from "../../../public/svg/icons/weather.svg";
 import { checkoutData } from "../../../src/state/tour/tour.slice";
-import moment from "moment";
 import { redirect } from "next/dist/server/api-utils";
 import { useDispatch } from "react-redux";
 import { useLoginToast } from "../../../src/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { useRouter } from "next/router";
+
+// import moment from "moment";
 
 const TourDetail = (props) => {
   const { details, meta } = props;
@@ -434,7 +434,7 @@ const TourDetail = (props) => {
                               {getMealString(item.meal)}
                             </Text>
                           </HStack>
-                          {item.flights.length > 0 && (
+                          {item.flights.length > 0 && item.flights && (
                             <Stack spacing={"6px"} direction={"row"}>
                               <AirlineOutlineIcon />
                               <Stack>
@@ -444,7 +444,7 @@ const TourDetail = (props) => {
                                 >
                                   Detail Penerbangan
                                 </Text>
-                                <Text>
+                                {/* <Text>
                                   {`${item.flights[0].airline.code} | ${
                                     item.flights[0].origin.code
                                   } - ${item.flights[0].destination.code} ${
@@ -472,7 +472,7 @@ const TourDetail = (props) => {
                                     item.flights[0].arrivesAt,
                                     "DD/MM/YYYY HH:mm:ss"
                                   ).format("HH:mm")}
-                                </Text>
+                                </Text> */}
                               </Stack>
                             </Stack>
                           )}
