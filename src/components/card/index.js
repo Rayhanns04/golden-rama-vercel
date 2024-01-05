@@ -875,9 +875,8 @@ export const AttractionItem = ({ item }) => {
                     BASE_URL + item?.photos[0]?.paths["680x325"] ??
                     "Image fetch failed"
                   }
-                  src={
-                    BASE_URL + item?.photos[0]?.paths["680x325"] ??
-                    "https://dummyimage.com/350x150"
+                  src={ item.photos?.length === 0 ? "https://dummyimage.com/350x150" :
+                    BASE_URL + item?.photos[0]?.paths["680x325"]
                   }
                 />
               )}

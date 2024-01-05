@@ -16,6 +16,8 @@ import {
   Heading,
   HStack,
   ListItem,
+  Radio,
+  RadioGroup,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -52,6 +54,7 @@ import { useLoginToast } from "../../../hooks";
 export const Detail = ({ ticket, attraction, query, id, type, index }) => {
   const { itinerary } = attraction;
   const { title, address, description, uuid } = ticket;
+  // console.log('itemku', type)
   const { isOpen, onOpen, onClose } = useDisclosure();
   // const Total = Total(item, attraction, uuid, participantsKeyObject);
   const allowedParticipants = ticket.ticketTypes.filter((item) => {
@@ -67,8 +70,29 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
   // console.log(attraction, "attraction");
   // console.log(ticket, "ticket");
   const [ticketByDate, setTicketByDate] = React.useState({});
-
   const [totalTicketByDate, setTotalTicketByDate] = React.useState(0);
+
+  // Time Slot
+  function transformTimeslots(timeslots) {
+    return timeslots.map(slot => {
+        const startTime = slot.startTime.substring(0, 5);
+        const endTime = slot.endTime.substring(0, 5);
+        const timeLabel = `${startTime} - ${endTime}`;
+
+        return {
+            uuid: slot.uuid,
+            timeLabel: timeLabel
+        };
+    });
+  }
+
+  let transformedArray = transformTimeslots(type?.data?.timeslots);
+  // console.log('itemku', type?.data?.timeslots)
+  if(transformedArray?.length === 0) {
+    transformedArray = null
+  }
+
+  // console.log('itemku10', transformedArray)
 
   const handleTicketByDate = (date) => {
     setTicketByDate(date);
@@ -110,6 +134,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
             departure_date: convertDate,
             ticketId,
             productTypes: ticket,
+            timeSlot: values?.timeSlot,
             totalPrice: totalTicketByDate,
             // ticketDetail: data,
             ticketDetail: ticketByDate,
@@ -122,6 +147,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
       console.log(error);
     }
   };
+
   const today = new Date();
   const todayDate = date(today, "yyyy-MM-dd");
   return (
@@ -362,6 +388,91 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
                         </Field>
                       </Stack>
                     </Stack>
+                    {
+                      transformedArray && (
+                        <Stack direction={"row"}>
+                          <Flex
+                            flexDirection={"column"}
+                            alignItems={"center"}
+                            position={"relative"}>
+                            <Circle size={2} bg={"brand.blue.400"} />
+                            <Divider
+                              my={1}
+                              orientation="vertical"
+                              variant={"dashed"}
+                              borderColor={"brand.blue.400"}
+                            />
+                          </Flex>
+                          <Stack flexGrow={1} mb={4}>
+                            <Text
+                              color={"brand.blue.400"}
+                              fontWeight={"bold"}
+                              fontSize={{ base: "md", md: "lg" }}>
+                              Sesi Waktu
+                            </Text>
+                            <Field name="timeSlot">
+                              {({ field, form }) => {
+                                // console.log('itemku11', field, form.values)                                
+                                return (
+                                  <FormControl >
+                                    <CustomDropdown
+                                      responsive
+                                      bg={"white"}
+                                      title={"Pilih Sesi Waktu"}
+                                      // placeholder={"Pilih time slot"}
+                                      value={form.values.timeSlot}
+                                      label={
+                                        transformedArray?.map((item) => {
+                                          if (form.values?.timeSlot === item.uuid) {
+                                            return item.timeLabel;
+                                          }
+                                          return null; 
+                                        })?.every(item => item === null) ? "Pilih Sesi Waktu":
+                                        transformedArray?.map((item) => {
+                                          if (form.values?.timeSlot === item.uuid) {
+                                            return item.timeLabel;
+                                          }
+                                        }) 
+                                      }>
+                                      <RadioGroup
+                                        onChange={() => form.setFieldValue("timeSlot", "")}
+                                        value={form.values?.timeSlot}
+                                      >
+                                        <Stack spacing={5} py={5}>
+                                          {transformedArray &&
+                                            transformedArray?.map((item, index) => {
+                                              // console.log('itemku12', form.values?.timeSlot, item.uuid, form.values?.timeSlot === item.uuid)
+                                              return (
+                                                <>
+                                                  {
+                                                    <Radio
+                                                      {...field}
+                                                      flexDirection={"row-reverse"}
+                                                      colorScheme={"brand.blue"}
+                                                      justifyContent={"space-between"}
+                                                      key={index}
+                                                      value={item.uuid}
+                                                      isChecked={form.values?.timeSlot === item.uuid}
+                                                    >
+                                                      {item.timeLabel}
+                                                    </Radio>
+                                                  }
+                                                </>
+                                              )
+                                            }
+                                          )}
+                                        </Stack>
+                                      </RadioGroup>
+                                    </CustomDropdown>
+                                  </FormControl>
+                                )
+                              }
+                              }
+                            </Field>
+                          </Stack>
+                        </Stack>
+                      )
+                    }
                     <Stack direction={"row"}>
                       <Flex
                         flexDirection={"column"}
@@ -369,12 +480,6 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
                         position={"relative"}
                       >
                         <Circle size={2} bg={"brand.blue.400"} />
-                        {/* <Divider
-              my={1}
-              orientation="vertical"
-              variant={"dashed"}
-              borderColor={"brand.blue.400"}
-            /> */}
                       </Flex>
                       <Stack flexGrow={1} pb={"18px"}>
                         <Text
@@ -495,6 +600,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
                               }}
                             </Field>
                           ))}
+                          
                           {/* <Field name={"participants.children"}>
                           {({ form }) => (
                             <FormControl>
