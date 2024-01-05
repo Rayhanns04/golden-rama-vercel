@@ -1,5 +1,4 @@
 import {
-  chakra,
   Accordion,
   AccordionButton,
   AccordionIcon,
@@ -13,8 +12,8 @@ import {
   CloseButton,
   Divider,
   Flex,
-  Heading,
   HStack,
+  Heading,
   Icon,
   IconButton,
   Link,
@@ -23,32 +22,23 @@ import {
   SimpleGrid,
   Skeleton,
   SkeletonCircle,
+  Spinner,
   Stack,
+  Tag,
   Text,
-  useBreakpointValue,
-  useClipboard,
-  useDisclosure,
   VStack,
   Wrap,
   WrapItem,
-  Tag,
-  Spinner,
+  chakra,
+  useBreakpointValue,
+  useClipboard,
+  useDisclosure,
 } from "@chakra-ui/react";
-import Image from "next/image";
-import React, { Fragment, useEffect, useRef } from "react";
-import NextLink from "next/link";
-import { useDispatch, useSelector } from "react-redux";
+import { CustomFilterButton, CustomOrangeFullWidthButton } from "../button";
 import { CustomTags, CustomTagsOutlineIcon } from "../tags";
-import WeatherIcon from "../../../public/svg/icons/weather.svg";
-import AirlineIcon from "../../../public/svg/icons/airline.svg";
-import CruiseIcon from "../../../public/svg/icons/cruise.svg";
-import BookmarkIcon from "../../../public/svg/icons/bookmark.svg";
-import InfoIcon from "../../../public/svg/icons/info.svg";
-import PeopleIcon from "/public/svg/icons/user-multiple.svg";
-import ChevronRightIcon from "../../../public/svg/icons/chevron-right.svg";
-import AirplaneIcon from "../../../public/svg/icons/airline-outline.svg";
-import DateIcon from "../../../public/svg/icons/date.svg";
-import UserIcon from "../../../public/svg/icons/user-multiple.svg";
+import { Field, Form, Formik, useFormikContext } from "formik";
+import React, { Fragment, useEffect, useRef } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import {
   addDaysWithMonthName,
   convertArrayAirlines,
@@ -63,46 +53,58 @@ import {
   stringSplit,
   sumPriceFlight,
 } from "../../helpers";
-import ArrowRightIcon from "../../../public/svg/chevron-right.svg";
-import FacebookIcon from "../../../public/svg/footer/icons/facebook.svg";
-import TwitterIcon from "../../../public/svg/footer/icons/twitter.svg";
-import InstagramIcon from "../../../public/svg/footer/icons/instagram.svg";
-import LinkIcon from "../../../public/svg/footer/icons/link.svg";
-import NoResultsIcon from "../../../public/svg/noresults.svg";
-import NotFoundIcon from "../../../public/svg/notfound.svg";
-import UnauthorizedIcon from "../../../public/svg/unauthorized.svg";
-import WifiIcon from "../../../public/svg/icons/wifi.svg";
-import BreakfastIcon from "../../../public/svg/icons/cutlery.svg";
-import PoolIcon from "../../../public/svg/icons/pool.svg";
-import AcIcon from "../../../public/svg/icons/hotel/ac.svg";
-import ShowerIcon from "../../../public/svg/icons/hotel/shower.svg";
-import StarOutlineIcon from "../../../public/svg/icons/star-outline.svg";
-import TagsIcon from "../../../public/svg/icons/tags.svg";
-import MapPinIcon from "../../../public/svg/icons/map-pin.svg";
-import { CustomFilterButton, CustomOrangeFullWidthButton } from "../button";
-import { convertToRupiah } from "../../helpers/delimeterRupiah";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Field, Form, Formik, useFormikContext } from "formik";
-import date from "../../helpers/date";
-import { getCountriesFromIsoCode } from "../../services/country.service";
-import { useQuery } from "@tanstack/react-query";
-import _ from "underscore";
-import ChevronFilledDown from "../../../public/svg/icons/chevron-filled-down.svg";
-import { getToursV2 } from "../../services/tour.service";
-import { CustomDivider } from "../divider";
-import { capitalizeFirstLetter } from "../../helpers/capitalizeFirstLetter";
-import { useRouter } from "next/router";
 import {
   getAttractionsDetailTicket,
   getStateById,
 } from "../../services/attraction.service";
-import { addDays } from "date-fns";
-import { checkoutData } from "../../state/insurance/insurance.slice";
-import { getAdditionalCoverage } from "../../services/insurance.service";
-import { detail } from "../../state/promo/promo.slice";
-import { getHotelDetail } from "../../services/hotel.service";
-import { useLoginToast } from "../../hooks";
+import { useDispatch, useSelector } from "react-redux";
+
+import AcIcon from "../../../public/svg/icons/hotel/ac.svg";
+import AirlineIcon from "../../../public/svg/icons/airline.svg";
+import AirplaneIcon from "../../../public/svg/icons/airline-outline.svg";
+import ArrowRightIcon from "../../../public/svg/chevron-right.svg";
+import BookmarkIcon from "../../../public/svg/icons/bookmark.svg";
+import BreakfastIcon from "../../../public/svg/icons/cutlery.svg";
+import ChevronFilledDown from "../../../public/svg/icons/chevron-filled-down.svg";
+import ChevronRightIcon from "../../../public/svg/icons/chevron-right.svg";
+import CruiseIcon from "../../../public/svg/icons/cruise.svg";
+import { CustomDivider } from "../divider";
+import DateIcon from "../../../public/svg/icons/date.svg";
+import FacebookIcon from "../../../public/svg/footer/icons/facebook.svg";
 import { INSURANCE_BENEFITS } from "../../constants/insurance";
+import Image from "next/image";
+import InfoIcon from "../../../public/svg/icons/info.svg";
+import InstagramIcon from "../../../public/svg/footer/icons/instagram.svg";
+import LinkIcon from "../../../public/svg/footer/icons/link.svg";
+import MapPinIcon from "../../../public/svg/icons/map-pin.svg";
+import NextLink from "next/link";
+import NoResultsIcon from "../../../public/svg/noresults.svg";
+import NotFoundIcon from "../../../public/svg/notfound.svg";
+import PeopleIcon from "/public/svg/icons/user-multiple.svg";
+import PoolIcon from "../../../public/svg/icons/pool.svg";
+import ShowerIcon from "../../../public/svg/icons/hotel/shower.svg";
+import StarOutlineIcon from "../../../public/svg/icons/star-outline.svg";
+import TagsIcon from "../../../public/svg/icons/tags.svg";
+import TwitterIcon from "../../../public/svg/footer/icons/twitter.svg";
+import UnauthorizedIcon from "../../../public/svg/unauthorized.svg";
+import UserIcon from "../../../public/svg/icons/user-multiple.svg";
+import WeatherIcon from "../../../public/svg/icons/weather.svg";
+import WifiIcon from "../../../public/svg/icons/wifi.svg";
+import _ from "underscore";
+import { addDays } from "date-fns";
+import { capitalizeFirstLetter } from "../../helpers/capitalizeFirstLetter";
+import { checkoutData } from "../../state/insurance/insurance.slice";
+import { convertToRupiah } from "../../helpers/delimeterRupiah";
+import date from "../../helpers/date";
+import { detail } from "../../state/promo/promo.slice";
+import { getAdditionalCoverage } from "../../services/insurance.service";
+import { getCountriesFromIsoCode } from "../../services/country.service";
+import { getHotelDetail } from "../../services/hotel.service";
+import { getToursV2 } from "../../services/tour.service";
+import { truncateString } from "../../helpers/utils";
+import { useLoginToast } from "../../hooks";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -443,6 +445,15 @@ export const TourItem = ({ item }) => {
             // minH={{ base: 400, md: "auto" }}
           >
             <Box m={0} minH={150} w={"100%"} position={"relative"}>
+              {/* <Image
+                layout={"fill"}
+                objectFit={"cover"}
+                alt={name}
+                src={
+                  (item.pictures && item?.pictures[0]?.url) ??
+                  "https://dummyimage.com/350x150"
+                }
+              /> */}
               <Image
                 layout={"fill"}
                 objectFit={"cover"}
@@ -451,7 +462,16 @@ export const TourItem = ({ item }) => {
                   (item.pictures && item?.pictures[0]?.url) ??
                   "https://dummyimage.com/350x150"
                 }
+                unoptimized
+                placeholder="empty"
+                // TODO:Handle image broken dengan placeholder
+                onError={(e) => {
+                  e.target.src =
+                    "https://stag-web.goldenrama.com/_next/image?url=%2Fjpg%2Fheader-tour.jpg&w=1920&q=75";
+                  e.target.onerror = null; // Prevent infinite loop if the fallback image also fails to load
+                }}
               />
+
               <IconButton
                 hidden
                 zIndex={1}
@@ -489,7 +509,9 @@ export const TourItem = ({ item }) => {
                 minH={{ base: "auto", md: "60px" }}
                 maxH={{ base: "auto", md: "60px" }}
               >
-                {name}
+                {/* Todo: Truncate title menjadi maks 60 karakter */}
+                {truncateString(name, 60)}
+                {/* This is Tours title */}
               </Heading>
               <HStack spacing={"20px"}>
                 {departures.duration && (
@@ -1332,22 +1354,23 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
   const additionalCoverage = useQuery(["getAdditionalCoverage", props], () =>
     getAdditionalCoverage(insuranceDetail)
   );
-  
-  const dataResult = additionalCoverage?.data
+
+  const dataResult = additionalCoverage?.data;
   let dataAdditionalCoverage = {};
 
-  if(dataResult){
+  if (dataResult) {
     const newData = dataResult?.data?.map((item) => {
-      const correspondingCoverage = dataResult?.priceOverview?.UsingCoverages.find(
-        (coverage) => coverage.Name === item?.Name
-      );
-    
+      const correspondingCoverage =
+        dataResult?.priceOverview?.UsingCoverages.find(
+          (coverage) => coverage.Name === item?.Name
+        );
+
       return {
         ...item,
         MainRate: correspondingCoverage ? correspondingCoverage?.Premium : 0,
       };
     });
-    
+
     // const result = {
     //   data: newData,
     //   priceOverview: {
@@ -1356,8 +1379,8 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     // };
 
     dataAdditionalCoverage = {
-      data: newData
-    }
+      data: newData,
+    };
   }
 
   const dispatch = useDispatch();
@@ -1374,7 +1397,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     );
     router.replace("/insurances/order-details", undefined, { shallow: true });
   }
-  
+
   const SelectionButton = ({ title, children, ...props }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const formik = useFormikContext();
@@ -1410,7 +1433,6 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
             return item.ID.toString();
           }) ?? [],
       }}
-
       onSubmit={handleSubmit}
     >
       <Form>
@@ -1429,61 +1451,65 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
               <Stack m={"-24px"} p={"24px"} spacing="24px" bg="brand.blue.100">
                 <>
                   {dataAdditionalCoverage?.data
-                      // ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
-                      ?.map((item, index) => (
-                    <Stack
-                      spacing={"12px"}
-                      key={index}
-                      bg={"white"}
-                      rounded="xl"
-                      p={"16px"}
-                    >
-                      <Stack>
-                        <Text
-                          fontSize={"md"}
-                          color={"neutral.text.high"}
-                          fontWeight="bold"
-                        >
-                          {item.Name}
-                        </Text>
-                        <Text fontSize={"sm"}>{item.Description}</Text>
-                      </Stack>
-                      <Divider variant={"dashed"} />
-                      <Field type="checkbox" name="CoverageIDs">
-                        {({ field, form }) => (
-                          <Checkbox
-                            {...field}
-                            isChecked={form.values[field.name].includes(
-                              item.ID.toString()
-                            )}
-                            value={item.ID}
-                            mt={"12px"}
-                            spacing={0}
-                            // {...field}
-                            alignItems={"start"}
-                            size={"md"}
-                            // isChecked={form.values.reschedule}
-                            colorScheme="brand.blue"
-                            w="full"
-                            flexDir={"row-reverse"}
+                    // ?.filter((item) => item.Name.replace(/\s/g, '') != "ProteksiCovid-19/Covid-19Protection")
+                    ?.map((item, index) => (
+                      <Stack
+                        spacing={"12px"}
+                        key={index}
+                        bg={"white"}
+                        rounded="xl"
+                        p={"16px"}
+                      >
+                        <Stack>
+                          <Text
+                            fontSize={"md"}
+                            color={"neutral.text.high"}
+                            fontWeight="bold"
                           >
-                            <Box justifyContent="space-between">
-                              <Text
-                                fontSize={{ base: "sm", md: "md" }}
-                                color="brand.orange.400"
-                                fontWeight={"bold"}
-                              >
-                                IDR{" "}
-                                {item.MainRate.toLocaleString("id-ID", {
-                                  maximumFractionDigits: 0,
-                                })} {item.Name === "Proteksi Covid-19/Covid- 19 Protection" ? "" : ""}
-                              </Text>
-                            </Box>
-                          </Checkbox>
-                        )}
-                      </Field>
-                    </Stack>
-                  ))}
+                            {item.Name}
+                          </Text>
+                          <Text fontSize={"sm"}>{item.Description}</Text>
+                        </Stack>
+                        <Divider variant={"dashed"} />
+                        <Field type="checkbox" name="CoverageIDs">
+                          {({ field, form }) => (
+                            <Checkbox
+                              {...field}
+                              isChecked={form.values[field.name].includes(
+                                item.ID.toString()
+                              )}
+                              value={item.ID}
+                              mt={"12px"}
+                              spacing={0}
+                              // {...field}
+                              alignItems={"start"}
+                              size={"md"}
+                              // isChecked={form.values.reschedule}
+                              colorScheme="brand.blue"
+                              w="full"
+                              flexDir={"row-reverse"}
+                            >
+                              <Box justifyContent="space-between">
+                                <Text
+                                  fontSize={{ base: "sm", md: "md" }}
+                                  color="brand.orange.400"
+                                  fontWeight={"bold"}
+                                >
+                                  IDR{" "}
+                                  {item.MainRate.toLocaleString("id-ID", {
+                                    maximumFractionDigits: 0,
+                                  })}{" "}
+                                  {item.Name ===
+                                  "Proteksi Covid-19/Covid- 19 Protection"
+                                    ? ""
+                                    : ""}
+                                </Text>
+                              </Box>
+                            </Checkbox>
+                          )}
+                        </Field>
+                      </Stack>
+                    ))}
                 </>
               </Stack>
             </SelectionButton>
@@ -2301,7 +2327,6 @@ export const FlightListItem = ({
       }
     );
 
-
     return (
       data && (
         <>
@@ -2893,7 +2918,7 @@ export const FlightPriceDetails = ({
   );
 };
 
-export const  FlightDetails = ({ query, data, ...props }) => {
+export const FlightDetails = ({ query, data, ...props }) => {
   return (
     <Box
       {...props}
@@ -2940,13 +2965,7 @@ export const  FlightDetails = ({ query, data, ...props }) => {
                 borderRadius="8px"
               >
                 <Text fontWeight="semibold">
-                  {`${item.OriginCityName} (${
-                    item.Origin
-                  }) - ${
-                    item.DestinationCityName
-                  } (${
-                    item.Destination
-                  })`}
+                  {`${item.OriginCityName} (${item.Origin}) - ${item.DestinationCityName} (${item.Destination})`}
                 </Text>
                 <Box alignContent={"center"}>
                   <Divider variant={"dashed"} />
@@ -2968,9 +2987,7 @@ export const  FlightDetails = ({ query, data, ...props }) => {
                         "dd LLL yyyy"
                       )}, ${convertTimeFlightPage(
                         item.DepartDateTime
-                      )} - ${convertTimeFlightPage(
-                        item.ArriveDateTime
-                      )}`,
+                      )} - ${convertTimeFlightPage(item.ArriveDateTime)}`,
                     },
                     {
                       i: "/svg/flights/people.svg",
@@ -3023,13 +3040,13 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
       slidesOffsetAfter={24}
       slidesPerView={1}
       cssMode={false}
-      style={{ width: '100%' }}
+      style={{ width: "100%" }}
     >
       {item.map((item, index) => (
         <SwiperSlide key={index} style={{ maxWidth: "280px" }}>
           <Formik initialValues={item} onSubmit={handleClick}>
             {(formik) => (
-              <LinkBox p={"16px"} bg={"white"} width={'100%'} rounded={"xl"}>
+              <LinkBox p={"16px"} bg={"white"} width={"100%"} rounded={"xl"}>
                 <Stack direction={"row"} justifyContent={"space-between"}>
                   <Stack direction={"column"}>
                     <HStack alignItems={"start"}>
@@ -3088,7 +3105,7 @@ export const FlightHistory = ({ item, setItem, handleClick }) => {
                         {item.flights[0].adult +
                           item.flights[0].child +
                           item.flights[0].infant}{" "}
-                        Penumpang, {getClassCode([`${item.flights[0].class}`])}  
+                        Penumpang, {getClassCode([`${item.flights[0].class}`])}
                       </Text>
                       <LinkOverlay href="#" onClick={formik.handleSubmit} />
                     </Stack>
