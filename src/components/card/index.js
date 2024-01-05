@@ -856,6 +856,8 @@ export const AttractionItem = ({ item }) => {
   const { title } = item;
   const BASE_URL = item.photosUrl;
 
+  // console.log('itemku', item)
+
   return (
     <NextLink href={`/attractions/${item.uuid}`}>
       <a rel="canonical">
@@ -876,9 +878,8 @@ export const AttractionItem = ({ item }) => {
                     BASE_URL + item?.photos[0]?.paths["680x325"] ??
                     "Image fetch failed"
                   }
-                  src={
-                    BASE_URL + item?.photos[0]?.paths["680x325"] ??
-                    "https://dummyimage.com/350x150"
+                  src={ (item.photos?.length === 0 || ((((item?.photos[0]?.paths["680x325"] === null) && (item?.photos[0]?.paths["original"] === null))))) ? "https://dummyimage.com/350x150" :
+                    BASE_URL + (item?.photos[0]?.paths["680x325"] === null ? item?.photos[0]?.paths["original"] : item?.photos[0]?.paths["680x325"]) 
                   }
                 />
               )}
