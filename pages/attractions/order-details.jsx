@@ -126,7 +126,7 @@ const OrderDetails = () => {
       productTypeUuid: attractionDetail.ticketId,
       timeSlotUuid:
         attractionDetail.ticketDetail.timeslots.length > 0
-          ? attractionDetail.ticketDetail.timeslots[0].uuid
+          ? attractionDetail.timeSlot
           : null,
       arrivalDate: attractionDetail.departure_date,
       partnerReference: "",

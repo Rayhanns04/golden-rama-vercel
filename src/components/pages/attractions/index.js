@@ -70,7 +70,6 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
   // console.log(attraction, "attraction");
   // console.log(ticket, "ticket");
   const [ticketByDate, setTicketByDate] = React.useState({});
-
   const [totalTicketByDate, setTotalTicketByDate] = React.useState(0);
 
   // Time Slot
@@ -88,6 +87,7 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
   }
 
   let transformedArray = transformTimeslots(type?.data?.timeslots);
+  // console.log('itemku', type?.data?.timeslots)
   if(transformedArray?.length === 0) {
     transformedArray = null
   }
