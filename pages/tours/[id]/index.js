@@ -1,5 +1,3 @@
-// import "moment/locale/id";
-
 import {
   Accordion,
   AccordionButton,
@@ -51,6 +49,7 @@ import {
   convertRupiah,
   getMealString,
 } from "../../../src/helpers";
+import { format, parse } from "date-fns";
 import {
   getSlugTours,
   getTourBySlugV2,
@@ -77,8 +76,6 @@ import { useLoginToast } from "../../../src/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { useRouter } from "next/router";
-
-// import moment from "moment";
 
 const TourDetail = (props) => {
   const { details, meta } = props;
@@ -130,6 +127,38 @@ const TourDetail = (props) => {
 
   const handleSelect = (value) => {
     setDeparture(parseInt(value));
+  };
+
+  const formatTime = (dateString) => {
+    const dateStr = dateString;
+
+    // Parse the date string into a Date object
+    const date = new Date(
+      dateStr.replace(
+        /(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})/,
+        "$3-$2-$1T$4:$5:$6"
+      )
+    );
+
+    // Format the date using date-fns
+    const formattedTime = format(date, "HH:mm");
+    return formattedTime;
+  };
+
+  const formatDate = (dateString) => {
+    const dateStr = dateString;
+
+    // Parse the date string into a Date object
+    const date = new Date(
+      dateStr.replace(
+        /(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})/,
+        "$3-$2-$1T$4:$5:$6"
+      )
+    );
+
+    // Format the date using date-fns
+    const formattedTime = format(date, "dd MMM yyyy");
+    return formattedTime;
   };
 
   return (
@@ -444,35 +473,24 @@ const TourDetail = (props) => {
                                 >
                                   Detail Penerbangan
                                 </Text>
-                                {/* <Text>
+
+                                {/* Todo: fix format date */}
+                                <Text>
                                   {`${item.flights[0].airline.code} | ${
                                     item.flights[0].origin.code
                                   } - ${item.flights[0].destination.code} ${
                                     item.flights[0].departsAt
-                                      ? moment(
-                                          item.flights[0].departsAt,
-                                          "DD/MM/YYYY HH:mm:ss"
-                                        ).format("ll")
+                                      ? formatDate(item.flights[0].departsAt)
                                       : ""
                                   } - ${
                                     item.flights[0].arrivesAt
-                                      ? moment(
-                                          item.flights[0].arrivesAt,
-                                          "DD/MM/YYYY HH:mm:ss"
-                                        ).format("ll")
+                                      ? formatDate(item.flights[0].arrivesAt)
                                       : ""
                                   }`}{" "}
                                   {" | "}
-                                  {moment(
-                                    item.flights[0].departsAt,
-                                    "DD/MM/YYYY HH:mm:ss"
-                                  ).format("HH:mm")}{" "}
-                                  -{" "}
-                                  {moment(
-                                    item.flights[0].arrivesAt,
-                                    "DD/MM/YYYY HH:mm:ss"
-                                  ).format("HH:mm")}
-                                </Text> */}
+                                  {formatTime(item.flights[0].departsAt)} -{" "}
+                                  {formatTime(item.flights[0].arrivesAt)}
+                                </Text>
                               </Stack>
                             </Stack>
                           )}
@@ -978,13 +996,34 @@ export const getServerSideProps = async (ctx) => {
   let slug = {
     tourSlug: id,
   };
-  const details = await getTourBySlugV2(slug);
 
-  if (
-    !details ||
-    details?.departures?.length < 1 ||
-    details?.groups?.length < 1
-  ) {
+  try {
+    const details = await getTourBySlugV2(slug);
+
+    if (
+      !details ||
+      details?.departures?.length < 1 ||
+      details?.groups?.length < 1
+    ) {
+      return {
+        redirect: {
+          destination: "/404",
+          permanent: false,
+        },
+      };
+    }
+
+    return {
+      props: {
+        details,
+        meta: {
+          title: details?.name || "",
+          description: details?.description || "",
+          image: details?.pictures?.[0]?.thumbnailUrl || "",
+        },
+      },
+    };
+  } catch (error) {
     return {
       redirect: {
         destination: "/404",
@@ -992,15 +1031,4 @@ export const getServerSideProps = async (ctx) => {
       },
     };
   }
-
-  return {
-    props: {
-      details,
-      meta: {
-        title: details?.name || "",
-        description: details?.description || "",
-        image: details?.pictures?.[0]?.thumbnailUrl || "",
-      },
-    },
-  };
 };

@@ -1,7 +1,7 @@
-import axios from "axios";
 import _ from "underscore";
-import { getTourAirlineAvailable } from "../helpers";
+import axios from "axios";
 import { encryptData } from "../helpers/crypto";
+import { getTourAirlineAvailable } from "../helpers";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL_API;
 
@@ -184,7 +184,7 @@ export const getTourBySlugV2 = async (slug) => {
     // response.data.data.tour.departures = departureDate;
     return Promise.resolve(response.data.data.tour);
   } catch (error) {
-    console.error(error);
+    // console.error(error);
 
     return Promise.reject(error);
   }
