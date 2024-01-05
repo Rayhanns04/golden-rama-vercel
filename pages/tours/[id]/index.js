@@ -181,6 +181,14 @@ const TourDetail = (props) => {
                               src={item.url}
                               alt={item.title}
                               layout={"fill"}
+                              unoptimized
+                              placeholder="empty"
+                              // TODO:Handle image broken dengan placeholder
+                              onError={(e) => {
+                                e.target.src =
+                                  "https://stag-web.goldenrama.com/_next/image?url=%2Fjpg%2Fheader-tour.jpg&w=1920&q=75";
+                                e.target.onerror = null; // Prevent infinite loop if the fallback image also fails to load
+                              }}
                             />
                           </Box>
                         </SwiperSlide>
