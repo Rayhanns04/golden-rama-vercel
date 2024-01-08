@@ -7,38 +7,39 @@ import {
   Text,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import Image from "next/image";
-import NextLink from "next/link";
+import { Form, Formik } from "formik";
 import React, { useEffect } from "react";
-import Layout from "../../src/components/layout";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { useRouter } from "next/router";
-import { FormTourSearch } from "../../src/components/form";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { addMonths, parseISO } from "date-fns";
 import {
+  getTourAirlines,
+  getTourAreas,
   getTourTagsV2,
   getToursV2,
-  getTourAreas,
-  getTourAirlines,
 } from "../../src/services/tour.service";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+
 import { CustomToursTabs } from "../../src/components/tab";
-import { Form, Formik } from "formik";
-import { useDispatch } from "react-redux";
-import { addMonths, parseISO } from "date-fns";
-import { resetDataTour } from "../../src/state/tour/tour.slice";
-import { resetDataFlight } from "../../src/state/order/order.slice";
-import { useLocalStorage } from "../../src/hooks";
-import { TourHistory } from "../../src/components/card";
+import { FormTourSearch } from "../../src/components/form";
+import Image from "next/image";
+import Layout from "../../src/components/layout";
+import NextLink from "next/link";
 import { Pagination } from "swiper";
+import { TourHistory } from "../../src/components/card";
+import { compact } from "underscore";
 import { convertDatefilterTour } from "../../src/helpers";
 import date from "../../src/helpers/date";
-import { compact } from "underscore";
+import { resetDataFlight } from "../../src/state/order/order.slice";
+import { resetDataTour } from "../../src/state/tour/tour.slice";
+import { useDispatch } from "react-redux";
+import { useLocalStorage } from "../../src/hooks";
+import { useRouter } from "next/router";
 
 const Tours = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   // console.log('itemtour1', props)
-  
+
   const { tour_type, sort, tour_duration, meta } = props;
 
   const [history, setHistory] = useLocalStorage("tour_search", []);
@@ -229,10 +230,32 @@ const Tours = (props) => {
               ? Array.from({ length: 6 })
               : areas.data
             ).map((area, index) => {
+
+              function getImageUrl(data) {
+                const formats = data?.attributes?.formats;
+
+                const preferredFormats = [
+                  "small",
+                  "thumbnail",
+                  "medium",
+                  "large",
+                ];
+
+                for (const format of preferredFormats) {
+                  if (formats?.[format]) {
+                    return (
+                      process.env.NEXT_PUBLIC_BACKEND_URL + formats[format].url
+                    );
+                  }
+                }
+
+                return "https://dummyimage.com/140x170/000/fff&text=area";
+              }
+
               const imageUrl = area?.attributes.image?.data
-                ? process.env.NEXT_PUBLIC_BACKEND_URL +
-                  area?.attributes.image?.data?.attributes.formats.small.url
+                ? getImageUrl(area.attributes.image.data)
                 : "https://dummyimage.com/140x170/000/fff&text=area";
+
               return (
                 <SwiperSlide
                   key={index}
@@ -271,6 +294,14 @@ const Tours = (props) => {
                             layout="fill"
                             objectPosition={"center"}
                             objectFit="cover"
+                            unoptimized
+                            placeholder="empty"
+                            // Handle image broken dengan placeholder
+                            onError={(e) => {
+                              e.target.src =
+                                "https://stag-web.goldenrama.com/_next/image?url=%2Fjpg%2Fheader-tour.jpg&w=1920&q=75";
+                              e.target.onerror = null; // Prevent infinite loop if the fallback image also fails to load
+                            }}
                           />
                         </Box>
                         <Box
@@ -343,8 +374,6 @@ const Tours = (props) => {
 
 export default Tours;
 
-
-
 export const getServerSideProps = async (context) => {
   try {
     const tour_type = await getTourTagsV2();
@@ -377,10 +406,10 @@ export const getServerSideProps = async (context) => {
   } catch (error) {
     return {
       props: {
-        tour_type: '',
-        tour_duration: '',
-        sort: '',
-        meta: '',
+        tour_type: "",
+        tour_duration: "",
+        sort: "",
+        meta: "",
         notFound: true,
       },
     };
