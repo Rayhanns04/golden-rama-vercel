@@ -103,7 +103,7 @@ export function convertRupiah(price = null) {
 export function convertTimeToCustomFormat(inputTime) {
   const timeRegex = /^(\d{2}):(\d{2})$/;
   if (timeRegex.test(inputTime)) {
-    const [hours, minutes] = inputTime.split(':');  
+    const [hours, minutes] = inputTime.split(":");
     const formattedTime = `${parseInt(hours)}j ${parseInt(minutes)}m`;
     return formattedTime;
   } else {
@@ -139,7 +139,9 @@ export function convertDateFlight(date) {
 
 export function convertDateFlightWithYear(date) {
   const newDate = new Date(date);
-  const result = `${newDate.getFullYear()}-${newDate.getMonth() + 1}-${newDate.getDate()}`;
+  const result = `${newDate.getFullYear()}-${
+    newDate.getMonth() + 1
+  }-${newDate.getDate()}`;
   // console.log(result, 'result');
   return result;
 }
@@ -162,7 +164,7 @@ export function convertTimeFlightPage(date) {
 }
 
 export function getClassCode(code) {
-  const codeNow = code[0]
+  const codeNow = code[0];
   const cabinClass = [
     { label: "Economy", value: "Economy" },
     { label: "Premium Economy", value: "PremiumEconomy" },
@@ -350,19 +352,20 @@ export function sumTaxPrice(prices) {
 }
 
 export function convertArrayAirlines(airlines) {
+  let result = "";
 
-  let result = ''
-  
-  if(airlines?.IsConnecting === false){
-    result = `${airlines.AirlineName} • ${airlines.Number}`
+  if (airlines?.IsConnecting === false) {
+    result = `${airlines.AirlineName} • ${airlines.Number}`;
   } else {
-    airlines.ConnectingFlights.map((it, index)=>{
-        result = `${it?.AirlineName} • ${it?.Number} ${airlines.ConnectingFlights?.length - 1 === index ? '' : '|' }`
-    })
+    airlines.ConnectingFlights.map((it, index) => {
+      result = `${it?.AirlineName} • ${it?.Number} ${
+        airlines.ConnectingFlights?.length - 1 === index ? "" : "|"
+      }`;
+    });
   }
   return result;
 }
-    
+
 export function convertDateMonth(date) {
   const newDate = new Date(date);
   const result = `${newDate.getDate()} ${monthNames[newDate.getMonth()]}`;
@@ -582,8 +585,8 @@ export function simplifyQuerySearch(query) {
 }
 
 export function simplifyJourneysFlight(journeys, query, isDomestic) {
-  let payload = {}
-  if(journeys?.IsConnecting === false){
+  let payload = {};
+  if (journeys?.IsConnecting === false) {
     payload = {
       isInternational: `${!isDomestic}`,
       airline: journeys?.Airline,
@@ -596,22 +599,22 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
       tax: journeys?.ClassObjects[0]?.Tax,
       fareBasisCode: journeys?.ClassObjects[0]?.FareBasisCode,
       code: journeys?.ClassObjects[0]?.Code,
-      extraData: journeys?.ClassObjects[0]?.ExtraData
+      extraData: journeys?.ClassObjects[0]?.ExtraData,
     };
   } else {
-    const classId = []
-    const flightId = []
-    const tax = []
-    const fare = []
-    const code = []
-    
+    const classId = [];
+    const flightId = [];
+    const tax = [];
+    const fare = [];
+    const code = [];
+
     journeys?.ConnectingFlights.map(async (item) => {
-      classId.push(item?.ClassObjects[0]?.Id)
-      flightId.push(item?.ClassObjects[0]?.FlightId)
-      tax.push(item?.ClassObjects[0]?.Tax)
-      fare.push(item?.ClassObjects[0]?.Fare)
-      code.push(item?.ClassObjects[0]?.Code)
-    })
+      classId.push(item?.ClassObjects[0]?.Id);
+      flightId.push(item?.ClassObjects[0]?.FlightId);
+      tax.push(item?.ClassObjects[0]?.Tax);
+      fare.push(item?.ClassObjects[0]?.Fare);
+      code.push(item?.ClassObjects[0]?.Code);
+    });
 
     payload = {
       isInternational: `${!isDomestic}`,
@@ -619,15 +622,15 @@ export function simplifyJourneysFlight(journeys, query, isDomestic) {
       adult: query.adult,
       child: query.child,
       infant: query.infant,
-      classId: classId.join('#'),
-      flightId: flightId.join('#'),
+      classId: classId.join("#"),
+      flightId: flightId.join("#"),
       fare: parseInt(fare.reduce((total, num) => total + num, 0)),
       tax: parseInt(tax.reduce((total, num) => total + num, 0)),
-      fareBasisCode: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.FareBasisCode,
-      code: code.join('#'),
-      extraData: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.ExtraData
+      fareBasisCode:
+        journeys?.ConnectingFlights[0]?.ClassObjects[0]?.FareBasisCode,
+      code: code.join("#"),
+      extraData: journeys?.ConnectingFlights[0]?.ClassObjects[0]?.ExtraData,
     };
-    
   }
   return payload;
 }
@@ -1393,7 +1396,7 @@ export const getMealString = (meal) => {
     dinner: "Makan Malam",
   };
 
-  const includedMeals = Object.keys(meal).filter((key) => meal[key]);
+  const includedMeals = Object.keys(mealString).filter((key) => meal[key]);
   if (includedMeals.length === 0) return "Tidak Termasuk Makanan";
   return `Sudah Termasuk ${includedMeals
     .map((meal) => mealString[meal])
