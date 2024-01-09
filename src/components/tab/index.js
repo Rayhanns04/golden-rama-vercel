@@ -1,3 +1,5 @@
+import * as Yup from "yup";
+
 import {
   Box,
   Center,
@@ -7,29 +9,29 @@ import {
   Text,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { Field, Formik } from "formik";
+import { HotelListItem, PackageListItem, TourListItem } from "../card";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { addDays, differenceInDays } from "date-fns";
-import { useGeolocated } from "react-geolocated";
 import { getHotelDetail, getHotels } from "../../services/hotel.service";
 import {
   getPackages,
   getTotalDataPackageV2,
 } from "../../services/package.service";
-import { getToursV2 } from "../../services/tour.service";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+
 import { CustomOrangeFullWidthButton } from "../button";
-import { HotelListItem, PackageListItem, TourListItem } from "../card";
+import { CustomRadioFill } from "../checkbox";
+import { FormTourFilter } from "../form";
 import Image from "next/image";
 import { SearchFilters } from "../search";
-import { FormTourFilter } from "../form";
-import { Field, Formik } from "formik";
-import * as Yup from "yup";
 import { convertToArray } from "../../helpers";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { CustomRadioFill } from "../checkbox";
-import { useRouter } from "next/router";
 import date from "../../helpers/date";
+import { getToursV2 } from "../../services/tour.service";
+import { useEffect } from "react";
+import { useGeolocated } from "react-geolocated";
+import { useInView } from "react-intersection-observer";
+import { useRouter } from "next/router";
 
 export const CustomToursTabs = ({
   airlines,
@@ -72,7 +74,7 @@ export const CustomToursTabs = ({
     tour_duration: query?.tour_duration ?? "",
     airlines: convertToArray(query?.airlines) ?? [],
     min_price: query?.min_price ?? 0,
-    max_price: query?.max_price ?? 50000000,
+    max_price: query?.max_price ?? 100000000,
     // period_month: selected.period_month ?? String,
     // period_year: selected.period_year ?? String,
   };
@@ -248,9 +250,7 @@ export const CustomPackagesTabs = (props) => {
       <Stack spacing={"16px"}>
         <PackageListItem query={packages} />
       </Stack>
-      <Center mt={4}>
-        {hasNextPage && <Spinner ref={trigger}></Spinner>}
-      </Center>
+      <Center mt={4}>{hasNextPage && <Spinner ref={trigger}></Spinner>}</Center>
       {/* <Box maxW={"400px"} mx={"auto"}>
         <CustomOrangeFullWidthButton
           hidden={!hasNextPage}
