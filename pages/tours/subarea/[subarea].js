@@ -6,34 +6,39 @@ import {
   Text,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import Image from "next/image";
-import NextLink from "next/link";
-import React, { useEffect } from "react";
-import Layout from "../../../src/components/layout";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { useRouter } from "next/router";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { addMonths, parseISO } from "date-fns";
 import {
+  getTourAirlines,
+  getTourSubAreaWithCountries,
+  getTourSubAreas,
   getTourTagsV2,
   getToursV2,
-  getTourSubAreas,
-  getTourSubAreaWithCountries,
-  getTourAirlines,
 } from "../../../src/services/tour.service";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+
 import { CustomToursTabs } from "../../../src/components/tab";
 import ExpandableHTML from "../../../src/components/expandable-html";
-import { useDispatch } from "react-redux";
-import { addMonths, parseISO } from "date-fns";
-import { resetDataTour } from "../../../src/state/tour/tour.slice";
-import { resetDataFlight } from "../../../src/state/order/order.slice";
+import Image from "next/image";
+import Layout from "../../../src/components/layout";
+import NextLink from "next/link";
 import { Pagination } from "swiper";
+import { compact } from "underscore";
 import { convertDatefilterTour } from "../../../src/helpers";
 import date from "../../../src/helpers/date";
-import { compact } from "underscore";
+import { resetDataFlight } from "../../../src/state/order/order.slice";
+import { resetDataTour } from "../../../src/state/tour/tour.slice";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/router";
+
+import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg"
 
 const ToursSubArea = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const [imageError, setImageError] = useState(false);
+
 
   const { tour_type, sort, tour_duration } = props;
 
@@ -212,6 +217,7 @@ const ToursSubArea = (props) => {
                   country.attributes.image_mobile.data.attributes.formats.small
                     .url
                 : `https://flagcdn.com/w320/${country?.attributes.isoCode2?.toLowerCase()}.jpg`;
+
               return (
                 <SwiperSlide
                   key={index}
@@ -248,10 +254,15 @@ const ToursSubArea = (props) => {
                         >
                           <Image
                             alt="Country"
-                            src={imageUrl}
+                            src={imageError ? IMAGE_PLACEHOLDER : imageUrl}
                             layout="fill"
                             objectPosition={"center"}
                             objectFit="cover"
+                            unoptimized
+                            placeholder="empty"
+                            onError={() => {
+                              setImageError(true);
+                            }}
                           />
                         </Box>
                         <Box
@@ -390,7 +401,5 @@ export const getServerSideProps = async (ctx) => {
     };
   }
 };
-
-
 
 export default ToursSubArea;

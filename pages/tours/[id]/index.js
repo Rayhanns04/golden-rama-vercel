@@ -76,6 +76,7 @@ import { useLoginToast } from "../../../src/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { useRouter } from "next/router";
+import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg"
 
 const TourDetail = (props) => {
   const { details, meta } = props;
@@ -93,6 +94,8 @@ const TourDetail = (props) => {
 
   const dispatch = useDispatch();
   const loginToast = useLoginToast();
+
+  const [imageError, setImageError] = useState(false);
 
   const handleSubmit = (values, action) => {
     try {
@@ -207,16 +210,12 @@ const TourDetail = (props) => {
                             <Image
                               objectPosition={"center"}
                               objectFit="cover"
-                              src={item.url}
-                              alt={item.title}
+                              src={imageError ? IMAGE_PLACEHOLDER : item.url}
+                              alt={item?.title}
                               layout={"fill"}
-                              unoptimized
                               placeholder="empty"
-                              // TODO:Handle image broken dengan placeholder
-                              onError={(e) => {
-                                e.target.src =
-                                  "https://stag-web.goldenrama.com/_next/image?url=%2Fjpg%2Fheader-tour.jpg&w=1920&q=75";
-                                e.target.onerror = null; // Prevent infinite loop if the fallback image also fails to load
+                              onError={() => {
+                                setImageError(true);
                               }}
                             />
                           </Box>
