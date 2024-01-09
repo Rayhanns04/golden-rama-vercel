@@ -37,7 +37,7 @@ import {
 import { CustomFilterButton, CustomOrangeFullWidthButton } from "../button";
 import { CustomTags, CustomTagsOutlineIcon } from "../tags";
 import { Field, Form, Formik, useFormikContext } from "formik";
-import React, { Fragment, useEffect, useRef } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   addDaysWithMonthName,
@@ -107,6 +107,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg";
 
 export const ShareItem = ({ path }) => {
   const url = `https://goldenrama.com${path}`;
@@ -432,6 +433,8 @@ export const Unauthorized = ({ withAuthButton }) => {
 export const TourItem = ({ item }) => {
   const { tags, name } = item;
   const departures = item.departures.reduce((prev, item) => (prev = item));
+  const [imageError, setImageError] = useState(false);
+
   return (
     <NextLink href={`/tours/${item.slug}`}>
       <a rel="canonical">
@@ -459,16 +462,15 @@ export const TourItem = ({ item }) => {
                 objectFit={"cover"}
                 alt={name}
                 src={
-                  (item.pictures && item?.pictures[0]?.url) ??
-                  "https://dummyimage.com/350x150"
+                  imageError
+                    ? IMAGE_PLACEHOLDER
+                    : item?.pictures && item.pictures[0]?.url
+                    ? item.pictures[0].url
+                    : "https://dummyimage.com/350x150"
                 }
-                unoptimized
                 placeholder="empty"
-                // TODO:Handle image broken dengan placeholder
-                onError={(e) => {
-                  e.target.src =
-                    "https://stag-web.goldenrama.com/_next/image?url=%2Fjpg%2Fheader-tour.jpg&w=1920&q=75";
-                  e.target.onerror = null; // Prevent infinite loop if the fallback image also fails to load
+                onError={() => {
+                  setImageError(true);
                 }}
               />
 

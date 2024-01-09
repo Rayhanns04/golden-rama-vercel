@@ -8,7 +8,7 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { addMonths, parseISO } from "date-fns";
 import {
@@ -34,11 +34,12 @@ import { resetDataTour } from "../../src/state/tour/tour.slice";
 import { useDispatch } from "react-redux";
 import { useLocalStorage } from "../../src/hooks";
 import { useRouter } from "next/router";
+import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg";
 
 const Tours = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
-  // console.log('itemtour1', props)
+  const [imageError, setImageError] = useState(false);
 
   const { tour_type, sort, tour_duration, meta } = props;
 
@@ -230,7 +231,6 @@ const Tours = (props) => {
               ? Array.from({ length: 6 })
               : areas.data
             ).map((area, index) => {
-
               function getImageUrl(data) {
                 const formats = data?.attributes?.formats;
 
@@ -290,17 +290,13 @@ const Tours = (props) => {
                         >
                           <Image
                             alt="Item 1"
-                            src={imageUrl}
+                            src={imageError ? IMAGE_PLACEHOLDER : imageUrl}
                             layout="fill"
                             objectPosition={"center"}
                             objectFit="cover"
-                            unoptimized
                             placeholder="empty"
-                            // Handle image broken dengan placeholder
-                            onError={(e) => {
-                              e.target.src =
-                                "https://stag-web.goldenrama.com/_next/image?url=%2Fjpg%2Fheader-tour.jpg&w=1920&q=75";
-                              e.target.onerror = null; // Prevent infinite loop if the fallback image also fails to load
+                            onError={() => {
+                              setImageError(true);
                             }}
                           />
                         </Box>
