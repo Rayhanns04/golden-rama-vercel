@@ -1,0 +1,482 @@
+import {
+  Box,
+  Stack,
+  Text,
+  useDisclosure,
+  IconButton,
+  Collapse,
+  SimpleGrid,
+  Skeleton,
+} from "@chakra-ui/react";
+import { Form, Formik, useFormikContext } from "formik";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { CustomOrangeFullWidthButton } from "../../src/components/button";
+import { TourListItem } from "../../src/components/card";
+import { FormTourFilter, FormTourSearch } from "../../src/components/form";
+import Layout from "../../src/components/layout";
+import {
+  getTotalDataTourV2,
+  getTourCountry,
+  getTourGroupsV2,
+  getToursV2,
+} from "../../src/services/tour.service";
+import EditIcon from "../../public/svg/icons/edit.svg";
+import { SearchFilters } from "../../src/components/search";
+import {
+  convertDatefilterTour,
+  convertToArray,
+  getTourAirlineAvailable,
+} from "../../src/helpers";
+import { CustomDivider } from "../../src/components/divider";
+import compact from "lodash/compact";
+import { getCountriesFromIsoCode } from "../../src/services/country.service";
+import { addMonths, parseISO } from "date-fns";
+import date from "../../src/helpers/date";
+import * as Yup from "yup";
+
+const SearchTours = (props) => {
+  const router = useRouter();
+  const query = router.query;
+  const [total, setTotal] = useState(0);
+
+  const countryName = useQuery(
+    ["getCountryNamesHistory", query.destination],
+    async () => {
+      if (query.destination) {
+        const response = await getCountriesFromIsoCode(query.destination);
+        return Promise.resolve(response[0].attributes.name);
+      } else {
+        return Promise.resolve("");
+      }
+    }
+  );
+
+  // const convertDateFilter = convertDatefilterTour(
+  //   query.period_month,
+  //   query.period_year
+  // );
+  // const startDate = parseISO(`${convertDateFilter}-01`);
+  // const endDate = addMonths(startDate, 1);
+  const filter = {
+    // groupSlugIn: query.area,
+    minPrice: query.min_price ? parseInt(query.min_price) : 0,
+    maxPrice: query.max_price ? parseInt(query.max_price) : 999999999,
+    sortBy: query?.sort ? query.sort : "HIGHEST_PRICE",
+  };
+  if (query.tour_type != "" && query.tour_type) {
+    const tour_type = convertToArray(query.tour_type);
+    const arrOfNum = tour_type.map((str) => {
+      if (str != "") return Number(str);
+    });
+
+    filter.tagIdIn = compact(arrOfNum);
+  }
+
+  if (query.destination != "") {
+    filter.countryCodeIn = query.destination;
+  }
+
+  // if (query.period_month != "" && query.period_year != "") {
+  //   filter.minDepartureDate = convertDatefilterTour(
+  //     query.period_month,
+  //     query.period_year
+  //   );
+  //   filter.maxDepartureDate = date(endDate, "yyyy-MM");
+  // }
+
+  if (query.airlines != "" && query.airlines) {
+    const airlines = convertToArray(query.airlines);
+    const arrOfStr = airlines.map((str) => {
+      if (str != "") return str;
+    });
+
+    filter.airlineCodeIn = compact(arrOfStr);
+  }
+
+  switch (query.tour_duration) {
+    case "1":
+      filter.maxNumberOfDays = 6;
+      break;
+    case "2":
+      filter.minNumberOfDays = 7;
+      break;
+    default:
+      break;
+  }
+
+  const getTours = async ({ pageParam = 0 }) => {
+    filter.itemPerPage = 9;
+    filter.page = pageParam;
+    const response = await getToursV2(filter);
+    // if (
+    //   query?.tour_type ||
+    //   query?.airlines ||
+    //   query?.tour_duration ||
+    //   query?.area ||
+    //   query?.destination
+    // ) {
+    // }
+    delete filter.itemPerPage;
+    delete filter.page;
+    const totalData = await getTotalDataTourV2(filter);
+    setTotal(totalData.length);
+
+    // setAirlines(getTourAirlineAvailable(response))
+
+    return response;
+  };
+
+  const tours = useInfiniteQuery(["getTours", query], getTours, {
+    getNextPageParam: (lastpage, pages) => {
+      if (lastpage.length === 9) {
+        return pages.length - 1 + 1;
+      } else {
+        return false;
+      }
+      // lastpage.nextCursor;
+    },
+  });
+
+  const {
+    data,
+    isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+  } = tours;
+
+  const handleSubmit = (values, actions) => {
+    // setShownItems(9);
+    router.replace({ pathname: `/tours/search`, query: values }, undefined, {
+      shallow: false,
+    });
+  };
+
+  // const { data, isLoading, isError } = tours;
+  const EditSearch = ({
+    selected,
+    totalData,
+    handleSubmit,
+    isLoading,
+    // airlines,
+    ...props
+  }) => {
+    const {
+      tour_type,
+      airlines,
+      area,
+      destination,
+      // period_month,
+      // period_year,
+      sort,
+      // totalData,
+    } = props.data;
+    const data = {
+      tour_type,
+      area,
+      destination,
+    };
+    const { isOpen, onToggle } = useDisclosure();
+    // const response = await getTours(variables, params);
+    const tour_duration = [
+      { label: "< 1 Week", value: "1" },
+      { label: "> 1 Week", value: "2" },
+    ];
+
+    const initialValues = {
+      tour_type: convertToArray(selected.tour_type) ?? [],
+      sort: selected.sort ?? "",
+      destination: selected.destination ?? "",
+      tour_duration: selected.tour_duration ?? "",
+      airlines: convertToArray(selected.airlines) ?? [],
+      min_price: selected.min_price ?? 0,
+      max_price: selected.max_price ?? 50000000,
+      // period_month: selected.period_month ?? String,
+      // period_year: selected.period_year ?? String,
+    };
+    const ActionButton = () => {
+      const formik = useFormikContext();
+      return (
+        <SimpleGrid
+          columns={2}
+          direction={"row"}
+          pt={"24px"}
+          alignItems={"center"}
+          spacing={6}
+        >
+          <CustomOrangeFullWidthButton
+            mt={0}
+            isoutlined
+            onClick={() => {
+              onToggle();
+              formik.handleReset();
+            }}
+          >
+            Batal
+          </CustomOrangeFullWidthButton>
+          <CustomOrangeFullWidthButton
+            // type="submit"
+            isLoading={formik.isSubmitting}
+            onClick={formik.handleSubmit}
+            mt={0}
+          >
+            Terapkan
+          </CustomOrangeFullWidthButton>
+        </SimpleGrid>
+      );
+    };
+    return (
+      <Box>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={(val) => handleSubmit(val)}
+          validationSchema={() =>
+            Yup.object().shape({
+              // period_year: Yup.string().required("Tahun wajib diisi"),
+              // period_month: Yup.string().required("Bulan wajib diisi"),
+            })
+          }
+        >
+          <Form>
+            <Box
+              maxW={{ lg: "container.lg", xl: "container.xl" }}
+              mx={"auto"}
+              as={"section"}
+              bg={"white"}
+              // mx={"-24px"}
+            >
+              <Collapse in={!isOpen}>
+                <Stack
+                  direction={"row"}
+                  justifyContent={"space-between"}
+                  // px={"24px"}
+                  py={"16px"}
+                >
+                  <Skeleton isLoaded={!countryName.isLoading}>
+                    <Text
+                      display={"flex"}
+                      alignSelf={"center"}
+                      color={"neutral.text.high"}
+                      fontSize={"sm"}
+                    >
+                      Hasil Pencarian &quot;
+                      <Text
+                        as={"span"}
+                        fontWeight={"bold"}
+                        color={"brand.blue.400"}
+                      >
+                        {countryName.data || "Semua Tur"}
+                        {/* {selected.area} */}
+                      </Text>
+                      &quot;
+                    </Text>
+                  </Skeleton>
+                  <IconButton
+                    size={"sm"}
+                    onClick={onToggle}
+                    variant={"unstyled"}
+                    icon={<EditIcon width={20} height={20} />}
+                  />
+                </Stack>
+              </Collapse>
+              <Collapse in={isOpen}>
+                <Stack py={6}>
+                  {props.data && (
+                    <FormTourSearch
+                      tour_type={tour_type}
+                      area={area}
+                      destination={destination}
+                      // period_month={period_month}
+                      // period_year={period_year}
+                      actionButton={<ActionButton />}
+                    />
+                  )}
+                </Stack>
+              </Collapse>
+            </Box>
+            <CustomDivider />
+            <SearchFilters
+              isLoading={isLoading}
+              filter={
+                <FormTourFilter
+                  tour_type={tour_type}
+                  airlines={airlines}
+                  tour_duration={tour_duration}
+                />
+              }
+              title={"Tour"}
+              result={tours}
+              airlines={airlines}
+              data={data}
+              totalData={totalData}
+              sort={sort}
+            />
+          </Form>
+        </Formik>
+      </Box>
+    );
+  };
+  return (
+    <Layout
+      type={"nested"}
+      metatitle={`Hasil Pencarian Tour ke ${
+        !countryName.isLoading ? countryName.data || "Semua Tujuan" : "..."
+      }, ${query.period_month} ${query.period_year}`}
+      pagetitle={"Hasil Pencarian Tour"}
+    >
+      <EditSearch
+        isLoading={isLoading}
+        selected={query}
+        totalData={total}
+        data={props}
+        // airlines={airlines}
+        handleSubmit={handleSubmit}
+      />
+      <Box as={"section"} px={"24px"} bg={"brand.blue.100"} mx={"-24px"}>
+        <Stack
+          spacing={"16px"}
+          py={"24px"}
+          maxW={{ lg: "container.lg", xl: "container.xl" }}
+          mx={"auto"}
+        >
+          <TourListItem query={tours} />
+          <CustomOrangeFullWidthButton
+            hidden={!hasNextPage}
+            onClick={fetchNextPage}
+            isLoading={isFetchingNextPage}
+          >
+            Lihat Lebih Banyak
+          </CustomOrangeFullWidthButton>
+        </Stack>
+      </Box>
+    </Layout>
+  );
+};
+
+export const getServerSideProps = async (ctx) => {
+  const { query } = ctx;
+  // const convertDateFilter = convertDatefilterTour(
+  //   query.period_month,
+  //   query.period_year
+  // );
+  // const startDate = parseISO(`${convertDateFilter}-01`);
+  // const endDate = addMonths(startDate, 1);
+  const filter = {
+    // groupSlugIn: query.area,
+    minPrice: query.min_price ? parseInt(query.min_price) : 0,
+    maxPrice: query.max_price ? parseInt(query.max_price) : 999999999,
+    sortBy: query?.sort ? query.sort : "HIGHEST_PRICE",
+  };
+  if (query.tour_type != "" && query.tour_type) {
+    const tour_type = convertToArray(query.tour_type);
+    const arrOfNum = tour_type.map((str) => {
+      if (str != "") return Number(str);
+    });
+
+    filter.tagIdIn = compact(arrOfNum);
+  }
+
+  if (query.destination != "") {
+    filter.countryCodeIn = query.destination;
+  }
+
+  // if (query.period_month != "" && query.period_year != "") {
+  //   filter.minDepartureDate = convertDatefilterTour(
+  //     query.period_month,
+  //     query.period_year
+  //   );
+  //   filter.maxDepartureDate = date(endDate, "yyyy-MM");
+  // }
+
+  if (query.airlines != "" && query.airlines) {
+    const airlines = convertToArray(query.airlines);
+    const arrOfStr = airlines.map((str) => {
+      if (str != "") return str;
+    });
+
+    filter.airlineCodeIn = compact(arrOfStr);
+  }
+
+  switch (query.tour_duration) {
+    case "1":
+      filter.maxNumberOfDays = 6;
+      break;
+    case "2":
+      filter.minNumberOfDays = 7;
+      break;
+    default:
+      break;
+  }
+
+  // const tour_type = await getTourTagsV2();
+  const tour_type = [
+    {
+      id: 1,
+      name: "Amazing",
+    },
+    {
+      id: 30,
+      name: "Super Sale",
+    },
+    {
+      id: 6,
+      name: "Favorite",
+    },
+    {
+      id: 10,
+      name: "Relaxing",
+    },
+    {
+      id: 45,
+      name: "Explore",
+    },
+  ];
+  const area = await getTourGroupsV2();
+  const destination = await getTourCountry();
+  const period_month = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  var min = new Date().getFullYear();
+  var max = min + 2;
+  var years = [];
+
+  for (var i = min; i <= max; i++) {
+    years.push(i);
+  }
+  const sort = [
+    { label: "Harga Terendah", value: "LOWEST_PRICE" },
+    { label: "Harga Tertinggi", value: "HIGHEST_PRICE" },
+    { label: "Durasi Tersingkat", value: "SHORTEST_DURATION" },
+    { label: "Durasi Terlama", value: "LONGEST_DURATION" },
+  ];
+
+  const response = await getToursV2(filter);
+  return {
+    props: {
+      airlines: getTourAirlineAvailable(response),
+      // totalData: response.length,
+      tour_type,
+      area,
+      destination,
+      period_month,
+      period_year: years,
+      sort,
+    },
+  };
+};
+
+export default SearchTours;
