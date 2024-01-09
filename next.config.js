@@ -24,7 +24,8 @@ const nextConfig = {
       "cdn.bemyguest.com.sgnull",
       "cdn.bemyguest.com.sg",
       "portalvhds11000v9mfhk0k.blob.core.windows.net",
-      "grts.traveliteindonesia.com"
+      "grts.traveliteindonesia.com",
+      "grts2.goldenrama.com",
     ],
   },
   async rewrites() {
