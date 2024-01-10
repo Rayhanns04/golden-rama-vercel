@@ -30,9 +30,14 @@ import CameraIcon from "../../../../public/svg/icons/camera.svg";
 import GalleryIcon from "../../../../public/svg/icons/gallery.svg";
 import Layout from "../../../../src/components/layout";
 import { toTitleCase } from "../../../../src/helpers";
+import { useState } from "react";
+import IMAGE_PLACEHOLDER from "public/png/placeholder-tour.png";
+import IMAGE_NULL_PLACEHOLDER from "public/png/placeholder-tour.png";
 
 const GalleryTour = () => {
   const router = useRouter();
+  const [imageError, setImageError] = useState(false);
+
   const { id } = router.query;
   const { data: tour, isLoading: isLoadingTour } = useQuery(
     ["getTour", id],
@@ -148,10 +153,18 @@ const GalleryTour = () => {
                         overflow="clip"
                       >
                         <Image
-                          src={picture?.url}
+                          src={
+                            imageError
+                              ? IMAGE_PLACEHOLDER
+                              : picture?.url || IMAGE_NULL_PLACEHOLDER
+                          }
                           alt="photo"
                           layout="fill"
                           objectFit="cover"
+                          placeholder="empty"
+                          onError={() => {
+                            setImageError(true);
+                          }}
                         />
                       </AspectRatio>
                     )

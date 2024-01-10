@@ -76,7 +76,8 @@ import { useLoginToast } from "../../../src/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { useRouter } from "next/router";
-import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg"
+import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg";
+import IMAGE_NULL_PLACEHOLDER from "public/png/placeholder-tour.png";
 
 const TourDetail = (props) => {
   const { details, meta } = props;
@@ -210,7 +211,11 @@ const TourDetail = (props) => {
                             <Image
                               objectPosition={"center"}
                               objectFit="cover"
-                              src={imageError ? IMAGE_PLACEHOLDER : item.url}
+                              src={
+                                imageError
+                                  ? IMAGE_PLACEHOLDER
+                                  : item.url || IMAGE_NULL_PLACEHOLDER
+                              }
                               alt={item?.title}
                               layout={"fill"}
                               placeholder="empty"

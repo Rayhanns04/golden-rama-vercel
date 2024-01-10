@@ -108,6 +108,7 @@ import { useRouter } from "next/router";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 import IMAGE_PLACEHOLDER from "public/jpg/header-tour.jpg";
+import IMAGE_NULL_PLACEHOLDER from "public/png/placeholder-tour.png";
 
 export const ShareItem = ({ path }) => {
   const url = `https://goldenrama.com${path}`;
@@ -466,7 +467,7 @@ export const TourItem = ({ item }) => {
                     ? IMAGE_PLACEHOLDER
                     : item?.pictures && item.pictures[0]?.url
                     ? item.pictures[0].url
-                    : "https://dummyimage.com/350x150"
+                    : IMAGE_NULL_PLACEHOLDER
                 }
                 placeholder="empty"
                 onError={() => {
