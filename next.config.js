@@ -18,6 +18,7 @@ const nextConfig = {
       "stag-api.goldenrama.com",
       "photos.hotelbeds.com",
       "s3.amazonaws.com",
+      "grts2.goldenrama.com",
       "localhost",
       "imagedummy.com",
       "flagcdn.com",
