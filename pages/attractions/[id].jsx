@@ -177,6 +177,8 @@ const AttractionDetails = ({ data }) => {
     }
   });
 
+  // console.log('itemku11', attraction?.data)
+
   const isDesktop = useBreakpointValue(
     { base: false, md: true },
     { ssr: false }

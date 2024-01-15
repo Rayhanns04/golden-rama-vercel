@@ -62,6 +62,9 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
   });
   const participantsObject = _.indexBy(allowedParticipants, "type");
   const participantsKeyObject = Object.keys(participantsObject);
+
+  // console.log('itemku', participantsKeyObject, allowedParticipants)
+
   const total =
     attraction?.minPrice?.[index] +
     percentage(attraction?.minPrice?.[index], ticket?.adultRecommendedMarkup);
@@ -506,11 +509,15 @@ export const Detail = ({ ticket, attraction, query, id, type, index }) => {
                                       color={"neutral.text.low"}
                                       textTransform={"capitalize"}
                                     >
-                                      {key} (
-                                      {`${participantsObject[key].minAge}
-                                    - ${participantsObject[key].maxAge}
-                                    tahun`}
-                                      )
+                                      {key}
+                                      {
+                                        (participantsObject[key].minAge === null && participantsObject[key].maxAge === null) ? '' : (
+                                          <>
+                                            {`${participantsObject[key].minAge}
+                                            - ${participantsObject[key].maxAge} tahun`}
+                                          </>
+                                        )
+                                      } 
                                     </FormLabel>
                                     <CustomDropdown
                                       bg={"white"}
