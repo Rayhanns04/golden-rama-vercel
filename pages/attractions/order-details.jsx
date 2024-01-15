@@ -50,6 +50,7 @@ const OrderDetails = () => {
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const { serviceFee } = attractionDetail.ticketDetail;
   const { totalPrice } = attractionDetail;
+  // console.log('itemku', attractionDetail)
   const additionalServiceFee = serviceFee.isFixed
     ? serviceFee.value
     : (parseInt(totalPrice) * serviceFee.value) / 100;

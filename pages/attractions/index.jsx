@@ -67,6 +67,7 @@ const Attractions = (props) => {
         showMoreItems();
       }
     }, [inView]);
+
     const attractions = useInfiniteQuery(
       ["getAttractions", {}],
       getAttractions,
@@ -87,7 +88,7 @@ const Attractions = (props) => {
       }
     );
 
-    // console.log('itemku', attractions.data)
+    // console.log('itemku', attractions?.data?.pages)
 
     const showMoreItems = () => {
       attractions.fetchNextPage();

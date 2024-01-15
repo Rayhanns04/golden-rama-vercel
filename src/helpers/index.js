@@ -176,8 +176,8 @@ export function getClassCode(code) {
     // { label: "Business Class", value: "B" },
     // { label: "First Class", value: "F" },
   ];
-  const result = cabinClass.find((item) => item.value === codeNow);
-  return result?.label ?? "Not Found";
+  const result = cabinClass.find((item) => item.value === code);
+  return result?.label;
 }
 
 export function differenceDate(dateDeparture, dateArrival) {

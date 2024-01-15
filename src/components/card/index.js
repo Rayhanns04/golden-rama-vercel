@@ -1356,25 +1356,24 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
   const router = useRouter();
   const { insuranceDetail } = useSelector((state) => state.insuranceReducer);
   const additionalCoverage = useQuery(["getAdditionalCoverage", props], () =>
-    getAdditionalCoverage(insuranceDetail)
+  getAdditionalCoverage(insuranceDetail)
   );
-
-  const dataResult = additionalCoverage?.data;
+  
+  const dataResult = additionalCoverage?.data
   let dataAdditionalCoverage = {};
 
-  if (dataResult) {
+  if(dataResult){
     const newData = dataResult?.data?.map((item) => {
-      const correspondingCoverage =
-        dataResult?.priceOverview?.UsingCoverages.find(
-          (coverage) => coverage.Name === item?.Name
-        );
-
+      const correspondingCoverage = dataResult?.priceOverview?.UsingCoverages.find(
+        (coverage) => coverage.Name === item?.Name
+      );
+    
       return {
         ...item,
         MainRate: correspondingCoverage ? correspondingCoverage?.Premium : 0,
       };
     });
-
+    
     // const result = {
     //   data: newData,
     //   priceOverview: {
@@ -1383,8 +1382,8 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     // };
 
     dataAdditionalCoverage = {
-      data: newData,
-    };
+      data: newData
+    }
   }
 
   const dispatch = useDispatch();
@@ -1401,7 +1400,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
     );
     router.replace("/insurances/order-details", undefined, { shallow: true });
   }
-
+  
   const SelectionButton = ({ title, children, ...props }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const formik = useFormikContext();
@@ -1437,6 +1436,7 @@ export const InsuranceProtectionsList = ({ detail_prices, ...props }) => {
             return item.ID.toString();
           }) ?? [],
       }}
+
       onSubmit={handleSubmit}
     >
       <Form>
