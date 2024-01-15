@@ -88,7 +88,7 @@ const Attractions = (props) => {
       }
     );
 
-    // console.log('itemku', attractions?.data?.pages)
+    // console.log('itemku12', attractions?.data?.pages)
 
     const showMoreItems = () => {
       attractions.fetchNextPage();
