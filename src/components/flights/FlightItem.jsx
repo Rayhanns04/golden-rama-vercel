@@ -1,22 +1,46 @@
-import { Box, Center, Flex, HStack, LinkBox, SimpleGrid, Skeleton, SkeletonCircle, Stack, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Center,
+  Flex,
+  HStack,
+  LinkBox,
+  SimpleGrid,
+  Skeleton,
+  SkeletonCircle,
+  Stack,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import Image from "next/image";
 import DetailButton from "./DetailButton";
 import { CustomOrangeFullWidthButton } from "../button";
 import { useEffect, useState } from "react";
 import { useLoginToast } from "../../hooks";
-import { convertDateFlightPage, convertRupiah, getClassCode } from "../../helpers";
 import {
-  getAirports,
-  getRecommendedAirports,
-} from "../../services/flight.service";
+  convertDateFlightPage,
+  convertRupiah,
+  getClassCode,
+} from "../../helpers";
 import { convertTimeToCustomFormat } from "../../helpers/flights";
 
-const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, originData, handlePosition, position, isSmartCombo, isInternational, isRoundTrip }) => {
-  const [totalTransit, setTotalTransit] = useState()
+const FlightItem = ({
+  item,
+  isLoading,
+  isDesktop,
+  query,
+  // destinationData,
+  originData,
+  handlePosition,
+  position,
+  isSmartCombo,
+  // isInternational,
+  isRoundTrip,
+}) => {
+  const [totalTransit, setTotalTransit] = useState();
   const [isEmpty, setIsEmpty] = useState(false);
-  const [imageLogos, setImageLogos] = useState([])
-  const [airlineName, setAirlineName] = useState('')
-  
+  const [imageLogos, setImageLogos] = useState([]);
+  const [airlineName, setAirlineName] = useState("");
+
   const loginToast = useLoginToast();
 
   const setIsEmptyState = (value) => {
@@ -28,7 +52,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
       setAirlineName(item?.AirlineName);
       setImageLogos([item?.AirlineImageUrl]);
     } else if (item?.TotalTransit > 0) {
-      const airlineImageUrls = {}; 
+      const airlineImageUrls = {};
 
       item.ConnectingFlights.forEach((flight) => {
         if (!airlineImageUrls[flight.AirlineName]) {
@@ -40,11 +64,16 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
 
       const airlineNames = Object.keys(airlineImageUrls);
       const airlineName = airlineNames.join(" + ");
-      
+
       setAirlineName(airlineName);
       setImageLogos(uniqueAirlineUrls);
     }
-  }, [item?.AirlineImageUrl, item?.AirlineName, item.ConnectingFlights, item?.TotalTransit]);
+  }, [
+    item?.AirlineImageUrl,
+    item?.AirlineName,
+    item.ConnectingFlights,
+    item?.TotalTransit,
+  ]);
 
   return (
     // isEmpty ? null :
@@ -87,7 +116,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               <Stack direction={"row"} alignItems={"flex-start"}>
                 {/* <SimpleGrid flexShrink={0} columns={logos.length > 1 ? 2 : 1}> */}
                 <SimpleGrid flexShrink={0}>
-                {imageLogos?.map((img, index) => (
+                  {imageLogos?.map((img, index) => (
                     <Box
                       key={index}
                       position="relative"
@@ -97,8 +126,8 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                             ? "30px"
                             : "18px"
                           : isDesktop
-                            ? "60px"
-                            : "24px"
+                          ? "60px"
+                          : "24px"
                       }
                       h={
                         imageLogos.length > 1
@@ -106,9 +135,10 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                             ? "30px"
                             : "18px"
                           : isDesktop
-                            ? "60px"
-                            : "24px"
-                      }>
+                          ? "60px"
+                          : "24px"
+                      }
+                    >
                       {img && (
                         <Image
                           layout="fill"
@@ -118,7 +148,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                         />
                       )}
                     </Box>
-                ))}
+                  ))}
                 </SimpleGrid>
                 <Stack alignItems={"flex-start"}>
                   <HStack>
@@ -136,7 +166,7 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                   </Text>
                   {/* add text with border rounded , with text smart combo */}
                   {/* && isInternational */}
-                  {(isSmartCombo === "true" && isRoundTrip === "true") && (
+                  {isSmartCombo === "true" && isRoundTrip === "true" && (
                     <Text
                       fontSize={{ base: "xx-small", md: "xx-small" }}
                       fontWeight={"semibold"}
@@ -251,8 +281,11 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               >
                 <Text
                   fontSize={{ base: "xs", md: "xs" }}
-                  color={"neutral.text.low"}>
-                  {item?.TotalTransit === 0 ? "Langsung • " : `${item?.TotalTransit} Transit • `}
+                  color={"neutral.text.low"}
+                >
+                  {item?.TotalTransit === 0
+                    ? "Langsung • "
+                    : `${item?.TotalTransit} Transit • `}
                   {convertTimeToCustomFormat(item?.TotalDateTime)}
                 </Text>
                 <Box
@@ -335,8 +368,9 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
                 <Text
                   fontSize={{ base: "xs", md: "sm" }}
                   flexGrow={1}
-                  fontWeight="semibold">
-                  {item?.DepartTime?.replace(/:/, '.')}
+                  fontWeight="semibold"
+                >
+                  {item?.DepartTime?.replace(/:/, ".")}
                 </Text>
               </HStack>
             </Skeleton>
@@ -347,16 +381,15 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               startColor={"gray.50"}
               endColor={"gray.200"}
               borderRadius={"4px"}
-              isLoaded={!isLoading}>
+              isLoaded={!isLoading}
+            >
               <HStack>
                 <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="thin">
                   {convertDateFlightPage(item?.ArriveDate)}
                 </Text>
                 <Text fontSize={{ base: "xs", md: "sm" }}>•</Text>
-                <Text
-                  fontSize={{ base: "xs", md: "sm" }}
-                  fontWeight="semibold">
-                  {item?.ArriveTime.replace(/:/, '.')}
+                <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold">
+                  {item?.ArriveTime.replace(/:/, ".")}
                 </Text>
               </HStack>
             </Skeleton>
@@ -368,19 +401,22 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
           // display={{ base: "none", md: "block" }}
           flexShrink={0}
           alignSelf={"center"}
-          alignItems={"center"}>
+          alignItems={"center"}
+        >
           <Stack spacing={0}>
             {item.isDiscount ? (
               <Skeleton
                 startColor={"gray.50"}
                 endColor={"gray.200"}
                 borderRadius={"4px"}
-                isLoaded={!isLoading}>
+                isLoaded={!isLoading}
+              >
                 <Text
                   as={"span"}
                   fontSize={{ base: "xs", md: "sm" }}
                   color={"neutral.text.low"}
-                  textDecoration={"line-through"}>
+                  textDecoration={"line-through"}
+                >
                   {`IDR ${convertRupiah(item?.Fare) ?? ""}`}
                 </Text>
               </Skeleton>
@@ -391,11 +427,13 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
               startColor={"gray.50"}
               endColor={"gray.200"}
               borderRadius={"4px"}
-              isLoaded={!isLoading}>
+              isLoaded={!isLoading}
+            >
               <Text
                 fontSize={"lg"}
                 fontWeight={"bold"}
-                color={"brand.orange.400"}>
+                color={"brand.orange.400"}
+              >
                 {`IDR ${convertRupiah(item?.Fare) ?? ""}`}
               </Text>
             </Skeleton>
@@ -405,12 +443,14 @@ const FlightItem = ({ item, isLoading, isDesktop, query, destinationData, origin
             startColor={"gray.50"}
             endColor={"gray.200"}
             borderRadius={"4px"}
-            w={"full"}>
+            w={"full"}
+          >
             <CustomOrangeFullWidthButton
               disabled={isEmpty || isLoading}
               onClick={(e) =>
                 loginToast(() => handlePosition(e, position, item))
-              }>
+              }
+            >
               Pilih
             </CustomOrangeFullWidthButton>
           </Skeleton>
