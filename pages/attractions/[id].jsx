@@ -21,7 +21,7 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import Image from "next/image";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   CustomOrangeFullWidthButton,
@@ -42,6 +42,8 @@ import {
 import { useRouter } from "next/router";
 import { CustomDivider } from "../../src/components/divider";
 import ClockIcon from "../../public/svg/icons/clock.svg";
+import IMAGE_PLACEHOLDER_ERROR from "public/png/placeholder-atraksi.png";
+import IMAGE_PLACEHOLDER_NULL from "public/png/placeholder-atraksi-null.jpeg";
 import TagsIcon from "../../public/svg/icons/tag.svg";
 import DocsIcon from "../../public/svg/icons/document.svg";
 import LocationIcon from "../../public/svg/icons/location.svg";
@@ -56,7 +58,8 @@ const AttractionDetails = ({ data }) => {
   const { query } = router;
   const { id } = query;
   const tourTypeRef = useRef();
-
+  const [imageErrors, setImageErrors] = useState([]);
+  
   const attraction = useQuery(["getAttractionsDetails", id], async () => {
     try {
       // const response = await getAttractionsDetails(id);
@@ -272,18 +275,22 @@ const AttractionDetails = ({ data }) => {
                       position={"relative"}
                       shadow={"lg"}
                       height={{ base: "200px" }}
-                      overflow={"hidden"}
-                    >
+                      overflow={"hidden"}>
                       <Image
                         objectPosition={"center"}
                         objectFit="cover"
-                        src={`${attraction.data.photosUrl}${
-                          isDesktop
-                            ? item.paths["1280x720"]
-                            : item.paths["680x325"]
-                        }`}
+                        src=
+                        {
+                          (item.paths["1280x720"] === null && item.paths["680x325"] === null) ? IMAGE_PLACEHOLDER_NULL :
+                          (imageErrors.includes(index)) ? IMAGE_PLACEHOLDER_ERROR :
+                          `${attraction.data.photosUrl}${isDesktop ? item.paths["1280x720"] : item.paths["680x325"]}`
+                        }
                         alt={"Image description"}
                         layout={"fill"}
+                        onError={() => {
+                          setImageErrors(prevErrors => [...prevErrors, index]);
+                        }}
+                        key={`image-${index}`}
                       />
                     </Box>
                   </SwiperSlide>

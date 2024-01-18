@@ -103,6 +103,8 @@ import { getHotelDetail } from "../../services/hotel.service";
 import { getToursV2 } from "../../services/tour.service";
 import { truncateString } from "../../helpers/utils";
 import { useLoginToast } from "../../hooks";
+import IMAGE_PLACEHOLDER_ERROR from "public/png/placeholder-atraksi.png";
+import IMAGE_PLACEHOLDER_NULL from "public/png/placeholder-atraksi-null.jpeg";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 
@@ -880,6 +882,7 @@ export const CruiseItem = ({ item }) => {
 export const AttractionItem = ({ item }) => {
   const { title } = item;
   const BASE_URL = item.photosUrl;
+  const [imageError, setImageError] = useState(false);
 
   // console.log('itemku', item)
 
@@ -903,9 +906,12 @@ export const AttractionItem = ({ item }) => {
                     BASE_URL + item?.photos[0]?.paths["680x325"] ??
                     "Image fetch failed"
                   }
-                  src={ (item.photos?.length === 0 || ((((item?.photos[0]?.paths["680x325"] === null) && (item?.photos[0]?.paths["original"] === null))))) ? "https://dummyimage.com/350x150" :
+                  src={ (item.photos?.length === 0 || ((((item?.photos[0]?.paths["680x325"] === null) && (item?.photos[0]?.paths["original"] === null))))) ? IMAGE_PLACEHOLDER_NULL : imageError ? IMAGE_PLACEHOLDER_ERROR :
                     BASE_URL + (item?.photos[0]?.paths["680x325"] === null ? item?.photos[0]?.paths["original"] : item?.photos[0]?.paths["680x325"]) 
                   }
+                  onError={() => {
+                    setImageError(true);
+                  }}
                 />
               )}
               <IconButton
@@ -1628,6 +1634,17 @@ export const InsuranceListItem = ({ query }) => {
 
 export const AttractionListItem = ({ query }) => {
   const { data, isLoading } = query;
+  const { pages } = data;
+
+  let collectedData = [];
+  if (Array.isArray(pages) && pages.length > 0) {
+    pages.forEach(page => {
+      if (page.hasOwnProperty('data') && Array.isArray(page.data)) {
+        collectedData = collectedData.concat(page.data);
+      }
+    });
+  }
+
   const CardSkeleton = () => {
     return (
       <Stack bg={"white"} overflow={"hidden"} rounded={"xl"}>
@@ -1716,23 +1733,20 @@ export const AttractionListItem = ({ query }) => {
       </Stack>
     );
   };
+
   return !isLoading ? (
     <>
-      {data?.pages.map((item, index) => (
-        <>
-          {item.data.length !== 0 ? (
-            <SimpleGrid key={index} columns={[1, 2, 3]} spacing={"16px"}>
-              {item.data.map((item, index) => (
-                <AttractionItem item={item} key={index} />
-              ))}
-            </SimpleGrid>
-          ) : (
-            // <Portal>
-            <NoResults href="/attractions" />
-            // </Portal>
-          )}
-        </>
-      ))}
+      {collectedData.length !== 0 ? (
+        <SimpleGrid columns={[1, 2, 3]} spacing={"16px"}>
+          {collectedData.map((item, index) => (
+            <AttractionItem item={item} key={index} />
+          ))}
+        </SimpleGrid>
+      ) : (
+        // <Portal>
+        <NoResults href="/attractions" />
+        // </Portal>
+      )}
     </>
   ) : (
     <SimpleGrid columns={{ md: 2, lg: 3 }} spacing={"16px"}>
