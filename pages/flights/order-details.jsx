@@ -2,25 +2,24 @@
 import {
   Badge,
   Box,
-  HStack,
-  Stack,
-  TabList,
-  TabPanels,
-  TabPanel,
-  Tabs,
-  Tab,
-  Text,
-  Button,
-  VStack,
-  Spinner,
-  useBreakpointValue,
-  Heading,
-  useToast,
-  Divider,
   Center,
-  GridItem,
+  Divider,
   Grid,
+  GridItem,
+  Heading,
+  HStack,
   SimpleGrid,
+  Spinner,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  useBreakpointValue,
+  useToast,
+  VStack,
 } from "@chakra-ui/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -36,32 +35,25 @@ import {
   bookingFlight,
   getDetailPrice,
 } from "../../src/services/flight.service";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   convertDateFlightPage,
   convertRupiah,
-  convertTimeFlightPage,
   createArrayPassanger,
-  differenceDateLong,
   getClassCode,
-  getPaxFaresName,
-  mappingPriceFlight,
-  simplifyBodyDetailFlight,
   simplifyJourneysFlight,
-  sumTaxPrice,
 } from "../../src/helpers";
 import { checkoutData } from "../../src/state/order/order.slice";
 import { checkPromo } from "../../src/services/promo.service";
 import { FlightDetails, FlightPriceDetails } from "../../src/components/card";
 import { useSteps } from "chakra-ui-steps";
-import { breakdownTransitTime, calculateTimeTotalTransitDifference } from "../../src/helpers/date";
-// console.log('orderData', data, journeys?.flights, query, isDomestic, user)
+import { breakdownTransitTime } from "../../src/helpers/date";
 
 const OrderDetails = () => {
   const [isError, setIsError] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
-  const [statusFareDetail, setStatusFareDetail] = useState([])
+  const [statusFareDetail, setStatusFareDetail] = useState([]);
   const statusCheckout = !statusFareDetail?.includes(false);
 
   const [isTimeOpen, setIsTimeOpen] = useState(false);
@@ -86,16 +78,16 @@ const OrderDetails = () => {
     (state) => state.orderReducer
   );
 
-  const totalDataFlight = data?.flights?.length
+  const totalDataFlight = data?.flights?.length;
 
   const { jwt, isLoggedIn, user } = useSelector((s) => s.authReducer);
   const [isChoosed, setIsChoosed] = useState(false);
   const [form, setForm] = useState({
-    journeys: data
+    journeys: data,
   });
-  
-  const {journeys} = form;
- 
+
+  const { journeys } = form;
+
   const [customer, setCustomer] = useState({
     fullName: isLoggedIn ? user?.full_name : "",
     email: isLoggedIn ? user?.email : "",
@@ -117,367 +109,490 @@ const OrderDetails = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   totalPrice;
-  
-  const [fareTotal, setFareTotal] = useState()
 
-  const [fareDetail, setFareDetail] = useState([])
-  const [serviceFee, setServiceFee] = useState(20000)
-  const [fareDetailRequest, setFareDetailRequest] = useState([])
-  const [resultFareBreakdown, setResultFareBreakdown] = useState([])
-  
+  const [fareTotal, setFareTotal] = useState();
+
+  const [fareDetail, setFareDetail] = useState([]);
+  const [serviceFee, setServiceFee] = useState(20000);
+  const [fareDetailRequest, setFareDetailRequest] = useState([]);
+  const [resultFareBreakdown, setResultFareBreakdown] = useState([]);
+
   const dataQuery = {
     adult: query?.adult,
     child: query?.child,
-    infant: query?.infant
-  }
-  
+    infant: query?.infant,
+  };
+
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
-      if(query?.isRoundTrip === 'true'){
-        let totalData = data?.flights?.length
-        const totalFareAll = []
-        setIsLoading(true)
-        let resultFareBreakdownTemp = []
-        let fareDetailRequestTemp = []
-        let fareDetailTemp = []
-        let statusTemp = []
-    
+      if (query?.isRoundTrip === "true") {
+        let totalData = data?.flights?.length;
+        const totalFareAll = [];
+        setIsLoading(true);
+        let resultFareBreakdownTemp = [];
+        let fareDetailRequestTemp = [];
+        let fareDetailTemp = [];
+        let statusTemp = [];
+
         await Promise.all(
-          data?.flights?.map(async (item, index)=>{
-            if(item?.FlightType === 'GdsBfm'){
+          data?.flights?.map(async (item, index) => {
+            if (item?.FlightType === "GdsBfm") {
               let totalAmountByPaxType = {};
-              item?.FareBreakdowns?.forEach(function(item) {
+              item?.FareBreakdowns?.forEach(function (item) {
                 var paxType = item.PaxType;
                 var charges = item.Charges;
-                
-                var totalAmount = charges.reduce(function(total, charge) {
-                    return total + charge.Amount;
+
+                var totalAmount = charges.reduce(function (total, charge) {
+                  return total + charge.Amount;
                 }, 0);
-            
+
                 if (totalAmountByPaxType[paxType] === undefined) {
-                    totalAmountByPaxType[paxType] = 0;
+                  totalAmountByPaxType[paxType] = 0;
                 }
-            
+
                 totalAmountByPaxType[paxType] += totalAmount;
               });
-      
-              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+
+              var result = Object.keys(totalAmountByPaxType).map(function (
+                paxType
+              ) {
                 return {
-                    "PaxType": paxType,
-                    "TotalAmount": totalAmountByPaxType[paxType]
+                  PaxType: paxType,
+                  TotalAmount: totalAmountByPaxType[paxType],
                 };
               });
 
-              let totalFareTempGDS = item?.FareBreakdowns?.reduce((sum, entry) => {
-                return sum + entry.Charges.reduce((chargeSum, charge) => chargeSum + charge.Amount, 0);
-              }, 0);
-      
-              resultFareBreakdownTemp[index] = result
-              totalFareAll.push(totalFareTempGDS)
-              statusTemp[index] = true
-            } else if (item?.FlightType === 'NonGds'){
-              if(item?.IsConnecting === false){
-                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+              let totalFareTempGDS = item?.FareBreakdowns?.reduce(
+                (sum, entry) => {
+                  return (
+                    sum +
+                    entry.Charges.reduce(
+                      (chargeSum, charge) => chargeSum + charge.Amount,
+                      0
+                    )
+                  );
+                },
+                0
+              );
+
+              resultFareBreakdownTemp[index] = result;
+              totalFareAll.push(totalFareTempGDS);
+              statusTemp[index] = true;
+            } else if (item?.FlightType === "NonGds") {
+              if (item?.IsConnecting === false) {
+                const fareItem = simplifyJourneysFlight(
+                  item,
+                  query,
+                  isDomestic
+                );
                 try {
+                  // get breakdown price flight
                   const response = await getDetailPrice(fareItem, jwt);
-                  fareDetailTemp[index] = response?.data
-                  if(response?.success === false){
-                    setIsLoading(false)
-                    statusTemp[index] = false
+                  fareDetailTemp[index] = response?.data;
+                  if (response?.success === false) {
+                    setIsLoading(false);
+                    statusTemp[index] = false;
                   } else {
-                    statusTemp[index] = true
+                    statusTemp[index] = true;
                   }
-      
+
                   var totalAmountByPaxType = {};
-                  response?.data?.Details.forEach(function(item) {
+                  response?.data?.Details.forEach(function (item) {
                     var paxType = item.Code;
                     var amount = item.Amount;
-                
+
                     if (totalAmountByPaxType[paxType] === undefined) {
-                        totalAmountByPaxType[paxType] = 0;
+                      totalAmountByPaxType[paxType] = 0;
                     }
                     totalAmountByPaxType[paxType] += amount;
                   });
-                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                  var result = Object.keys(totalAmountByPaxType).map(function (
+                    paxType
+                  ) {
                     return {
-                        "PaxType": paxType,
-                        "TotalAmount": totalAmountByPaxType[paxType]
+                      PaxType: paxType,
+                      TotalAmount: totalAmountByPaxType[paxType],
                     };
                   });
-      
-                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
+
+                  setServiceFee(
+                    response?.data?.AdditionalFee?.ServiceFee?.value
+                  );
                   const filteredResponse = result.filter(
                     (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
                   );
                   const sumTotal = result
-                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                    .filter(
+                      (item) =>
+                        item.PaxType !== "ADT" &&
+                        item.PaxType !== "CHD" &&
+                        item.PaxType !== "INFT"
+                    )
                     .reduce((total, item) => total + item.TotalAmount, 0);
-                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+                  const totalToDistribute =
+                    sumTotal /
+                    (Number(dataQuery.adult) + Number(dataQuery.child));
                   const updatedResponse = filteredResponse.map((item) => ({
                     ...item,
-                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+                    TotalAmount:
+                      item.PaxType === "ADT"
+                        ? item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.adult)
+                        : item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.child),
                   }));
-      
+
                   const finalResponse = [
                     ...updatedResponse,
-                    ...result.filter((item) => item.PaxType === "INFT")
+                    ...result.filter((item) => item.PaxType === "INFT"),
                   ];
-                  
-                  totalFareAll.push(response?.data?.Total)
-                  resultFareBreakdownTemp[index] = finalResponse
-                  fareDetailRequestTemp[index] = fareItem
+
+                  totalFareAll.push(response?.data?.Total);
+                  resultFareBreakdownTemp[index] = finalResponse;
+                  fareDetailRequestTemp[index] = fareItem;
                 } catch (error) {
-                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+                  console.error(
+                    "Terjadi kesalahan saat mengambil detail harga:",
+                    error
+                  );
                 }
-              } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
-                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
+              } else if (
+                item?.IsConnecting === true &&
+                item?.IsMultiClass === true
+              ) {
+                const fareItem = simplifyJourneysFlight(
+                  item,
+                  query,
+                  isDomestic
+                );
                 try {
                   const response = await getDetailPrice(fareItem, jwt);
-                  fareDetailTemp[index] = response?.data
-                  if(response?.success === false){
-                    setIsLoading(false)
-                    statusTemp[index] = false
+                  fareDetailTemp[index] = response?.data;
+                  if (response?.success === false) {
+                    setIsLoading(false);
+                    statusTemp[index] = false;
                   } else {
-                    statusTemp[index] = true
+                    statusTemp[index] = true;
                   }
-      
+
                   var totalAmountByPaxType = {};
-                  response?.data?.Details.forEach(function(item) {
+                  response?.data?.Details.forEach(function (item) {
                     var paxType = item.Code;
                     var amount = item.Amount;
                     if (totalAmountByPaxType[paxType] === undefined) {
-                        totalAmountByPaxType[paxType] = 0;
+                      totalAmountByPaxType[paxType] = 0;
                     }
                     totalAmountByPaxType[paxType] += amount;
                   });
-                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
+                  var result = Object.keys(totalAmountByPaxType).map(function (
+                    paxType
+                  ) {
                     return {
-                        "PaxType": paxType,
-                        "TotalAmount": totalAmountByPaxType[paxType]
+                      PaxType: paxType,
+                      TotalAmount: totalAmountByPaxType[paxType],
                     };
                   });
                   const filteredResponse = result.filter(
                     (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
                   );
                   const sumTotal = result
-                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
+                    .filter(
+                      (item) =>
+                        item.PaxType !== "ADT" &&
+                        item.PaxType !== "CHD" &&
+                        item.PaxType !== "INFT"
+                    )
                     .reduce((total, item) => total + item.TotalAmount, 0);
-                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
+                  const totalToDistribute =
+                    sumTotal /
+                    (Number(dataQuery.adult) + Number(dataQuery.child));
                   const updatedResponse = filteredResponse.map((item) => ({
                     ...item,
-                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
+                    TotalAmount:
+                      item.PaxType === "ADT"
+                        ? item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.adult)
+                        : item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.child),
                   }));
                   const finalResponse = [
                     ...updatedResponse,
-                    ...result.filter((item) => item.PaxType === "INFT")
+                    ...result.filter((item) => item.PaxType === "INFT"),
                   ];
-                  totalFareAll.push(response?.data?.Total)
-                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-                  resultFareBreakdownTemp[index] = finalResponse
-                  fareDetailRequestTemp[index] = fareItem
+                  totalFareAll.push(response?.data?.Total);
+                  setServiceFee(
+                    response?.data?.AdditionalFee?.ServiceFee?.value
+                  );
+
+                  // fare breakdown temp
+                  resultFareBreakdownTemp = response?.data?.DetailAdjustments;
+                  fareDetailRequestTemp[index] = fareItem;
                 } catch (error) {
-                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
+                  console.error(
+                    "Terjadi kesalahan saat mengambil detail harga:",
+                    error
+                  );
                 }
               }
             }
-      
-            if(totalData === totalFareAll?.length){
-              setIsLoading(false)
-            }
-            setResultFareBreakdown(resultFareBreakdownTemp)
-            setFareDetailRequest(fareDetailRequestTemp)
-            setFareTotal(totalFareAll?.reduce((a, b)=> a + b, 0))
-          }) 
-        )
-  
-        setStatusFareDetail(statusTemp)
-        setFareDetail(fareDetailTemp)     
-      } else {
-        let fareDetailRequestTemp = []
-        let fareDetailTemp = []
-        let statusTemp = []
-    
-        await Promise.all(
-          data?.flights?.map(async (item, index)=>{
-            setIsLoading(true)
-            if(item?.FlightType === 'GdsBfm'){
-              let totalAmountByPaxType = {};
 
-              let totalFareTempGDS = item?.FareBreakdowns?.reduce((sum, entry) => {
-                return sum + entry.Charges.reduce((chargeSum, charge) => chargeSum + charge.Amount, 0);
-              }, 0);
-            
-
-              item?.FareBreakdowns?.forEach(function(item) {
-                var paxType = item.PaxType;
-                var charges = item.Charges;
-                
-                var totalAmount = charges.reduce(function(total, charge) {
-                    return total + charge.Amount;
-                }, 0);
-            
-                if (totalAmountByPaxType[paxType] === undefined) {
-                    totalAmountByPaxType[paxType] = 0;
-                }
-            
-                totalAmountByPaxType[paxType] += totalAmount;
-              });
-      
-              var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-                return {
-                    "PaxType": paxType,
-                    "TotalAmount": totalAmountByPaxType[paxType]
-                };
-              });
-      
-              setResultFareBreakdown([result])
-              setFareTotal(totalFareTempGDS)
-              statusTemp[index] = true
-            } else if (item?.FlightType === 'NonGds'){
-              if(item?.IsConnecting === false){
-                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-                fareDetailRequestTemp[index] = fareItem
-                try {
-                  const response = await getDetailPrice(fareItem, jwt);
-                  fareDetailTemp[index] = response?.data
-                  if(response?.success === false){
-                    setIsLoading(false)
-                    statusTemp[index] = false
-                  } else {
-                    statusTemp[index] = true
-                  }
-      
-                  var totalAmountByPaxType = {};
-                  response?.data?.Details.forEach(function(item) {
-                    var paxType = item.Code;
-                    var amount = item.Amount;
-                
-                    if (totalAmountByPaxType[paxType] === undefined) {
-                        totalAmountByPaxType[paxType] = 0;
-                    }
-                    totalAmountByPaxType[paxType] += amount;
-                  });
-      
-                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-                    return {
-                        "PaxType": paxType,
-                        "TotalAmount": totalAmountByPaxType[paxType]
-                    };
-                  });
-      
-                  // ubah response nyaaaaaa
-                  const filteredResponse = result.filter(
-                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
-                  );
-      
-                  const sumTotal = result
-                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
-                    .reduce((total, item) => total + item.TotalAmount, 0);
-      
-                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-      
-                  const updatedResponse = filteredResponse.map((item) => ({
-                    ...item,
-                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
-                  }));
-      
-                  const finalResponse = [
-                    ...updatedResponse,
-                    ...result.filter((item) => item.PaxType === "INFT")
-                  ];
-      
-                  setResultFareBreakdown([finalResponse])
-                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-                  setFareTotal(response?.data?.Total)
-                } catch (error) {
-                  setFareDetailRequest([])
-                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-                }
-              } else if(item?.IsConnecting === true && item?.IsMultiClass === true) {
-                const fareItem = simplifyJourneysFlight(item, query, isDomestic)
-                fareDetailRequestTemp[index] = fareItem
-                try {
-                  const response = await getDetailPrice(fareItem, jwt);
-                  fareDetailTemp[index] = response?.data
-                  if(response?.success === false){
-                    setIsLoading(false)
-                    statusTemp[index] = false
-                  } else {
-                    statusTemp[index] = true
-                  }
-      
-                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-                  var totalAmountByPaxType = {};
-                  response?.data?.Details.forEach(function(item) {
-                    var paxType = item.Code;
-                    var amount = item.Amount;
-                
-                    if (totalAmountByPaxType[paxType] === undefined) {
-                        totalAmountByPaxType[paxType] = 0;
-                    }
-                    totalAmountByPaxType[paxType] += amount;
-                  });
-      
-                  var result = Object.keys(totalAmountByPaxType).map(function(paxType) {
-                    return {
-                        "PaxType": paxType,
-                        "TotalAmount": totalAmountByPaxType[paxType]
-                    };
-                  });
-      
-                  // ubah response nyaaaaaa
-                  const filteredResponse = result.filter(
-                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
-                  );
-      
-                  const sumTotal = result
-                    .filter((item) => item.PaxType !== "ADT" && item.PaxType !== "CHD" && item.PaxType !== "INFT")
-                    .reduce((total, item) => total + item.TotalAmount, 0);
-      
-                  const totalToDistribute = sumTotal / (Number(dataQuery.adult) + Number(dataQuery.child));
-      
-                  const updatedResponse = filteredResponse.map((item) => ({
-                    ...item,
-                    TotalAmount: item.PaxType === "ADT" ? item.TotalAmount + totalToDistribute * Number(dataQuery.adult) : item.TotalAmount + totalToDistribute * Number(dataQuery.child)
-                  }));
-      
-                  const finalResponse = [
-                    ...updatedResponse,
-                    ...result.filter((item) => item.PaxType === "INFT")
-                  ];
-      
-                  setResultFareBreakdown([finalResponse])
-                  setServiceFee(response?.data?.AdditionalFee?.ServiceFee?.value)
-                  setFareTotal(response?.data?.Total)
-                } catch (error) {
-                  setFareDetailRequest([])
-                  console.error('Terjadi kesalahan saat mengambil detail harga:', error);
-                }
-              }
+            if (totalData === totalFareAll?.length) {
+              setIsLoading(false);
             }
-            setIsLoading(false)
+            setResultFareBreakdown(resultFareBreakdownTemp);
+            setFareDetailRequest(fareDetailRequestTemp);
+            setFareTotal(totalFareAll?.reduce((a, b) => a + b, 0));
           })
-        )
-        setFareDetailRequest(fareDetailRequestTemp)
-        setFareDetail(fareDetailTemp)
-        setStatusFareDetail(statusTemp)
+        );
+
+        setStatusFareDetail(statusTemp);
+        setFareDetail(fareDetailTemp);
+      } else {
+        let fareDetailRequestTemp = [];
+        let fareDetailTemp = [];
+        let statusTemp = [];
+
+        await Promise.all(
+          data?.flights?.map(async (item, index) => {
+            setIsLoading(true);
+            if (item?.FlightType === "GdsBfm") {
+              let totalAmountByPaxType = {};
+
+              let totalFareTempGDS = item?.FareBreakdowns?.reduce(
+                (sum, entry) => {
+                  return (
+                    sum +
+                    entry.Charges.reduce(
+                      (chargeSum, charge) => chargeSum + charge.Amount,
+                      0
+                    )
+                  );
+                },
+                0
+              );
+
+              item?.FareBreakdowns?.forEach(function (item) {
+                var paxType = item.PaxType;
+                var charges = item.Charges;
+
+                var totalAmount = charges.reduce(function (total, charge) {
+                  return total + charge.Amount;
+                }, 0);
+
+                if (totalAmountByPaxType[paxType] === undefined) {
+                  totalAmountByPaxType[paxType] = 0;
+                }
+
+                totalAmountByPaxType[paxType] += totalAmount;
+              });
+
+              var result = Object.keys(totalAmountByPaxType).map(function (
+                paxType
+              ) {
+                return {
+                  PaxType: paxType,
+                  TotalAmount: totalAmountByPaxType[paxType],
+                };
+              });
+
+              // setResultFareBreakdown([result]);
+              setFareTotal(totalFareTempGDS);
+              statusTemp[index] = true;
+            } else if (item?.FlightType === "NonGds") {
+              if (item?.IsConnecting === false) {
+                const fareItem = simplifyJourneysFlight(
+                  item,
+                  query,
+                  isDomestic
+                );
+                fareDetailRequestTemp[index] = fareItem;
+                try {
+                  const response = await getDetailPrice(fareItem, jwt);
+                  fareDetailTemp[index] = response?.data;
+                  if (response?.success === false) {
+                    setIsLoading(false);
+                    statusTemp[index] = false;
+                  } else {
+                    statusTemp[index] = true;
+                  }
+
+                  var totalAmountByPaxType = {};
+                  response?.data?.Details.forEach(function (item) {
+                    var paxType = item.Code;
+                    var amount = item.Amount;
+
+                    if (totalAmountByPaxType[paxType] === undefined) {
+                      totalAmountByPaxType[paxType] = 0;
+                    }
+                    totalAmountByPaxType[paxType] += amount;
+                  });
+
+                  var result = Object.keys(totalAmountByPaxType).map(function (
+                    paxType
+                  ) {
+                    return {
+                      PaxType: paxType,
+                      TotalAmount: totalAmountByPaxType[paxType],
+                    };
+                  });
+
+                  // ubah response nyaaaaaa
+                  const filteredResponse = result.filter(
+                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+                  );
+
+                  const sumTotal = result
+                    .filter(
+                      (item) =>
+                        item.PaxType !== "ADT" &&
+                        item.PaxType !== "CHD" &&
+                        item.PaxType !== "INFT"
+                    )
+                    .reduce((total, item) => total + item.TotalAmount, 0);
+
+                  const totalToDistribute =
+                    sumTotal /
+                    (Number(dataQuery.adult) + Number(dataQuery.child));
+
+                  const updatedResponse = filteredResponse.map((item) => ({
+                    ...item,
+                    TotalAmount:
+                      item.PaxType === "ADT"
+                        ? item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.adult)
+                        : item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.child),
+                  }));
+
+                  const finalResponse = [
+                    ...updatedResponse,
+                    ...result.filter((item) => item.PaxType === "INFT"),
+                  ];
+                  setResultFareBreakdown(response?.data?.DetailAdjustments);
+                  setServiceFee(
+                    response?.data?.AdditionalFee?.ServiceFee?.value
+                  );
+                  setFareTotal(response?.data?.Total);
+                } catch (error) {
+                  setFareDetailRequest([]);
+                  console.error(
+                    "Terjadi kesalahan saat mengambil detail harga:",
+                    error
+                  );
+                }
+              } else if (
+                item?.IsConnecting === true &&
+                item?.IsMultiClass === true
+              ) {
+                const fareItem = simplifyJourneysFlight(
+                  item,
+                  query,
+                  isDomestic
+                );
+                fareDetailRequestTemp[index] = fareItem;
+                try {
+                  const response = await getDetailPrice(fareItem, jwt);
+                  fareDetailTemp[index] = response?.data;
+                  if (response?.success === false) {
+                    setIsLoading(false);
+                    statusTemp[index] = false;
+                  } else {
+                    statusTemp[index] = true;
+                  }
+
+                  setServiceFee(
+                    response?.data?.AdditionalFee?.ServiceFee?.value
+                  );
+                  var totalAmountByPaxType = {};
+                  response?.data?.Details.forEach(function (item) {
+                    var paxType = item.Code;
+                    var amount = item.Amount;
+
+                    if (totalAmountByPaxType[paxType] === undefined) {
+                      totalAmountByPaxType[paxType] = 0;
+                    }
+                    totalAmountByPaxType[paxType] += amount;
+                  });
+
+                  var result = Object.keys(totalAmountByPaxType).map(function (
+                    paxType
+                  ) {
+                    return {
+                      PaxType: paxType,
+                      TotalAmount: totalAmountByPaxType[paxType],
+                    };
+                  });
+
+                  // ubah response nyaaaaaa
+                  const filteredResponse = result.filter(
+                    (item) => item.PaxType === "ADT" || item.PaxType === "CHD"
+                  );
+
+                  const sumTotal = result
+                    .filter(
+                      (item) =>
+                        item.PaxType !== "ADT" &&
+                        item.PaxType !== "CHD" &&
+                        item.PaxType !== "INFT"
+                    )
+                    .reduce((total, item) => total + item.TotalAmount, 0);
+
+                  const totalToDistribute =
+                    sumTotal /
+                    (Number(dataQuery.adult) + Number(dataQuery.child));
+
+                  const updatedResponse = filteredResponse.map((item) => ({
+                    ...item,
+                    TotalAmount:
+                      item.PaxType === "ADT"
+                        ? item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.adult)
+                        : item.TotalAmount +
+                          totalToDistribute * Number(dataQuery.child),
+                  }));
+
+                  const finalResponse = [
+                    ...updatedResponse,
+                    ...result.filter((item) => item.PaxType === "INFT"),
+                  ];
+
+                  setResultFareBreakdown(response?.data?.DetailAdjustments);
+                  setServiceFee(
+                    response?.data?.AdditionalFee?.ServiceFee?.value
+                  );
+                  setFareTotal(response?.data?.Total);
+                } catch (error) {
+                  setFareDetailRequest([]);
+                  console.error(
+                    "Terjadi kesalahan saat mengambil detail harga:",
+                    error
+                  );
+                }
+              }
+            }
+            setIsLoading(false);
+          })
+        );
+        setFareDetailRequest(fareDetailRequestTemp);
+        setFareDetail(fareDetailTemp);
+        setStatusFareDetail(statusTemp);
       }
     } catch (error) {
-      console.error('Terjadi kesalahan:', error);
+      console.error("Terjadi kesalahan:", error);
     } finally {
       setIsLoading(false);
     }
-  },[setIsLoading])
+  }, [setIsLoading]);
 
   useEffect(() => {
-    fetchData()
+    fetchData();
   }, [fetchData]);
 
   const [isPromoAvailable, setIsPromoAvailable] = useState({
     available: false,
     totalDiscount: 0,
-    promoCode: ""
+    promoCode: "",
   });
 
   const [totalPrice, setTotalPrice] = useState({});
@@ -504,7 +619,6 @@ const OrderDetails = () => {
   const toast = useToast();
 
   const handleSubmit = () => {
-  
     if (
       !customer?.fullName ||
       !customer?.email ||
@@ -544,15 +658,15 @@ const OrderDetails = () => {
       isInternational: !isDomestic,
       transaction: {
         subTotal: fareTotal,
-        total: (fareTotal+serviceFee) - isPromoAvailable?.totalDiscount,
+        total: fareTotal + serviceFee - isPromoAvailable?.totalDiscount,
         discount: isPromoAvailable?.totalDiscount,
         downPayment: 0,
         promoCode: isPromoAvailable?.promoCode,
         discountPromo: isPromoAvailable?.totalDiscount,
         unique_code: isPromoAvailable?.unique_code || null,
-        serviceFee: serviceFee
+        serviceFee: serviceFee,
       },
-      fareDetail: updatedFareDetail 
+      fareDetail: updatedFareDetail,
     };
 
     mutation.mutate(payload);
@@ -565,28 +679,31 @@ const OrderDetails = () => {
       category: "flight",
     };
     mutationPromo.mutate(payload);
-  }
-  
-  const mutation = useMutation(async (form) => {
+  };
+
+  const mutation = useMutation(
+    async (form) => {
       const response = await bookingFlight(form, jwt);
       return Promise.resolve(response);
-  },
+    },
     {
       onSuccess: (response) => {
-        if(response.success === true){
-          dispatch(checkoutData({ 
-            orderDetail: response,  
-            transaction: {
-              subTotal: fareTotal,
-              total: (fareTotal+serviceFee) - isPromoAvailable?.totalDiscount,
-              discount: isPromoAvailable?.totalDiscount,
-              downPayment: 0,
-              promoCode: isPromoAvailable?.promoCode,
-              discountPromo: isPromoAvailable?.totalDiscount,
-              unique_code: isPromoAvailable?.unique_code || null,
-              serviceFee: serviceFee
-            },
-          }));
+        if (response.success === true) {
+          dispatch(
+            checkoutData({
+              orderDetail: response,
+              transaction: {
+                subTotal: fareTotal,
+                total: fareTotal + serviceFee - isPromoAvailable?.totalDiscount,
+                discount: isPromoAvailable?.totalDiscount,
+                downPayment: 0,
+                promoCode: isPromoAvailable?.promoCode,
+                discountPromo: isPromoAvailable?.totalDiscount,
+                unique_code: isPromoAvailable?.unique_code || null,
+                serviceFee: serviceFee,
+              },
+            })
+          );
           router.push({ pathname: "/flights/payment" });
         } else {
           toast({
@@ -652,7 +769,7 @@ const OrderDetails = () => {
           available: true,
           totalDiscount: response.promo_detail.discount_amount,
           promoCode: response.promo_detail.promoCode,
-          unique_code: response?.unique_code
+          unique_code: response?.unique_code,
         });
       },
       onError: (error) => {
@@ -677,56 +794,68 @@ const OrderDetails = () => {
           justifyContent="space-between"
           alignItems="center"
         >
-          {
-            !isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? (
+          {!isLoading &&
+          statusCheckout &&
+          statusFareDetail?.length === totalDataFlight ? (
+            <Text
+              fontSize="lg"
+              fontWeight="semibold"
+              color="brand.orange.400"
+              w="full"
+              whiteSpace={"nowrap"}
+            >
+              {isLoading ? (
+                <Spinner />
+              ) : (
+                <>IDR {convertRupiah(fareTotal + serviceFee)}</>
+              )}
               <Text
-                fontSize="lg"
-                fontWeight="semibold"
-                color="brand.orange.400"
-                w="full"
-                whiteSpace={"nowrap"}
+                fontSize={"xs"}
+                color="neutral.text.low"
+                fontWeight={"normal"}
+                as={"span"}
               >
-                  {
-                    isLoading ? 
-                    <Spinner/> : 
-                    <>IDR {convertRupiah(fareTotal+serviceFee)}</>
-                  }
-                <Text
-                  fontSize={"xs"}
-                  color="neutral.text.low"
-                  fontWeight={"normal"}
-                  as={"span"}
-                >
-                  per pax
-                </Text>
+                per pax
               </Text>
-            ) : (
-              ""
-            )
-          }
-          {
-            isLoading ? (
-              <Center width="100%">
-                <Spinner></Spinner>
-              </Center>
-            ) : (fareTotal !== undefined && statusCheckout && (statusFareDetail?.length === totalDataFlight)) ? (
-              <CustomOrangeFullWidthButton
-                maxW={`${!isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? '180px' : '100%' } `}
-                onClick={() => setIsChoosed(true)}
-                // disabled={price.isLoading && !price.data?.priceFinalCustom}
-              >
-                Pilih Tiket
-              </CustomOrangeFullWidthButton>
-            ) : (
-              <CustomOrangeFullWidthButton
-                maxW={`${!isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? '180px' : '100%' } `}
-                onClick={() => router.back()}
-                // disabled={price.isLoading && !price.data?.priceFinalCustom}
-              >
-                Tiket Tidak Tersedia
-              </CustomOrangeFullWidthButton>
-            )
-          }
+            </Text>
+          ) : (
+            ""
+          )}
+          {isLoading ? (
+            <Center width="100%">
+              <Spinner></Spinner>
+            </Center>
+          ) : fareTotal !== undefined &&
+            statusCheckout &&
+            statusFareDetail?.length === totalDataFlight ? (
+            <CustomOrangeFullWidthButton
+              maxW={`${
+                !isLoading &&
+                statusCheckout &&
+                statusFareDetail?.length === totalDataFlight
+                  ? "180px"
+                  : "100%"
+              } `}
+              onClick={() => setIsChoosed(true)}
+              // disabled={price.isLoading && !price.data?.priceFinalCustom}
+            >
+              Pilih Tiket
+            </CustomOrangeFullWidthButton>
+          ) : (
+            <CustomOrangeFullWidthButton
+              maxW={`${
+                !isLoading &&
+                statusCheckout &&
+                statusFareDetail?.length === totalDataFlight
+                  ? "180px"
+                  : "100%"
+              } `}
+              onClick={() => router.back()}
+              // disabled={price.isLoading && !price.data?.priceFinalCustom}
+            >
+              Tiket Tidak Tersedia
+            </CustomOrangeFullWidthButton>
+          )}
         </HStack>
       </Box>
     );
@@ -734,7 +863,7 @@ const OrderDetails = () => {
 
   const TabContent = ({ type, onChoose, journey, status }) => {
     const { query } = useSelector((state) => state.orderReducer);
-    const [flights, setFlights] = useState([])
+    const [flights, setFlights] = useState([]);
     const isDesktop = useBreakpointValue(
       { base: false, md: true },
       { ssr: false }
@@ -765,9 +894,11 @@ const OrderDetails = () => {
                 query.isRoundTrip == "true"
                   ? `Round Trip - ${status}`
                   : "One Way",
-                  type === "transit" ? 
-                  (journey?.TotalTransit === 0 ? "Langsung" : `${journey?.TotalTransit} Transit`)
-                  : "Langsung"
+                type === "transit"
+                  ? journey?.TotalTransit === 0
+                    ? "Langsung"
+                    : `${journey?.TotalTransit} Transit`
+                  : "Langsung",
               ].map((item, index) => (
                 <Badge
                   key={index}
@@ -782,19 +913,19 @@ const OrderDetails = () => {
               ))}
             </HStack>
             <Text my="12px" fontWeight="semibold" fontSize={"lg"}>
-              Ke{" "}
-              {journey?.DestinationCityName}
+              Ke {journey?.DestinationCityName}
             </Text>
             <Stack spacing={"24px"} py={"24px"}>
               {flights?.map((item, index) => {
-                return   (
+                return (
                   <Box as={"section"} key={index}>
                     <Stack
                       w="full"
                       p={"16px"}
                       gap={"16px"}
                       borderTopRadius={"12px"}
-                      bg={"white"}>
+                      bg={"white"}
+                    >
                       <Stack spacing={"24px"}>
                         <HStack
                           justifyContent={"space-between"}
@@ -818,30 +949,28 @@ const OrderDetails = () => {
                             alignItems={"end"}
                             textAlign={"right"}
                           >
-                            {[ 
+                            {[
                               {
                                 a: item?.DepartTime,
-                                b: item?.DepartDate
-                              }, 
+                                b: item?.DepartDate,
+                              },
                               {
                                 a: item?.ArriveTime,
-                                b: item?.ArriveDate
-                              }    
-                            ].map(
-                                (datetime, index) => (
-                                  <Box key={index}>
-                                    <Text
-                                      fontSize={{ base: "sm", md: "md" }}
-                                      fontWeight={"semibold"}
-                                    >
-                                      {datetime?.a?.replace(/:/, '.')}
-                                    </Text>
-                                    <Text fontSize={{ base: "sm", md: "md" }}>
-                                      {convertDateFlightPage(datetime?.b)}
-                                    </Text>
-                                  </Box>
-                                )
-                              )}
+                                b: item?.ArriveDate,
+                              },
+                            ].map((datetime, index) => (
+                              <Box key={index}>
+                                <Text
+                                  fontSize={{ base: "sm", md: "md" }}
+                                  fontWeight={"semibold"}
+                                >
+                                  {datetime?.a?.replace(/:/, ".")}
+                                </Text>
+                                <Text fontSize={{ base: "sm", md: "md" }}>
+                                  {convertDateFlightPage(datetime?.b)}
+                                </Text>
+                              </Box>
+                            ))}
                           </VStack>
                           <Box py={"12px"}>
                             <VStack
@@ -871,10 +1000,12 @@ const OrderDetails = () => {
                             {[
                               {
                                 c: `${item?.OriginCityName}, ${item?.Origin}`,
-                                a: `${item?.OriginAirportName}`
+                                a: `${item?.OriginAirportName}`,
                               },
                               {
-                                b: `${item.Duration.split(':')[0]} JAM ${item.Duration.split(':')[1]} MENIT`,
+                                b: `${item.Duration.split(":")[0]} JAM ${
+                                  item.Duration.split(":")[1]
+                                } MENIT`,
                               },
                               {
                                 c: `${item?.DestinationCityName}, ${item?.Destination}`,
@@ -913,7 +1044,8 @@ const OrderDetails = () => {
                       borderTopColor={"gray.200"}
                       borderTopStyle={"dashed"}
                       borderBottomRadius={"12px"}
-                      bg={"white"}>
+                      bg={"white"}
+                    >
                       {[{ left: "-8px" }, { right: "-8px" }].map(
                         (item, index) => (
                           <Box
@@ -930,70 +1062,79 @@ const OrderDetails = () => {
                       )}
                       <HStack
                         justifyContent={"space-between"}
-                        alignItems={"center"}>
-                          <HStack>
-                            <Image
-                              src="/svg/nav/tours.svg"
-                              alt="tours"
-                              width={20}
-                              height={20}
-                            />
-                            <Text fontSize={"sm"} fontWeight={"semibold"}>
-                                {item?.TotalTransit == 0 ? (
-                                <Text
-                                  fontSize={{ base: "sm", md: "md" }}
-                                  fontWeight={"semibold"}>
-                                  Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[0]?.Value : ' - '}
-                                </Text>
-                              ) : 
-                              (
-                                <>
-                                  {
-                                  item?.ConnectingFlights.map((item, index)=>(
-                                      <Text
-                                        key={index}
-                                        fontSize={{ base: "sm", md: "md" }}
-                                        fontWeight={"semibold"}>
-                                        Bagasi {" "} {item?.Facilities !== null ? item?.Facilities[index]?.Value : ' - '}
-                                      </Text>
-                                    ))
-                                  }
-                                </>
-                              ) 
-                              }
-                            </Text>
-                          </HStack>
+                        alignItems={"center"}
+                      >
+                        <HStack>
                           <Image
-                            hidden
-                            src="/svg/icons/chevron-down.svg"
-                            alt="chevron-down"
-                            width={16}
-                            height={16}
+                            src="/svg/nav/tours.svg"
+                            alt="tours"
+                            width={20}
+                            height={20}
                           />
+                          <Text fontSize={"sm"} fontWeight={"semibold"}>
+                            {item?.TotalTransit == 0 ? (
+                              <Text
+                                fontSize={{ base: "sm", md: "md" }}
+                                fontWeight={"semibold"}
+                              >
+                                Bagasi{" "}
+                                {item?.Facilities !== null
+                                  ? item?.Facilities[0]?.Value
+                                  : " - "}
+                              </Text>
+                            ) : (
+                              <>
+                                {item?.ConnectingFlights.map((item, index) => (
+                                  <Text
+                                    key={index}
+                                    fontSize={{ base: "sm", md: "md" }}
+                                    fontWeight={"semibold"}
+                                  >
+                                    Bagasi{" "}
+                                    {item?.Facilities !== null
+                                      ? item?.Facilities[index]?.Value
+                                      : " - "}
+                                  </Text>
+                                ))}
+                              </>
+                            )}
+                          </Text>
                         </HStack>
+                        <Image
+                          hidden
+                          src="/svg/icons/chevron-down.svg"
+                          alt="chevron-down"
+                          width={16}
+                          height={16}
+                        />
+                      </HStack>
                     </Box>
-                    {item?.TotalTransit > 0 || index < flights?.length - 1 && (
-                      <VStack
-                        p={"12px"}
-                        mt={'8px'}
-                        bg={"brand.blue.100"}
-                        borderRadius={"12px"}
-                        justifyContent={"center"}
-                        alignText={"center"}>
+                    {item?.TotalTransit > 0 ||
+                      (index < flights?.length - 1 && (
+                        <VStack
+                          p={"12px"}
+                          mt={"8px"}
+                          bg={"brand.blue.100"}
+                          borderRadius={"12px"}
+                          justifyContent={"center"}
+                          alignText={"center"}
+                        >
                           <Text fontSize={"sm"} color={"neutral.text.low"}>
-                            {`Transit selama ${breakdownTransitTime(String(item?.ClassObjects[0]?.TransitTime))} di`}
+                            {`Transit selama ${breakdownTransitTime(
+                              String(item?.ClassObjects[0]?.TransitTime)
+                            )} di`}
                           </Text>
                           <Text
                             fontWeight={"semibold"}
                             fontSize={"sm"}
                             color={"neutral.text.medium"}
                           >
-                            {`${item?.DestinationCityName} (${item?.Destination}) ${item?.DestinationAirportName }`}                      
+                            {`${item?.DestinationCityName} (${item?.Destination}) ${item?.DestinationAirportName}`}
                           </Text>
                         </VStack>
-                    )}
+                      ))}
                   </Box>
-                )
+                );
               })}
             </Stack>
           </GridItem>
@@ -1036,7 +1177,10 @@ const OrderDetails = () => {
             color="brand.orange.400"
             w="full"
           >
-            IDR {convertRupiah((fareTotal+serviceFee) - isPromoAvailable?.totalDiscount)}
+            IDR{" "}
+            {convertRupiah(
+              fareTotal + serviceFee - isPromoAvailable?.totalDiscount
+            )}
           </Text>
         ) : (
           <Spinner></Spinner>
@@ -1094,15 +1238,18 @@ const OrderDetails = () => {
               as={"section"}
               bg={"white"}
               // bg={{ base: "brand.blue.100", md: "brand.blue.100" }}
-              mx={"-24px"}>
+              mx={"-24px"}
+            >
               <Box
                 maxW={{ lg: "container.lg", xl: "container.xl" }}
-                mx={"auto"}>
+                mx={"auto"}
+              >
                 <FlightDetails query={query} data={data} hidden={!isDesktop} />
                 <Grid
                   templateColumns={{ md: "repeat(3,1fr)" }}
                   py={"24px"}
-                  columnGap={"calc(20px + 24px)"}>
+                  columnGap={"calc(20px + 24px)"}
+                >
                   <GridItem colSpan={{ md: 2 }}>
                     <CheckoutDetail
                       category={"flight"}
@@ -1117,7 +1264,11 @@ const OrderDetails = () => {
                       handlePromo={handlePromo}
                       isPromoAvailable={isPromoAvailable}
                       isLackField={isError}
-                      isKTP = {data?.flights?.find((item) => (item?.AirlineName === "Citilink" || item?.AirlineName === "AirAsia"))}                      
+                      isKTP={data?.flights?.find(
+                        (item) =>
+                          item?.AirlineName === "Citilink" ||
+                          item?.AirlineName === "AirAsia"
+                      )}
                     />
                   </GridItem>
                   <FlightPrice hidden={!isDesktop} />
@@ -1143,7 +1294,11 @@ const OrderDetails = () => {
                         >
                           Rincian Harga
                         </Text>
-                        <FlightPriceDetails loading={isLoading} isPromoAvailable={isPromoAvailable} detail_prices={fareTotal+serviceFee} />
+                        <FlightPriceDetails
+                          loading={isLoading}
+                          isPromoAvailable={isPromoAvailable}
+                          detail_prices={fareTotal + serviceFee}
+                        />
                       </Box>
                       <FlightPrice hidden={isDesktop} />
                     </Stack>
@@ -1218,7 +1373,7 @@ const OrderDetails = () => {
                             status="Pulang"
                             journey={journeys.flights[1]}
                             onChoose={() => {
-                              setIsChoosed(true)
+                              setIsChoosed(true);
                               // alert('ini kedua')
                             }}
                           />
@@ -1240,172 +1395,156 @@ const OrderDetails = () => {
                         <Text pb="1px" fontSize="lg" fontWeight="semibold">
                           Detail Harga
                         </Text>
-                              <>
-                                {
-                                  isLoading ? (
-                                    <Center width='100%'>
-                                      <Spinner />
-                                    </Center>
-                                  ) : !isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? (
+                        <>
+                          {isLoading ? (
+                            <Center width="100%">
+                              <Spinner />
+                            </Center>
+                          ) : !isLoading &&
+                            statusCheckout &&
+                            statusFareDetail?.length === totalDataFlight ? (
+                            <>
+                              <VStack
+                                alignItems="start"
+                                py={"16px"}
+                                // borderBottom="1px dashed #9E9E9E"
+                              >
+                                <>
+                                  {journeys.flights.map((item, index) => (
                                     <>
-                                      <VStack
-                                        alignItems="start"
-                                        py={"16px"}
-                                        // borderBottom="1px dashed #9E9E9E"
-                                        >
+                                      <Text
+                                        color="brand.blue.400"
+                                        fontWeight="semibold"
+                                        fontSize={"sm"}
+                                        key={index}
+                                      >
+                                        Tiket penerbangan {index + 1} •{" "}
+                                        {item?.IsConnecting === false
+                                          ? item?.AirlineName
+                                          : item?.ConnectingFlights[0]
+                                              ?.AirlineName}
+                                      </Text>
+                                      {isLoading ? (
+                                        <Center width="100%">
+                                          <Spinner></Spinner>
+                                        </Center>
+                                      ) : (
                                         <>
-                                          {
-                                            journeys .flights.map((item, index) => (
-                                              <>
-                                                <Text
-                                                  color="brand.blue.400"
-                                                  fontWeight="semibold"
-                                                  fontSize={"sm"}
-                                                  key={index}
-                                                >
-                                                  Tiket penerbangan {index + 1} •{" "}
-                                                  {
-                                                    item?.IsConnecting === false ? item?.AirlineName : item?.ConnectingFlights[0]?.AirlineName
-                                                  }
-                                                </Text>
-                                                {
-                                                  isLoading ? 
-                                                  (
-                                                    <Center width="100%">
-                                                      <Spinner></Spinner>
-                                                    </Center>
-                                                  ): (
-                                                    <>
-                                                      {
-                                                        dataQuery.adult !== "0" && (
-                                                          <HStack
-                                                            w="full"
-                                                            justifyContent="space-between"
-                                                            // pt={2}
-                                                          >
-                                                            <Text fontSize="sm" color="neutral.text.medium">
-                                                              Dewasa (x{dataQuery?.adult})
-                                                            </Text>
-                                                            {
-                                                              resultFareBreakdown[index]?.map((item, index) => {
-                                                                if(item?.PaxType === "ADT" || item?.PaxType === "1"){
-                                                                  return (
-                                                                    <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                                      IDR {convertRupiah(item?.TotalAmount)}
-                                                                    </Text>
-                                                                  )
-                                                                } 
-                                                              })
-                                                            }
-                                                          </HStack>
-                                                        )
-                                                      }
-
-                                                      {
-                                                        dataQuery.child !== "0" && (
-                                                          <HStack
-                                                            w="full"
-                                                            justifyContent="space-between"
-                                                          >
-                                                            <Text fontSize="sm" color="neutral.text.medium">
-                                                              Anak-anak (x{dataQuery?.child})
-                                                            </Text>
-                                                            {
-                                                              resultFareBreakdown[index]?.map((item, index) => {
-                                                                if(item?.PaxType === "CHD" || item?.PaxType === "2"){
-                                                                  return (
-                                                                    <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                                      IDR {convertRupiah(item?.TotalAmount)}
-                                                                    </Text>
-                                                                  )
-                                                                } 
-                                                              })
-                                                            }
-                                                          </HStack>
-                                                        )
-                                                      }
-
-                                                      {
-                                                        dataQuery.infant !== "0" && (
-                                                          <HStack
-                                                            w="full"
-                                                            justifyContent="space-between"
-                                                          >
-                                                            <Text fontSize="sm" color="neutral.text.medium">
-                                                              Bayi (x{dataQuery?.infant})
-                                                            </Text>
-                                                            {
-                                                              resultFareBreakdown[index]?.map((item, index) => {
-                                                                if(item?.PaxType === "INF" || item?.PaxType === "INFT" || item?.PaxType === "3"){
-                                                                  return (
-                                                                    <Text key={index} fontSize="sm" color="neutral.text.medium">
-                                                                      {
-                                                                        item?.TotalAmount !== 0 ? (
-                                                                          `IDR ${convertRupiah(item?.TotalAmount)}`
-                                                                        ) : (`IDR 0`)
-                                                                      }
-                                                                    </Text>
-                                                                  )
-                                                                } 
-                                                              })
-                                                            }
-                                                          </HStack>
-                                                        )
-                                                      }
-                                                    </>
-                                                  )
-                                                }
-                                                
-                                              </>
-                                            ))
-                                          }
-                                          <Divider variant={"dashed"} />
-                                        </>
-                                        <HStack
-                                          w="full"
-                                          justifyContent="space-between"
-                                          pt={4}
-                                        >
-                                          <Text fontSize="sm" color="neutral.text.medium">
-                                            Pajak
-                                          </Text>
-                                          <Text fontSize="sm" color="neutral.text.medium">
-                                            Sudah Termasuk
-                                            {/* IDR {convertRupiah(i.total)} */}
-                                          </Text>
-                                        </HStack>
-                                        <HStack w="full" justifyContent="space-between">
-                                          <Text fontSize="sm" color="neutral.text.medium">
-                                            Service Fee
-                                          </Text>
-                                          {
-                                            isLoading ? (
-                                              <Spinner />
-                                            ) : !isLoading && statusCheckout && (statusFareDetail?.length === totalDataFlight) ? (
-                                              <Text fontSize="sm" color="neutral.text.medium">
-                                                IDR{" "}
-                                                {convertRupiah(serviceFee)}
+                                          {dataQuery.adult !== "0" && (
+                                            <HStack
+                                              w="full"
+                                              justifyContent="space-between"
+                                              // pt={2}
+                                            >
+                                              <Text
+                                                fontSize="sm"
+                                                color="neutral.text.medium"
+                                              >
+                                                Dewasa (x{dataQuery?.adult})
                                               </Text>
-                                            ) : (
-                                              "-"
-                                            )
-                                          }
-                                        </HStack>
-                                        <Divider variant={"dashed"} />
-                                      </VStack>
-                                      <HStack justifyContent="space-between" py="16px">
-                                      <Text>Total Pembayaran</Text>
-                                      <Text fontWeight="semibold">
-                                          IDR{" "}
-                                          {convertRupiah(fareTotal+serviceFee)}
-                                        </Text>
-                                      </HStack>
+                                              <FareItem
+                                                data={resultFareBreakdown}
+                                                code="ADT"
+                                              />
+                                            </HStack>
+                                          )}
+
+                                          {dataQuery.child !== "0" && (
+                                            <HStack
+                                              w="full"
+                                              justifyContent="space-between"
+                                            >
+                                              <Text
+                                                fontSize="sm"
+                                                color="neutral.text.medium"
+                                              >
+                                                Anak-anak (x{dataQuery?.child})
+                                              </Text>
+                                              <FareItem
+                                                data={resultFareBreakdown}
+                                                code="CHD"
+                                              />
+                                            </HStack>
+                                          )}
+
+                                          {dataQuery.infant !== "0" && (
+                                            <HStack
+                                              w="full"
+                                              justifyContent="space-between"
+                                            >
+                                              <Text
+                                                fontSize="sm"
+                                                color="neutral.text.medium"
+                                              >
+                                                Bayi (x{dataQuery?.infant})
+                                              </Text>
+                                              <FareItem
+                                                data={resultFareBreakdown}
+                                                code="INF"
+                                              />
+                                            </HStack>
+                                          )}
+                                        </>
+                                      )}
                                     </>
+                                  ))}
+                                  <Divider variant={"dashed"} />
+                                </>
+                                <HStack
+                                  w="full"
+                                  justifyContent="space-between"
+                                  pt={4}
+                                >
+                                  <Text
+                                    fontSize="sm"
+                                    color="neutral.text.medium"
+                                  >
+                                    Pajak
+                                  </Text>
+                                  <Text
+                                    fontSize="sm"
+                                    color="neutral.text.medium"
+                                  >
+                                    Sudah Termasuk
+                                    {/* IDR {convertRupiah(i.total)} */}
+                                  </Text>
+                                </HStack>
+                                <HStack w="full" justifyContent="space-between">
+                                  <Text
+                                    fontSize="sm"
+                                    color="neutral.text.medium"
+                                  >
+                                    Service Fee
+                                  </Text>
+                                  {isLoading ? (
+                                    <Spinner />
+                                  ) : !isLoading &&
+                                    statusCheckout &&
+                                    statusFareDetail?.length ===
+                                      totalDataFlight ? (
+                                    <Text
+                                      fontSize="sm"
+                                      color="neutral.text.medium"
+                                    >
+                                      IDR {convertRupiah(serviceFee)}
+                                    </Text>
                                   ) : (
                                     "-"
-                                  )
-                                }
-                              </>
+                                  )}
+                                </HStack>
+                                <Divider variant={"dashed"} />
+                              </VStack>
+                              <HStack justifyContent="space-between" py="16px">
+                                <Text>Total Pembayaran</Text>
+                                <Text fontWeight="semibold">
+                                  IDR {convertRupiah(fareTotal + serviceFee)}
+                                </Text>
+                              </HStack>
+                            </>
+                          ) : (
+                            "-"
+                          )}
+                        </>
                       </Box>
                       <Box
                         position={"sticky"}
@@ -1430,6 +1569,20 @@ const OrderDetails = () => {
         />
       </Box>
     </Layout>
+  );
+};
+
+const FareItem = ({ data, code }) => {
+  const item = data?.find((item) => item?.Code === code);
+
+  if (!item) {
+    return null; // Return null if item is not found
+  }
+
+  return (
+    <Text fontSize="sm" color="neutral.text.medium">
+      IDR {convertRupiah(item.Amount + item.AdditionalPrices)}
+    </Text>
   );
 };
 
